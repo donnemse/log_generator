@@ -1,4 +1,4 @@
-package com.igloosec.generator.service;
+package com.igloosec.generator.service.socket;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.igloosec.generator.service;
+package com.igloosec.generator.service.socket;
 
 public interface ISocketServer {
     void startServer();

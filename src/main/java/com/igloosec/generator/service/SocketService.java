@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.queue.LogQueueService;
+import com.igloosec.generator.service.socket.ISocketServer;
+import com.igloosec.generator.service.socket.SocketServer;
 
 @Service
 public class SocketService {

@@ -12,9 +12,9 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.igloosec.generator.conf.LogProperty;
 import com.igloosec.generator.field.FieldInfo;
 import com.igloosec.generator.finnegan.Finnegan;
+import com.igloosec.generator.prop.LogProperty;
 import com.igloosec.generator.util.NetUtil;
 
 

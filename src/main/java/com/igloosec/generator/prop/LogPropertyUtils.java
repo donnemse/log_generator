@@ -1,4 +1,4 @@
-package com.igloosec.generator.conf;
+package com.igloosec.generator.prop;
 
 import org.yaml.snakeyaml.introspector.Property;
 import org.yaml.snakeyaml.introspector.PropertyUtils;

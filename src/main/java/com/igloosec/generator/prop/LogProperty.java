@@ -1,4 +1,4 @@
-package com.igloosec.generator.conf;
+package com.igloosec.generator.prop;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,0 +1,68 @@
+log: apache
+eps: 60
+logtype: WEB
+raw: |
+   ${sip} - - [${event_time}] "${method} ${url} ${http_version}" ${status} ${event_size}
+data:
+   sip:
+      type: ip
+      values:
+         "192.168.1.1/24": 0.1
+         "192.168.1.100": 0.1
+   dip:
+      type: ip
+      values:
+         "192.168.1.1/16": 0.1
+         "192.168.1.110": 0.1
+         
+   tan_birthday:
+      type: str
+      values:
+         "20220217": 1
+   randome_value_ER435FRE:
+      type: str
+      values:
+         sdfsdhfouhsofsf: 0.1
+         dvkjfvojhdogjdfg: 0.9
+         
+   event_time:
+      type: time
+      raw_format: dd/MMM/yyyy:HH:mm:ss Z
+      parse_format: yyyyMMddHHmmssSSS
+      
+   method:
+      type: str
+      values:
+         GET: 0.4
+         POST: 0.4
+         UPDATE: 0.1
+         DELETE: 0.1
+         
+   url:
+      type: url
+      values:
+         "/cabletb/605/update/CBOXUpdate.xml": 0.1
+   
+   http_version:
+      type: str
+      values:
+         "HTTP/1.1": 1
+   
+   status:
+      type: int
+      values:
+         10-100: 0.5
+         500: 0.3
+         400: 0.2
+         
+   event_size:
+      type: int
+      values:
+         1~10: 0.5
+         8080: 0.4
+   payload:
+      type: payload
+      values: 
+         "sdfdsfsdfsdfsdfsdfsdfsdfdsfsdfsdfsdf sdfdsf \\nsdfdsfsdfsfdsfsdfdsf": 0.1
+         "34rti34ti34ujt0p3uj": 0.2
+         

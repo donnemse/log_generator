@@ -12,7 +12,7 @@ import com.igloosec.generator.field.FieldValue;
 import lombok.Data;
 
 @Data
-public class LogProperty {
+public class LoggerProperty {
     private String log;
     private long eps;
     private String logtype;

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.igloosec.generator.mybatis.mapper.LoggerMapper;
 import com.igloosec.generator.prop.LoggerPropertyManager;
 import com.igloosec.generator.restful.model.LoggerYamlVO;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
@@ -19,6 +20,14 @@ public class LoggerManageRestController {
     
     @Autowired
     private LoggerPropertyManager loggerPropMng;
+    
+    @Autowired
+    private LoggerMapper mapper;
+    
+    @RequestMapping(value = "/sql", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse sql() {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", mapper.selectNumber(10));
+    }
     
     @RequestMapping(value = "/get/{name}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse get(@PathVariable(value = "name") String name) {

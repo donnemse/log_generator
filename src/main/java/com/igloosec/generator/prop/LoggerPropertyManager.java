@@ -31,7 +31,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class LoggerPropertyManager {
     
-    private Map<String, LoggerProperty> cache;
+    private Map<String, LoggerPropertyInfo> cache;
     private ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     
     @PostConstruct
@@ -42,19 +42,23 @@ public class LoggerPropertyManager {
         for (File f: files) {
             try {
                 LoggerProperty lp = mapper.readValue(f, LoggerProperty.class);
-                lp.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
-                this.cache.put(f.getName(), lp);
+                LoggerPropertyInfo info = new LoggerPropertyInfo();
+                info.setLogger(lp);
+                info.setId(f.getName());
+                info.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
+                
+                this.cache.put(f.getName(), info);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
     }
     
-    public LoggerProperty getLogger(String id) {
+    public LoggerPropertyInfo getLogger(String id) {
         return this.cache.get(id);
     }
     
-    public Map<String, LoggerProperty> listLogger() {
+    public Map<String, LoggerPropertyInfo> listLogger() {
         return this.cache;
     }
     /**
@@ -65,8 +69,12 @@ public class LoggerPropertyManager {
     public boolean createLogger(LoggerYamlVO vo) {
         try {
             LoggerProperty lp = mapper.readValue(vo.getYaml(), LoggerProperty.class);
+            LoggerPropertyInfo info = new LoggerPropertyInfo();
+            info.setLogger(lp);
+            info.setId(vo.getFileName());
+            
             // TODO validateCheck
-            this.cache.put(vo.getFileName(), lp);
+            this.cache.put(info.getId(), info);
             // TODO write File
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -86,7 +94,11 @@ public class LoggerPropertyManager {
             LoggerProperty lp = mapper.readValue(vo.getYaml(), LoggerProperty.class);
             // TODO validateCheck
             this.cache.remove(vo.getFileName());
-            this.cache.put(vo.getNewFileName(), lp);
+            LoggerPropertyInfo info = new LoggerPropertyInfo();
+            info.setLogger(lp);
+            info.setId(vo.getFileName());
+            
+            this.cache.put(vo.getNewFileName(), info);
             
             // TODO write File
         } catch (Exception e) {

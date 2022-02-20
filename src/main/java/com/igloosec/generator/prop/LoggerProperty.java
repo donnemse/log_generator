@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.text.StringSubstitutor;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.igloosec.generator.field.FieldInfo;
 import com.igloosec.generator.field.FieldValue;
 
@@ -18,7 +17,6 @@ public class LoggerProperty {
     private long eps;
     private String logtype;
     private String raw;
-    private String yamlStr;
     
     private Map<String, FieldInfo> data;
     

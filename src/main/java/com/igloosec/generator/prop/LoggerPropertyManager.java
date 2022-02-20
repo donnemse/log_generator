@@ -10,19 +10,22 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.igloosec.generator.mybatis.mapper.LoggerMapper;
 import com.igloosec.generator.restful.model.LoggerYamlVO;
 
 import lombok.extern.log4j.Log4j2;
@@ -31,34 +34,63 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class LoggerPropertyManager {
     
-    private Map<String, LoggerPropertyInfo> cache;
-    private ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    private Map<Integer, LoggerPropertyInfo> cache;
+    private ObjectMapper om = new ObjectMapper(new YAMLFactory());
+    
+    private File configDir = new File("./config");
+    
+    @Autowired
+    private LoggerMapper mapper;
     
     @PostConstruct
     private void init() {
         this.cache = new HashMap<>();
-        mapper.setSerializationInclusion(Include.NON_NULL);
-        List<File> files = (List<File>) FileUtils.listFiles(new File("./config"), new String[] {"yaml"}, true);
+        List<LoggerPropertyInfo> listInfo = this.mapper.listLogger();
+        Map<String, LoggerPropertyInfo> mapInfo = listInfo.stream()
+            .collect(Collectors.toMap(LoggerPropertyInfo::getName, x -> x));
+        
+        List<File> files = (List<File>) FileUtils.listFiles(configDir, new String[] {"yaml"}, true);
         for (File f: files) {
             try {
-                LoggerProperty lp = mapper.readValue(f, LoggerProperty.class);
-                LoggerPropertyInfo info = new LoggerPropertyInfo();
-                info.setLogger(lp);
-                info.setId(f.getName());
-                info.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
+                LoggerProperty lp = om.readValue(f, LoggerProperty.class);
                 
-                this.cache.put(f.getName(), info);
+                LoggerPropertyInfo info = null;
+                if (mapInfo.containsKey(f.getName())) {
+                    info = mapInfo.get(f.getName());
+                } else {
+                    info = this.createLogger(f);
+                }
+                info.setLogger(lp);
+                this.cache.put(info.getId(), info);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
     }
     
-    public LoggerPropertyInfo getLogger(String id) {
+    private LoggerPropertyInfo createLogger(File f) throws Exception {
+        LoggerPropertyInfo info = new LoggerPropertyInfo();
+        
+        info.setName(f.getName());
+        info.setCreated(new Date().getTime());
+        info.setLastModified(new Date().getTime());
+        info.setIp("System");
+        info.setStatus(0);
+        info.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
+        int i = mapper.insertLogger(info);
+        log.debug("********************");
+        log.debug(info);
+        if (i == 0) {
+            throw new Exception("can not insert logger");
+        }
+        return info;
+    }
+
+    public LoggerPropertyInfo getLogger(int id) {
         return this.cache.get(id);
     }
     
-    public Map<String, LoggerPropertyInfo> listLogger() {
+    public Map<Integer, LoggerPropertyInfo> listLogger() {
         return this.cache;
     }
     /**
@@ -68,10 +100,10 @@ public class LoggerPropertyManager {
      */
     public boolean createLogger(LoggerYamlVO vo) {
         try {
-            LoggerProperty lp = mapper.readValue(vo.getYaml(), LoggerProperty.class);
+            LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
             LoggerPropertyInfo info = new LoggerPropertyInfo();
             info.setLogger(lp);
-            info.setId(vo.getFileName());
+            info.setName(vo.getFileName());
             
             // TODO validateCheck
             this.cache.put(info.getId(), info);
@@ -91,28 +123,30 @@ public class LoggerPropertyManager {
     public boolean modifyLogger(LoggerYamlVO vo) {
         try {
             // TODO Stop logging
-            LoggerProperty lp = mapper.readValue(vo.getYaml(), LoggerProperty.class);
+            LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
             // TODO validateCheck
-            this.cache.remove(vo.getFileName());
+            this.cache.remove(vo.getId());
             LoggerPropertyInfo info = new LoggerPropertyInfo();
             info.setLogger(lp);
-            info.setId(vo.getFileName());
-            
-            this.cache.put(vo.getNewFileName(), info);
-            
-            // TODO write File
+            info.setId(vo.getId());
+            info.setName(vo.getNewFileName());
+            info.setIp(vo.getIp());
+            info.setLastModified(new Date().getTime());
+            info.setYamlStr(vo.getYaml());
+            mapper.updateLogger(info);
+            this.cache.put(vo.getId(), info);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
         }
         return true;
     }
-    
+
     public boolean deleteLogger(LoggerYamlVO vo) {
         try {
             // TODO Stop logging
             // TODO validateCheck
-            this.cache.remove(vo.getFileName());
+            this.cache.remove(vo.getId());
             
             // TODO remove File
         } catch (Exception e) {

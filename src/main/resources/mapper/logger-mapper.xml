@@ -5,4 +5,29 @@
     <select id="selectNumber" parameterType="int" resultType="int">
         SELECT #{number}
     </select>
+    
+    <select id="listLogger" parameterType="int" resultType="com.igloosec.generator.prop.LoggerPropertyInfo">
+        SELECT * from logger
+    </select>
+    
+    <insert id="insertLogger" parameterType="com.igloosec.generator.prop.LoggerPropertyInfo"
+        useGeneratedKeys="true" keyProperty="id">
+	    insert into logger (
+	      name, created, last_modified, ip, yaml_str
+	    )values (
+	      #{name}, #{created}, #{lastModified}, #{ip}, #{yamlStr}
+	    )
+    </insert>
+    
+    <update id="updateLogger" parameterType="com.igloosec.generator.prop.LoggerPropertyInfo">
+        update logger 
+        set
+            name = #{name},
+            last_modified = #{lastModified},
+            ip = #{ip},
+            yaml_str = #{yamlStr}
+        where
+            id = #{id}
+    </update>
+ 
 </mapper>

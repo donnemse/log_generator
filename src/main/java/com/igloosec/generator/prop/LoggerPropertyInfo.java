@@ -6,13 +6,14 @@ import lombok.Data;
 
 @Data
 public class LoggerPropertyInfo {
-    private String id;
+    private int id;
+    private String name;
     private LoggerProperty logger;
     private String yamlStr;
     private String ip;
     private long created;
     private long lastModified;
-    private boolean status;
+    private int status;
     
     private String getIp() {
         if (this.ip == null) {

@@ -29,7 +29,7 @@
                         let $div = $(
                             "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
                                 "<div class=\"pure-u-3-4\">" +
-			                        "<h5 class=\"logger-name\">" + k + "</h5>" +
+			                        "<h5 class=\"logger-name\">" + v.name + "</h5>" +
 			                        "<h4 class=\"logger-subject\">" +
 			                            v.logger.log +
 			                        "</h4>" +
@@ -64,7 +64,7 @@
                 	editor.setValue(data.yamlStr, -1)
                 	
                 	let $div = 
-	                	$("<h1 class=\"logger-content-title\">" + data.id + "</h1>" +
+	                	$("<h1 class=\"logger-content-title\">" + data.name + "</h1>" +
 	                    "<p class=\"logger-content-subtitle\">" +
 	                        "From <a>" + data.ip + "</a> at <span>3:56pm, April 3, 2021</span>" +
 	                    "</p>");

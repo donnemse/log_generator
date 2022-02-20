@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.igloosec.generator.prop.LoggerPropertyManager;
 import com.igloosec.generator.restful.model.LoggerYamlVO;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
-import com.igloosec.generator.service.SocketService;
 
 @RestController
 @RequestMapping(value = "/logger")
@@ -20,6 +19,16 @@ public class LoggerManageRestController {
     
     @Autowired
     private LoggerPropertyManager loggerPropMng;
+    
+    @RequestMapping(value = "/get/{name}", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse get(@PathVariable(value = "name") String name) {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.getLogger(name));
+    }
+    
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse list() {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.listLogger());
+    }
     
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse create(@RequestBody LoggerYamlVO vo) {

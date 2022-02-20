@@ -2,6 +2,7 @@ package com.igloosec.generator.prop;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.igloosec.generator.restful.model.LoggerYamlVO;
@@ -35,12 +37,12 @@ public class LoggerPropertyManager {
     @PostConstruct
     private void init() {
         this.cache = new HashMap<>();
-        
-        
+        mapper.setSerializationInclusion(Include.NON_NULL);
         List<File> files = (List<File>) FileUtils.listFiles(new File("./config"), new String[] {"yaml"}, true);
         for (File f: files) {
             try {
                 LoggerProperty lp = mapper.readValue(f, LoggerProperty.class);
+                lp.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
                 this.cache.put(f.getName(), lp);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -48,6 +50,13 @@ public class LoggerPropertyManager {
         }
     }
     
+    public LoggerProperty getLogger(String id) {
+        return this.cache.get(id);
+    }
+    
+    public Map<String, LoggerProperty> listLogger() {
+        return this.cache;
+    }
     /**
      * @param name
      * @param yaml

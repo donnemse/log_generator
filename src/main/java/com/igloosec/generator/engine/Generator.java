@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.igloosec.generator.prop.LogProperty;
+import com.igloosec.generator.prop.LoggerProperty;
 import com.igloosec.generator.queue.LogQueueService;
 
 import lombok.extern.log4j.Log4j2;
@@ -26,25 +26,25 @@ public class Generator {
     @Async
 //    @PostConstruct
     public void run() throws StreamReadException, DatabindException, IOException {
-        
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        
-        try {
-            LogProperty a = mapper.readValue(new File("config/apache.yaml"), LogProperty.class);
-            while(true) {
-                Map<String, Object> b = a.generateLog();
-                queueService.pushLog(b);
-                log.debug(b);
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+//        
+//        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+//        
+//        try {
+//            LogProperty a = mapper.readValue(new File("config/apache.yaml"), LogProperty.class);
+//            while(true) {
+//                Map<String, Object> b = a.generateLog();
+//                queueService.pushLog(b);
+//                log.debug(b);
+//                try {
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    // TODO Auto-generated catch block
+//                    e.printStackTrace();
+//                }
+//            }
+//        } catch (IOException e1) {
+//            // TODO Auto-generated catch block
+//            e1.printStackTrace();
+//        }
     }
 }

@@ -12,7 +12,7 @@
 	<artifactId>LogGenerator</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>LogGenerator</name>
-	<description>LogGeneratorLogGeneratorLogGeneratorLogGeneratorLogGeneratorLogGeneratorLogGeneratorLogGenerator</description>
+	<description>LogGenerator</description>
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
@@ -41,6 +41,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
 
         <!-- <dependency>
             <groupId>org.mybatis.spring.boot</groupId>

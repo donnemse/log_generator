@@ -1,5 +1,6 @@
 package com.igloosec.generator.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.igloosec.generator.prop.LoggerPropertyManager;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 
 import lombok.AllArgsConstructor;
@@ -17,9 +19,12 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class WebController {
     
+    @Autowired
+    private LoggerPropertyManager loggerPropMng;
+    
     @GetMapping("/")
     public String main(Model model) {
-        model.addAttribute("test", "test");
+        model.addAttribute("data", loggerPropMng.listLogger());
         return "main";
     }
     

@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igloosec.generator.prop.LoggerPropertyManager;
-import com.igloosec.generator.restful.model.LoggerYamlVO;
+import com.igloosec.generator.restful.model.LoggerRequestVO;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
+import com.igloosec.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -36,28 +37,21 @@ public class LoggerManageRestController {
     }
     
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse create(@RequestBody LoggerYamlVO vo) {
+    public @ResponseBody SingleObjectResponse create(@RequestBody LoggerRequestVO vo) {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.createLogger(vo));
     }
     
     @RequestMapping(value = "/modify", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse modify(
-            @RequestBody LoggerYamlVO vo,
+            @RequestBody LoggerRequestVO vo,
             HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
         
-        log.info(">>>> X-FORWARDED-FOR : " + ip);
- 
-        if (ip == null) {
-            ip = request.getHeader("Proxy-Client-IP");
-            log.info(">>>> Proxy-Client-IP : " + ip);
-        }
-        vo.setIp(ip);
+        vo.setIp(NetUtil.getClientIP(request));
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.modifyLogger(vo));
     }
     
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public @ResponseBody SingleObjectResponse delete(@RequestBody LoggerYamlVO vo) {
+    public @ResponseBody SingleObjectResponse delete(@RequestBody LoggerRequestVO vo) {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.deleteLogger(vo));
     }
 }

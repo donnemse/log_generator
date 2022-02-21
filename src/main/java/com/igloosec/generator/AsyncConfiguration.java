@@ -13,7 +13,6 @@ public class AsyncConfiguration implements AsyncConfigurer {
 
     @Override
     public Executor getAsyncExecutor() {
-        System.out.println("***********");
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("async-thread-");
         executor.setCorePoolSize(10);
@@ -26,7 +25,6 @@ public class AsyncConfiguration implements AsyncConfigurer {
     
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        System.out.println("AsyncDemoApp.getAsyncUncaughtExceptionHandler");
         return (throwable, method, objects)
                 -> throwable.printStackTrace();
     }

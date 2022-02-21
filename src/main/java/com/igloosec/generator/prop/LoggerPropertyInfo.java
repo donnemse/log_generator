@@ -1,5 +1,6 @@
 package com.igloosec.generator.prop;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import lombok.Data;
@@ -14,6 +15,10 @@ public class LoggerPropertyInfo {
     private long created;
     private long lastModified;
     private int status;
+    private String lastModifiedStr;
+    private String createdStr;
+    
+    private transient SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     
     private String getIp() {
         if (this.ip == null) {
@@ -28,4 +33,13 @@ public class LoggerPropertyInfo {
         }
         return this.lastModified;
     }
+    
+    
+//    public String getLastModifiedStr() {
+//        return sdf.format(this.lastModified);
+//    }
+//    
+//    public String getCreatedStr() {
+//        return sdf.format(this.created);
+//    }
 }

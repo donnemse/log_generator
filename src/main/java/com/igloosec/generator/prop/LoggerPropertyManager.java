@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
-import com.igloosec.generator.restful.model.LoggerYamlVO;
+import com.igloosec.generator.restful.model.LoggerRequestVO;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -98,12 +98,12 @@ public class LoggerPropertyManager {
      * @param yaml
      * @return
      */
-    public boolean createLogger(LoggerYamlVO vo) {
+    public boolean createLogger(LoggerRequestVO vo) {
         try {
             LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
             LoggerPropertyInfo info = new LoggerPropertyInfo();
             info.setLogger(lp);
-            info.setName(vo.getFileName());
+            info.setName(vo.getName());
             
             // TODO validateCheck
             this.cache.put(info.getId(), info);
@@ -120,7 +120,7 @@ public class LoggerPropertyManager {
      * @param yaml
      * @return
      */
-    public boolean modifyLogger(LoggerYamlVO vo) {
+    public boolean modifyLogger(LoggerRequestVO vo) {
         try {
             // TODO Stop logging
             LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
@@ -129,8 +129,8 @@ public class LoggerPropertyManager {
             LoggerPropertyInfo info = new LoggerPropertyInfo();
             info.setLogger(lp);
             info.setId(vo.getId());
-            info.setName(vo.getNewFileName());
             info.setIp(vo.getIp());
+            info.setName(vo.getName());
             info.setLastModified(new Date().getTime());
             info.setYamlStr(vo.getYaml());
             mapper.updateLogger(info);
@@ -142,7 +142,7 @@ public class LoggerPropertyManager {
         return true;
     }
 
-    public boolean deleteLogger(LoggerYamlVO vo) {
+    public boolean deleteLogger(LoggerRequestVO vo) {
         try {
             // TODO Stop logging
             // TODO validateCheck

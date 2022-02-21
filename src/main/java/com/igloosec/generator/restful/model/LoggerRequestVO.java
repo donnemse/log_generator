@@ -3,10 +3,9 @@ package com.igloosec.generator.restful.model;
 import lombok.Data;
 
 @Data
-public class LoggerYamlVO {
+public class LoggerRequestVO {
     private int id;
     private String yaml;
-    private String fileName;
-    private String newFileName;
+    private String name;
     private String ip;
 }

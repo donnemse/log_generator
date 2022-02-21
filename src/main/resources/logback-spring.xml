@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.padual.com/java/logback.xsd"
+    debug="true" packagingData="true" scan="true" scanPeriod="30 seconds">
+    <property name="LOG_DIR" value="./logs" />
+    <property name="PATH_LOG_DB" value="${LOG_DIR}/funnel_db.log"/>
+    <property name="PATH_LOG_CORE" value="${LOG_DIR}/funnel_core.log"/>
+    <property name="PATH_LOG_CLEANER" value="${LOG_DIR}/funnel_cleaner.log"/>
+    <property name="PATH_LOG_FULL" value="${LOG_DIR}/funnel.log"/>
+    <property name="PATH_LOG_ERR" value="${LOG_DIR}/funnel.err"/>
+
+    <appender name="APPENDER_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                [%d{ISO8601}] %5p (%logger:%L\): %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="APPENDER_FILE_FULL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${PATH_LOG_FULL}</file>
+        <encoder>
+            <pattern>[%d{ISO8601}] %5p (%logger:%L\): %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${PATH_LOG_FULL}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <totalSizeCap>10MB</totalSizeCap>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="APPENDER_FILE_ERR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>warn</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${PATH_LOG_ERR}</file>
+        <encoder>
+            <pattern>[%d{ISO8601}] %5p (%logger:%L\): %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${PATH_LOG_ERR}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <totalSizeCap>10MB</totalSizeCap>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="APPENDER_FILE_DB" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${PATH_LOG_DB}</file>
+        <encoder>
+            <pattern>[%d{ISO8601}] %5p (%logger:%L\): %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${PATH_LOG_DB}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <totalSizeCap>10MB</totalSizeCap>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="APPENDER_FILE_CORE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${PATH_LOG_CORE}</file>
+        <encoder>
+            <pattern>[%d{ISO8601}] %5p (%logger:%L\): %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${PATH_LOG_CORE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <totalSizeCap>10MB</totalSizeCap>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="APPENDER_FILE_CLEANER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${PATH_LOG_CLEANER}</file>
+        <encoder>
+            <pattern>[%d{ISO8601}] %5p (%logger:%L\): %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${PATH_LOG_CLEANER}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <totalSizeCap>10MB</totalSizeCap>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="springfox" level="WARN" />
+    <logger name="org.springframework" level="WARN" />
+    <logger name="org.apache.kafka" level="WARN" />
+    <logger name="org.springframework.security" level="WARN" />
+    <logger name="com.igloosec.funnel.db" level="DEBUG" />
+    <logger name="org.springframework.web" level="WARN" />
+    <logger name="httpclient.wire" level="WARN" />
+
+    <!-- DB LOG -->
+    <logger name="com.zaxxer.hikari" level="DEBUG" additivity="false">
+        <appender-ref ref="APPENDER_FILE_DB"/>
+    </logger>
+    <logger name="org.mybatis" level="DEBUG" additivity="false">
+        <appender-ref ref="APPENDER_FILE_DB"/>
+    </logger>
+    <logger name="com.igloosec.funnel.db.mapper" level="DEBUG" additivity="false">
+        <appender-ref ref="APPENDER_FILE_DB"/>
+    </logger>
+
+    <!-- CORE LOG -->
+    <logger name="com.igloosec.funnel.core.FunnelCleaner" level="DEBUG">
+        <appender-ref ref="APPENDER_FILE_CLEANER"/>
+    </logger>
+
+    <logger name="com.igloosec.funnel" level="DEBUG">
+        <appender-ref ref="APPENDER_FILE_CORE"/>
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="APPENDER_CONSOLE"/>
+        <appender-ref ref="APPENDER_FILE_FULL"/>
+        <appender-ref ref="APPENDER_FILE_ERR"/>
+        <appender-ref ref="APPENDER_FILE_DB"/>
+        <appender-ref ref="APPENDER_FILE_CLEANER"/>
+    </root>
+</configuration>

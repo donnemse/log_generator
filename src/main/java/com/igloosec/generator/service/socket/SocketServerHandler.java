@@ -21,7 +21,7 @@ public class SocketServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("active");
+        log.debug("active");
         ctx.writeAndFlush("asds");
     }
 
@@ -33,7 +33,7 @@ public class SocketServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println(msg);
+        log.debug(msg);
         
         while (true) {
             List<Map<String, Object>> list = new ArrayList<>();
@@ -41,8 +41,8 @@ public class SocketServerHandler extends ChannelInboundHandlerAdapter {
                 list.add(queue.poll());
                 
             }
-            System.out.println("poll");
-            System.out.println(list);
+            log.debug("poll");
+            log.debug(list);
             ctx.writeAndFlush(list);
             Thread.sleep(1_000);
         }

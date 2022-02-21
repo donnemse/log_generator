@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A layout example that shows off a responsive logger layout.">
-    <title>logger &ndash; Layout Examples &ndash; Pure</title>
+    <title>ILogger</title>
     <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css">
     <link rel="stylesheet" href="/css/main.css">
     <style>
@@ -15,10 +15,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/moments.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript">
-	    
+        
         $(function() {
-        	var editor = ace.edit("editor");
+            var editor = ace.edit("editor");
             editor.session.setMode("ace/mode/yaml");
             editor.setTheme("ace/theme/tomorrow");
             
@@ -28,48 +29,53 @@
                     $.each(response.data.data, function(k, v) {
                         let $div = $(
                             "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                                "<div class=\"pure-u-3-4\">" +
-			                        "<h5 class=\"logger-name\">" + v.name + "</h5>" +
-			                        "<h4 class=\"logger-subject\">" +
-			                            v.logger.log +
-			                        "</h4>" +
-			                        "<h6 class=\"logger-subject\">" +
-			                            "EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
-			                        "</h6>" +
-			                        "<p class=\"logger-desc\">" +
-			                            v.logger.raw + 
-			                        "</p>" +
-			                    "</div>" +
-			                "</div>")
-	                   $div.data("logger", k)
+                            "   <div class=\"pure-u-3-4\">" +
+                            "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
+                            "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
+                            "       <h6 class=\"logger-subject\">" +
+                            "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
+                            "       </h6>" +
+                            "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
+                            "   </div>" +
+                            "   <div class=\"pure-u-1-4\">" +
+                            "       <div class=\"button-change-state " + (v.status == 1? "button-success": "button-error") + " pure-button button-xsmall\">" +
+                            "           " + (v.status == 1? "running": "stopped") +
+                            "       </div>" +
+                            "   </div>" +
+                            "</div>")
+                       $div.data("logger", k)
                         $("#list").append($div);
                     });
                 })
                 .catch(function (error) {
-                    // handle error
                     console.log(error);
                 })
                 .then(function () {
-                	$(".logger-item").eq(0).trigger("click");
+                    $(".logger-item").eq(0).trigger("click");
                 });
             
             $(document).on("click", ".logger-item", function (e) {
-            	$(".logger-item").removeClass("logger-item-selected logger-item-unread");
-            	$(e.currentTarget).addClass("logger-item-selected logger-item-unread");
-            	
-            	console.log(e);
+                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
+                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
+                
                 axios.get('/logger/get/' + $(e.currentTarget).data("logger"))
                 .then(function (response) {
-                	let data = response.data.data;
-                	editor.setValue(data.yamlStr, -1)
-                	
-                	let $div = 
-	                	$("<h1 class=\"logger-content-title\">" + data.name + "</h1>" +
-	                    "<p class=\"logger-content-subtitle\">" +
-	                        "From <a>" + data.ip + "</a> at <span>3:56pm, April 3, 2021</span>" +
-	                    "</p>");
-                	$(".logger-info").html($div);
                 	console.log(response.data);
+                    let data = response.data.data;
+                    editor.setValue(data.yaml_str, -1)
+                    
+                    let $div = $(
+                        "<h1 class=\"logger-content-title\">" +
+                        "   <input type=\"text\" id=\"selected_name\" value=\"" + data.name + "\">" +
+                        "</h1>" +
+                        "<p class=\"logger-content-subtitle\">" +
+                            "From <a>" + data.ip + "</a> at <span>" + moment(data.last_modified).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
+                        "</p>" +
+                        "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
+                        "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
+                    );
+                    $(".logger-info").html($div);
+                    
                 })
                 .catch(function (error) {
                     // handle error
@@ -79,25 +85,47 @@
                     // always executed
                 });
             });
+            
+            $(document).on("click", ".save-button", function (e) {
+                let name = $("#selected_name").val();
+                let id = $("#selected_id").val();
+                let yaml = editor.getValue();
+                
+                axios({
+                    url: "/logger/modify",
+                    method: "patch",
+                    data: {
+                        name: name,
+                        id: id,
+                        yaml: yaml
+                    }
+                }).then(function (response) {
+                    console.log(response.data);
+                }).catch(function (error) {
+                    console.log(error);
+                }).then(function () {
+                    // always executed
+                });
+            });
         });
     </script>
 </head>
 <body>
 
+
+<!-- History -->
 <div id="layout" class="content pure-g">
     <div id="nav" class="pure-u">
         <a href="#" id="menuLink" class="nav-menu-button">Menu</a>
 
         <div class="nav-inner">
-            <button class="primary-button pure-button">Compose</button>
+            <button class="primary-button pure-button">New</button>
 
             <div class="pure-menu">
                 <ul class="pure-menu-list">
                     <li class="pure-menu-item"><a href="#" class="pure-menu-link">Port <span class="logger-count">(2)</span></a></li>
                     <li class="pure-menu-item"><a href="#" class="pure-menu-link">Logger</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">Sent</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">Drafts</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">Trash</a></li>
+                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">History</a></li>
                     <li class="pure-menu-heading">Labels</li>
                     <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-personal"></span>Personal</a></li>
                     <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-work"></span>Work</a></li>
@@ -117,9 +145,8 @@
                 </div>
 
                 <div class="logger-content-controls pure-u-1-2">
-                    <button class="secondary-button pure-button">Run</button>
-                    <button class="secondary-button pure-button">Save</button>
-                    <button class="secondary-button pure-button">Remove</button>
+                    <button class="secondary-button pure-button save-button">Save</button>
+                    <button class="secondary-button pure-button remove-button">Remove</button>
                 </div>
             </div>
 

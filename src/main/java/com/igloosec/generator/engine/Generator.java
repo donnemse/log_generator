@@ -16,6 +16,7 @@ import com.igloosec.generator.prop.LoggerProperty;
 import com.igloosec.generator.queue.LogQueueService;
 
 import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Log4j2

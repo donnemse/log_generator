@@ -244,304 +244,104 @@ a {
         right: 0;
         bottom: 0;
         left: 150px;
-        overflow: auto;/*
- * -- BASE STYLES --
- * Most of these are inherited from Base, but I want to change a few.
- */
-body {
-    color: #333;
-}
+        overflow: auto;
 
-
-
-a {
-    text-decoration: none;
-    color: #1b98f8;
-}
-
-
-/*
- * -- HELPER STYLES --
- * Over-riding some of the .pure-button styles to make my buttons look unique
- */
-.primary-button,
-.secondary-button {
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-    border-radius: 20px;
-}
-.primary-button {
-    color: #fff;
-    background: #1b98f8;
-    margin: 1em 0;
-}
-.secondary-button {
-    background: #fff;
-    border: 1px solid #ddd;
-    color: #666;
-    padding: 0.5em 2em;
-    font-size: 80%;
-}
-
-/*
- * -- LAYOUT STYLES --
- * This layout consists of three main elements, `#nav` (navigation bar), `#list` (logger list), and `#main` (logger content). All 3 elements are within `#layout`
- */
-#layout, #nav, #list, #main {
-    margin: 0;
-    padding: 0;
-}
-
-/* Make the navigation 100% width on phones */
-#nav {
-    width: 100%;
-    height: 40px;
-    position: relative;
-    background: rgb(37, 42, 58);
-    text-align: center;
-}
-/* Show the "Menu" button on phones */
-#nav .nav-menu-button {
-    display: block;
-    top: 0.5em;
-    right: 0.5em;
-    position: absolute;
-}
-
-/* When "Menu" is clicked, the navbar should be 80% height */
-#nav.active {
-    height: 80%;
-}
-/* Don't show the navigation items... */
-.nav-inner {
-    display: none;
-}
-
-/* ...until the "Menu" button is clicked */
-#nav.active .nav-inner {
-    display: block;
-    padding: 2em 0;
-}
-
-
-/*
- * -- NAV BAR STYLES --
- * Styling the default .pure-menu to look a little more unique.
- */
-#nav .pure-menu {
-    background: transparent;
-    border: none;
-    text-align: left;
-}
-    #nav .pure-menu-link:hover,
-    #nav .pure-menu-link:focus {
-        background: rgb(55, 60, 90);
     }
-    #nav .pure-menu-link {
-        color: #fff;
-        margin-left: 0.5em;
-    }
-    #nav .pure-menu-heading {
-        border-bottom: none;
-        font-size:110%;
-        color: rgb(75, 113, 151);
+}
+/*
+
+
+/*
+ * -- DESKTOP (AND UP) MEDIA QUERIES --
+ * On desktops and other large-sized devices, we want to customize some
+ * of the mobile styles.
+ */
+@media (min-width: 60em) {
+
+    /* This will take up the entire height, and be a little thinner */
+    #list {
+        margin-left: -350px;
+        width:350px;
+        height: 100%;
+        border-right: 1px solid #ddd;
     }
 
-
-/*
- * -- logger STYLES --
- * Styles relevant to the logger messages, labels, counts, and more.
- */
-.logger-count {
-    color: rgb(75, 113, 151);
+    /* This will now take up it's own column, so don't need position: fixed; */
+    #main {
+        position: static;
+        margin: 0;
+        padding: 0;
+    }
 }
 
-.logger-label-personal,
-.logger-label-work,
-.logger-label-travel {
-    width: 15px;
-    height: 15px;
+
+
+input[type=color],
+input[type=date],
+input[type=datetime-local],
+input[type=datetime], 
+input[type=email], 
+input[type=month], 
+input[type=number], 
+input[type=password], 
+input[type=search], 
+input[type=tel], 
+input[type=text], 
+input[type=time], 
+input[type=url], 
+input[type=week], 
+select, 
+textarea {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 3px #ddd;
+    box-sizing: border-box;
     display: inline-block;
-    margin-right: 0.5em;
-    border-radius: 3px;
-}
-.logger-label-personal {
-    background: #ffc94c;
-}
-.logger-label-work {
-    background: #41ccb4;
-}
-.logger-label-travel {
-    background: #40c365;
+    padding: 0.5em 0.6em;
+    vertical-align: middle;
 }
 
-
-/* logger Item Styles */
-.logger-item {
-    padding: 0.9em 1em;
-    border-bottom: 1px solid #ddd;
-    border-left: 6px solid transparent;
-}
-    .logger-avatar {
-        border-radius: 3px;
-        margin-right: 0.5em;
-    }
-    .logger-name,
-    .logger-subject {
-        margin: 0;
-    }
-    .logger-name {
-        text-transform: uppercase;
-        color: #999;
-    }
-    .logger-desc {
-        font-size: 80%;
-        margin: 0.4em 0;
-    }
-
-.logger-item-selected {
-    background: #eee;
-}
-.logger-item-unread {
-    border-left: 6px solid #1b98f8;
+.button-success,
+.button-error,
+.button-warning,
+.button-secondary {
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
-/* logger Content Styles */
-.logger-content-header, .logger-content-body, .logger-content-footer {
-    padding: 1em 2em;
-}
-    .logger-content-header {
-        border-bottom: 1px solid #ddd;
-    }
-
-        .logger-content-title {
-            margin: 0.5em 0 0;
-        }
-        .logger-content-subtitle {
-            font-size: 1em;
-            margin: 0;
-            font-weight: normal;
-        }
-            .logger-content-subtitle span {
-                color: #999;
-            }
-    .logger-content-controls {
-        margin-top: 2em;
-        text-align: right;
-    }
-        .logger-content-controls .secondary-button {
-            margin-bottom: 0.3em;
-        }
-
-    .logger-avatar {
-        width: 40px;
-        height: 40px;
-    }
-
-
-/*
- * -- TABLET (AND UP) MEDIA QUERIES --
- * On tablets and other medium-sized devices, we want to customize some
- * of the mobile styles.
- */
-@media (min-width: 40em) {
-
-    /* Move the layout over so we can fit the nav + list in on the left */
-    #layout {
-        padding-left:500px; /* "left col (nav + list)" width */
-        position: relative;
-    }
-
-    /* These are position:fixed; elements that will be in the left 500px of the screen */
-    #nav, #list {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        overflow: auto;
-    }
-    #nav {
-        margin-left:-500px; /* "left col (nav + list)" width */
-        width:150px;
-        height: 100%;
-    }
-
-    /* Show the menu items on the larger screen */
-    .nav-inner {
-        display: block;
-        padding: 2em 0;
-    }
-
-    /* Hide the "Menu" button on larger screens */
-    #nav .nav-menu-button {
-        display: none;
-    }
-
-    #list {
-        margin-left: -350px;
-        width: 100%;
-        height: 33%;
-        border-bottom: 1px solid #ddd;
-    }
-
-    #main {
-        position: fixed;
-        top: 33%;
-        right: 0;
-        bottom: 0;
-        left: 150px;
-        overflow: auto;
-        width: auto; /* so that it's not 100% */
-    }
-
+.button-success {
+    background: rgb(28, 184, 65);
+    /* this is a green */
 }
 
-/*
- * -- DESKTOP (AND UP) MEDIA QUERIES --
- * On desktops and other large-sized devices, we want to customize some
- * of the mobile styles.
- */
-@media (min-width: 60em) {
-
-    /* This will take up the entire height, and be a little thinner */
-    #list {
-        margin-left: -350px;
-        width:350px;
-        height: 100%;
-        border-right: 1px solid #ddd;
-    }
-
-    /* This will now take up it's own column, so don't need position: fixed; */
-    #main {
-        position: static;
-        margin: 0;
-        padding: 0;
-    }
-}
-        width: auto; /* so that it's not 100% */
-    }
-
+.button-error {
+    background: rgb(202, 60, 60);
+    /* this is a maroon */
 }
 
-/*
- * -- DESKTOP (AND UP) MEDIA QUERIES --
- * On desktops and other large-sized devices, we want to customize some
- * of the mobile styles.
- */
-@media (min-width: 60em) {
+.button-warning {
+    background: rgb(223, 117, 20);
+    /* this is an orange */
+}
 
-    /* This will take up the entire height, and be a little thinner */
-    #list {
-        margin-left: -350px;
-        width:350px;
-        height: 100%;
-        border-right: 1px solid #ddd;
-    }
+.button-secondary {
+    background: rgb(66, 184, 221);
+    /* this is a light blue */
+}
 
-    /* This will now take up it's own column, so don't need position: fixed; */
-    #main {
-        position: static;
-        margin: 0;
-        padding: 0;
-    }
+.button-xsmall {
+    font-size: 70%;
+}
+
+.button-small {
+    font-size: 85%;
+}
+
+.button-large {
+    font-size: 110%;
+}
+
+.button-xlarge {
+    font-size: 125%;
 }

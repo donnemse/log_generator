@@ -15,10 +15,6 @@ public class LoggerPropertyInfo {
     private long created;
     private long lastModified;
     private int status;
-    private String lastModifiedStr;
-    private String createdStr;
-    
-    private transient SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     
     private String getIp() {
         if (this.ip == null) {

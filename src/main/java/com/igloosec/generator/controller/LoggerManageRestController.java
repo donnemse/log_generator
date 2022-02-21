@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.igloosec.generator.engine.GeneratorManager;
 import com.igloosec.generator.prop.LoggerPropertyManager;
 import com.igloosec.generator.restful.model.LoggerRequestVO;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
@@ -22,7 +23,8 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping(value = "/logger")
 @Log4j2
 public class LoggerManageRestController {
-    
+    @Autowired
+    private GeneratorManager genMgr;
     @Autowired
     private LoggerPropertyManager loggerPropMng;
     
@@ -53,5 +55,15 @@ public class LoggerManageRestController {
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public @ResponseBody SingleObjectResponse delete(@RequestBody LoggerRequestVO vo) {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.deleteLogger(vo));
+    }
+    
+    @RequestMapping(value = "/start/{id}", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse start(@PathVariable(value = "id") int id) {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", genMgr.start(id));
+    }
+    
+    @RequestMapping(value = "/stop/{id}", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse stop(@PathVariable(value = "id") int id) {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", genMgr.stop(id));
     }
 }

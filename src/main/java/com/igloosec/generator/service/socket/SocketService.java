@@ -34,18 +34,15 @@ public class SocketService {
     
     @Scheduled(fixedDelay = 15 * 1000)
     public void schedule() {
-        log.debug(queueService.getQueue());
-        log.debug(queueService.getEpsCache());
         for (Entry<Integer, Queue<Map<String, Object>>> entry: queueService.getQueue().entrySet()) {
             if(this.cache.containsKey(entry.getKey())) {
                 int size = entry.getValue().size();
-                log.debug("####### scheduled " + size);
                 this.cache.get(entry.getKey()).setCurrentQueueSize(size);
                 this.cache.get(entry.getKey()).setMaxQueueSize(
                         size +
                         ((LinkedBlockingQueue<Map<String, Object>>)entry.getValue()).remainingCapacity());
-                this.cache.get(entry.getKey()).setEps(queueService.getEpsCache().get(entry.getKey()));
-                log.debug(queueService.getEpsCache().get(entry.getKey()));
+                this.cache.get(entry.getKey()).setProducerEps(queueService.getProducerEpsCache().get(entry.getKey()));
+                this.cache.get(entry.getKey()).setConsumerEps(queueService.getConsumerEpsCache().get(entry.getKey()));
             }
         }
     }
@@ -80,7 +77,9 @@ public class SocketService {
                 this.cache.get(entry.getKey()).setMaxQueueSize(
                         size +
                         ((LinkedBlockingQueue<Map<String, Object>>) entry.getValue()).remainingCapacity());
-                this.cache.get(entry.getKey()).setEps(queueService.getEpsCache().get(entry.getKey()));
+                this.cache.get(entry.getKey()).setProducerEps(queueService.getProducerEpsCache().get(entry.getKey()));
+                this.cache.get(entry.getKey()).setConsumerEps(queueService.getConsumerEpsCache().get(entry.getKey()));
+                
             }
         }
         return this.cache.values();

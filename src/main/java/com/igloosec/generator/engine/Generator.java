@@ -29,11 +29,12 @@ public class Generator extends AGenerator {
         long time = System.currentTimeMillis();
         while(this.state) {
           Map<String, Object> map = logger.getLogger().generateLog();
-          queueService.push(map);
+          queueService.push(map, logger.getId());
           cnt++;
           try {
               if (eps < 1000) {
-                  Thread.sleep(1000 / eps);
+                  Thread.sleep((1000 - (System.currentTimeMillis() - time)) / eps);
+                  time = System.currentTimeMillis();
               } else if (cnt % 100 == 0){
                   long diff = System.currentTimeMillis() - time;
                   Thread.sleep((1000 - (eps / 100 * diff)) / eps / 100);

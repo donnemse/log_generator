@@ -24,12 +24,16 @@ public class LogQueueService {
     private Map<Integer, Queue<Map<String, Object>>> queue;
     
     @Getter
-    private Map<Integer, EpsVO> epsCache;
+    private Map<Integer, Map<Integer, EpsVO>> producerEpsCache;
+    
+    @Getter
+    private Map<Integer, EpsVO> consumerEpsCache;
     
     @PostConstruct
     private void init() {
         this.queue = new HashMap<>();
-        this.epsCache = new HashMap<>();
+        this.producerEpsCache = new HashMap<>();
+        this.consumerEpsCache = new HashMap<>();
     }
     
     public void newQueue(int port, int queueSize) {
@@ -50,23 +54,28 @@ public class LogQueueService {
         return this.queue.get(port);
     }
     
-    public void push(Map<String, Object> vo) {
+    public void push(Map<String, Object> vo, int loggerId) {
         long time = System.currentTimeMillis();
         for (Entry<Integer, Queue<Map<String, Object>>> entry: queue.entrySet()) {
             entry.getValue().offer(vo);
             
-            if (!epsCache.containsKey(entry.getKey())) {
+            int port = entry.getKey();
+            if (!producerEpsCache.containsKey(port)) {
+                producerEpsCache.put(port, new HashMap<>());
+            }
+            
+            if (!producerEpsCache.get(port).containsKey(loggerId)) {
                 EpsVO epsVO = new EpsVO();
                 epsVO.setProducerLastCheckTime(time);
-                epsCache.put(entry.getKey(), epsVO);
+                producerEpsCache.get(port).put(loggerId, epsVO);
             }
-            epsCache.get(entry.getKey()).addProducerCnt();
-            long diff = time - epsCache.get(entry.getKey()).getProducerLastCheckTime();
+            producerEpsCache.get(port).get(loggerId).addProducerCnt();
+            long diff = time - producerEpsCache.get(port).get(loggerId).getProducerLastCheckTime();
             if (diff > 5 * 1000) {
-                epsCache.get(entry.getKey()).setProducerEps(
-                        epsCache.get(entry.getKey()).getProducerCnt() / (diff / 1000.d));
-                epsCache.get(entry.getKey()).setProducerEps(0);
-                epsCache.get(entry.getKey()).setProducerLastCheckTime(time);
+                producerEpsCache.get(port).get(loggerId).setProducerEps(
+                        producerEpsCache.get(port).get(loggerId).getProducerCnt() / (diff / 1000.d));
+                producerEpsCache.get(port).get(loggerId).setProducerCnt(0);
+                producerEpsCache.get(port).get(loggerId).setProducerLastCheckTime(time);
             }
         }
     }
@@ -74,23 +83,23 @@ public class LogQueueService {
     public List<Map<String, Object>> poll(int port, int maxBuffer) {
         long time = System.currentTimeMillis();
         
-        if (!epsCache.containsKey(port)) {
+        if (!consumerEpsCache.containsKey(port)) {
             EpsVO epsVO = new EpsVO();
             epsVO.setConsumerLastCheckTime(time);
-            epsCache.put(port, epsVO);
+            consumerEpsCache.put(port, epsVO);
         }
         
         List<Map<String, Object>> list = new ArrayList<>();
         while(!queue.get(port).isEmpty() && list.size() < maxBuffer) {
             list.add(queue.get(port).poll());
-            epsCache.get(port).addConsumerCnt();
+            consumerEpsCache.get(port).addConsumerCnt();
         }
-        long diff = time - epsCache.get(port).getConsumerLastCheckTime();
+        long diff = time - consumerEpsCache.get(port).getConsumerLastCheckTime();
         if (diff > 5 * 1000) {
-            epsCache.get(port).setConsumerEps(
-                    epsCache.get(port).getConsumerCnt() / (diff / 1000.d));
-            epsCache.get(port).setConsumerEps(0);
-            epsCache.get(port).setConsumerLastCheckTime (time);
+            consumerEpsCache.get(port).setConsumerEps(
+                    consumerEpsCache.get(port).getConsumerCnt() / (diff / 1000.d));
+            consumerEpsCache.get(port).setConsumerCnt(0);
+            consumerEpsCache.get(port).setConsumerLastCheckTime (time);
         }
         return list;
     }

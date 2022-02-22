@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.annotation.PostConstruct;
@@ -32,8 +33,8 @@ public class LogQueueService {
     @PostConstruct
     private void init() {
         this.queue = new HashMap<>();
-        this.producerEpsCache = new HashMap<>();
-        this.consumerEpsCache = new HashMap<>();
+        this.producerEpsCache = new ConcurrentHashMap<>();
+        this.consumerEpsCache = new ConcurrentHashMap<>();
     }
     
     public void newQueue(int port, int queueSize) {

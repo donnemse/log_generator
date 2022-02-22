@@ -29,5 +29,20 @@
         where
             id = #{id}
     </update>
- 
+    
+    <update id="updateLoggerStatus" parameterType="map">
+        update logger
+        set
+            status = #{status}
+        where
+            id = #{id}
+    </update>
+    
+    <insert id="insertHistory" parameterType="map" useGeneratedKeys="true">
+        insert into logger_hist (
+          logger_id, ip, last_modified, msg
+        )values (
+          #{loggerId}, #{ip}, #{lastModified}, #{msg}
+        )
+    </insert>
 </mapper>

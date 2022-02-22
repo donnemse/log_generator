@@ -40,9 +40,9 @@ a {
 
 /*
  * -- LAYOUT STYLES --
- * This layout consists of three main elements, `#nav` (navigation bar), `#list` (logger list), and `#main` (logger content). All 3 elements are within `#layout`
+ * This layout consists of three main elements, `#nav` (navigation bar), `.list` (logger list), and `#main` (logger content). All 3 elements are within `#layout`
  */
-#layout, #nav, #list, #main {
+#layout, #nav, .list, #main {
     margin: 0;
     padding: 0;
 }
@@ -208,7 +208,7 @@ a {
     }
 
     /* These are position:fixed; elements that will be in the left 500px of the screen */
-    #nav, #list {
+    #nav, .list {
         position: fixed;
         top: 0;
         bottom: 0;
@@ -231,7 +231,7 @@ a {
         display: none;
     }
 
-    #list {
+    .list {
         margin-left: -350px;
         width: 100%;
         height: 33%;
@@ -259,7 +259,7 @@ a {
 @media (min-width: 60em) {
 
     /* This will take up the entire height, and be a little thinner */
-    #list {
+    .list {
         margin-left: -350px;
         width:350px;
         height: 100%;
@@ -274,7 +274,9 @@ a {
     }
 }
 
-
+#editor { 
+    height: calc(100vh - 180px)
+}
 
 input[type=color],
 input[type=date],
@@ -344,4 +346,34 @@ textarea {
 
 .button-xlarge {
     font-size: 125%;
+}
+
+.button-change-state-tag {
+	position: absolute;
+	right:0
+}
+
+.modal-dialog {
+	min-width: 50% !important;
+    max-width: 75% !important;
+}
+
+.modal-body {
+	max-height: calc(100vh - 200px);
+    overflow: scroll;
+}
+
+.field-key {
+    background: #f7f8c7;
+    font-weight: 500;
+    border-radius: 3px;
+    border: 1px solid #acabab;
+}
+
+.field-key-hover {
+    background: #fe8282;
+    color: #eee;
+    font-weight: 500;
+    border-radius: 3px;
+    border: 1px solid #acabab;
 }

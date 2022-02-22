@@ -5,8 +5,8 @@ import java.util.Date;
 
 public class TimeField extends FieldInfo implements IFieldGenerator {
     
-    private SimpleDateFormat sdfRaw;
-    private SimpleDateFormat sdfParsed;
+    private transient SimpleDateFormat sdfRaw;
+    private transient SimpleDateFormat sdfParsed;
     
     public TimeField(String rawFormat, String parseFormat) {
         this.sdfRaw = new SimpleDateFormat(rawFormat);

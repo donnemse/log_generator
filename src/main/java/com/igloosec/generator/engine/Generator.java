@@ -15,23 +15,35 @@ public class Generator extends AGenerator {
     
     private volatile boolean state = true;
     
+    private long eps;
+    
     public Generator(LogQueueService queueService, LoggerPropertyInfo logger) {
         this.queueService = queueService;
         this.logger = logger;
+        this.eps = logger.getLogger().getEps();
     }
 
     @Override
     public void run() {
+        int cnt = 0;
+        long time = System.currentTimeMillis();
         while(this.state) {
-          Map<String, Object> b = logger.getLogger().generateLog();
-          queueService.pushLog(b);
-          log.debug(b);
+          Map<String, Object> map = logger.getLogger().generateLog();
+          queueService.push(map);
+          cnt++;
           try {
-              Thread.sleep(5000);
+              if (eps < 1000) {
+                  Thread.sleep(1000 / eps);
+              } else if (cnt % 100 == 0){
+                  long diff = System.currentTimeMillis() - time;
+                  Thread.sleep((1000 - (eps / 100 * diff)) / eps / 100);
+                  time = System.currentTimeMillis();
+                  
+              }
           } catch (InterruptedException e) {
               log.error(e.getMessage(), e);
           }
-      }
+        }
     }
 
     @Override
@@ -48,8 +60,11 @@ public class Generator extends AGenerator {
 
     @Override
     public int checkStatus() {
-        
-        return 0;
+        if (this.state) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
 

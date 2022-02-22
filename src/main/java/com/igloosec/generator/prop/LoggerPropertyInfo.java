@@ -1,6 +1,5 @@
 package com.igloosec.generator.prop;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import lombok.Data;

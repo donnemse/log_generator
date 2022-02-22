@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
 import com.igloosec.generator.engine.GeneratorManager;
 import com.igloosec.generator.prop.LoggerPropertyManager;
 import com.igloosec.generator.restful.model.LoggerRequestVO;
@@ -20,7 +21,7 @@ import com.igloosec.generator.util.NetUtil;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
-@RequestMapping(value = "/logger")
+@RequestMapping(value = "/api/logger")
 @Log4j2
 public class LoggerManageRestController {
     @Autowired
@@ -35,6 +36,8 @@ public class LoggerManageRestController {
     
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
+        Gson gson = new Gson();
+        log.debug(gson.toJson(loggerPropMng.listLogger()));
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.listLogger());
     }
     
@@ -57,13 +60,22 @@ public class LoggerManageRestController {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.deleteLogger(vo));
     }
     
+    @RequestMapping(value = "/sample", method = RequestMethod.POST)
+    public @ResponseBody SingleObjectResponse sample(@RequestBody LoggerRequestVO vo) {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.sample(vo));
+    }
+    
     @RequestMapping(value = "/start/{id}", method = RequestMethod.GET)
-    public @ResponseBody SingleObjectResponse start(@PathVariable(value = "id") int id) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", genMgr.start(id));
+    public @ResponseBody SingleObjectResponse start(
+            @PathVariable(value = "id") int id,
+            HttpServletRequest request) {
+        return genMgr.start(id, NetUtil.getClientIP(request));
     }
     
     @RequestMapping(value = "/stop/{id}", method = RequestMethod.GET)
-    public @ResponseBody SingleObjectResponse stop(@PathVariable(value = "id") int id) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", genMgr.stop(id));
+    public @ResponseBody SingleObjectResponse stop(
+            @PathVariable(value = "id") int id,
+            HttpServletRequest request) {
+        return genMgr.stop(id, NetUtil.getClientIP(request));
     }
 }

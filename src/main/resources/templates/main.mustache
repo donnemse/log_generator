@@ -7,11 +7,7 @@
     <title>ILogger</title>
     <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css">
     <link rel="stylesheet" href="/css/main.css">
-    <style>
-        #editor { 
-            height: calc(100vh - 150px)
-        }
-    </style>
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -23,13 +19,13 @@
             editor.session.setMode("ace/mode/yaml");
             editor.setTheme("ace/theme/tomorrow");
             
-            axios.get('/logger/list')
+            axios.get('/api/logger/list')
                 .then(function (response) {
                     let i = 0;
                     $.each(response.data.data, function(k, v) {
                         let $div = $(
                             "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                            "   <div class=\"pure-u-3-4\">" +
+                            "   <div class=\"pure-u-1\">" +
                             "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
                             "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
                             "       <h6 class=\"logger-subject\">" +
@@ -37,44 +33,47 @@
                             "       </h6>" +
                             "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
                             "   </div>" +
-                            "   <div class=\"pure-u-1-4\">" +
+                            "   <div class=\"pure-u-1-4 button-change-state-tag\">" +
                             "       <div class=\"button-change-state " + (v.status == 1? "button-success": "button-error") + " pure-button button-xsmall\">" +
                             "           " + (v.status == 1? "running": "stopped") +
                             "       </div>" +
                             "   </div>" +
                             "</div>")
-                       $div.data("logger", k)
-                        $("#list").append($div);
+                       $div.data("logger_id", k)
+                        $("#logger_tab .list").append($div);
                     });
                 })
                 .catch(function (error) {
                     console.log(error);
                 })
                 .then(function () {
-                    $(".logger-item").eq(0).trigger("click");
+                    $("#logger_tab .logger-item").eq(0).trigger("click");
                 });
             
-            $(document).on("click", ".logger-item", function (e) {
-                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
+            $(document).on("click", "#logger_tab .logger-item", function (e) {
+                if ($(e.target).hasClass("button-change-state")) {
+                	return;
+                }
+                $("#logger_tab .logger-item").removeClass("logger-item-selected logger-item-unread");
                 $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
                 
-                axios.get('/logger/get/' + $(e.currentTarget).data("logger"))
+                axios.get('/api/logger/get/' + $(e.currentTarget).data("logger_id"))
                 .then(function (response) {
                 	console.log(response.data);
                     let data = response.data.data;
                     editor.setValue(data.yaml_str, -1)
                     
                     let $div = $(
-                        "<h1 class=\"logger-content-title\">" +
+                        "<h2 class=\"logger-content-title\">" +
                         "   <input type=\"text\" id=\"selected_name\" value=\"" + data.name + "\">" +
-                        "</h1>" +
+                        "</h2>" +
                         "<p class=\"logger-content-subtitle\">" +
                             "From <a>" + data.ip + "</a> at <span>" + moment(data.last_modified).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
                         "</p>" +
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
                     );
-                    $(".logger-info").html($div);
+                    $("#logger_tab .logger-info").html($div);
                     
                 })
                 .catch(function (error) {
@@ -86,13 +85,13 @@
                 });
             });
             
-            $(document).on("click", ".save-button", function (e) {
-                let name = $("#selected_name").val();
-                let id = $("#selected_id").val();
+            $(document).on("click", "#logger_tab .save-button", function (e) {
+                let name = $("#logger_tab #selected_name").val();
+                let id = $("#logger_tab #selected_id").val();
                 let yaml = editor.getValue();
                 
                 axios({
-                    url: "/logger/modify",
+                    url: "/api/logger/modify",
                     method: "patch",
                     data: {
                         name: name,
@@ -107,7 +106,127 @@
                     // always executed
                 });
             });
+            
+            $(document).on("click", "#logger_tab .sample-button", function (e) {
+                $tbody = $(".modal .modal-body .pure-table tbody")
+                $tbody.empty();
+                let re = /(\{|,\s)(?<key>[a-zA-Z0-9\-\_]{1,})(=)(?<val>.+?)(\,\s|\})/gm
+                axios({
+                    url: "/logger/sample",
+                    method: "post",
+                    data: {
+                        yaml: editor.getValue()
+                    }
+                }).then(function (response) {
+                    $.each(response.data.data, function(idx, val) {
+                        let list = [];
+                        $.each(val, function(k, v) {
+                            list.push("<span class=\"field-key\" name=\"" + k + "\">" + k + "</span>=" +
+                            "<span class=\"field-val\" name=\"" + v + "\">" + v + "</span>");
+                        });
+                        
+                        $tbody.append(
+                            "<tr class=\"" + (idx % 2 == 0? "": "pure-table-odd") + "\">" +
+                            "    <td>" + (idx + 1) + "</td>" +
+                            "    <td>" + list.join(", ") + "</td>" +
+                            "</tr>");
+                    });
+                    console.log(response.data);
+                }).catch(function (error) {
+                    console.log(error);
+                }).then(function () {
+                    // always executed
+                });
+            });
+            
+            $(document).on('click', "li.pure-menu-item", function(e) {
+            	let name = $(this).attr("name");
+            	$(".tab-pane").addClass("d-none");
+            	$(".tab-pane#" + name + "_tab").removeClass("d-none");
+            	console.log(name)
+            });
+            
+            $(document).on('mouseenter',"#logger_tab .field-key",function (e) {
+            	let name = $(e.currentTarget).attr("name");
+                $("#logger_tab .field-key[name=\"" + name + "\"]").addClass("field-key-hover");
+            });
+
+            $(document).on('mouseleave',"#logger_tab .field-key",function (e) {
+            	let name = $(e.currentTarget).attr("name");
+                $("#logger_tab .field-key[name=\"" + name + "\"]").removeClass("field-key-hover");
+            });
+            
+            $(document).on('click',"#logger_tab .button-change-state-tag .button-change-state",function (e) {
+            	$button = $(this);
+            	let id = $(e.target).parents(".logger-item").data("logger_id");
+            	let flag = $button.hasClass("button-error");
+            	
+            	axios({
+                    url: "/api/logger/" + (flag? "start": "stop") + "/" + id,
+                    method: "get"
+                }).then(function (response) {
+                    if (response.data.data) {
+                    	console.log(response.data.data)
+                    	console.log(flag);
+                    	console.log(e)
+                    	console.log($(e))
+                    	if (flag) {
+                    		$button.removeClass("button-error");
+                    		$button.addClass("button-success");
+                    		$button.text("Running");
+                    	} else {
+                    		$button.removeClass("button-success");
+                    		$button.addClass("button-error");
+                    		$button.text("Stopped");
+                    	}
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                }).then(function () {
+                    // always executed
+                });
+            });
         });
+        var triggerTabList = [].slice.call(document.querySelectorAll('.nav-pills li'))
+        triggerTabList.forEach(function (triggerEl) {
+          var tabTrigger = new bootstrap.Tab(triggerEl)
+
+          triggerEl.addEventListener('click', function (event) {
+            event.preventDefault()
+            tabTrigger.show()
+          })
+        })
+        
+        
+        
+        
+        
+        
+        ///////////////////////// Socket ///////////////////////////////
+        
+        axios.get('/api/socket/list')
+            .then(function (response) {
+                let i = 0;
+                console.log(response);
+                $.each(response.data.data, function(k, v) {
+                    let $div = $(
+                        "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
+                        "   <div class=\"pure-u-1\">" +
+                        "       <h5 class=\"logger-name\">" + v.port + "</h5>" + 
+                        "       <h6 class=\"logger-subject\">" +
+                        "           최대큐사이즈: " + v.max_queue_size + "\n현재큐사이즈: " + v.current_queue_size +
+                        "       </h6>" +
+                        "   </div>" +
+                        "</div>")
+                    $("#socket_tab .list").append($div);
+                });
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+                $("#socket_tab .logger-item").eq(0).trigger("click");
+            });
     </script>
 </head>
 <body>
@@ -120,12 +239,11 @@
 
         <div class="nav-inner">
             <button class="primary-button pure-button">New</button>
-
             <div class="pure-menu">
                 <ul class="pure-menu-list">
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">Port <span class="logger-count">(2)</span></a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">Logger</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link">History</a></li>
+                    <li class="pure-menu-item" name="socket"><a href="#" class="pure-menu-link">Port <span class="logger-count">(2)</span></a></li>
+                    <li class="pure-menu-item" name="logger"><a href="#" class="pure-menu-link">Logger</a></li>
+                    <li class="pure-menu-item" name="hist"><a href="#" class="pure-menu-link">History</a></li>
                     <li class="pure-menu-heading">Labels</li>
                     <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-personal"></span>Personal</a></li>
                     <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-work"></span>Work</a></li>
@@ -134,81 +252,98 @@
             </div>
         </div>
     </div>
-
-    <div id="list" class="pure-u-1"></div>
-
-    <div id="main" class="pure-u-1">
-        <div class="logger-content">
-            <div class="logger-content-header pure-g">
-                <div class="logger-info pure-u-1-2">
-                    
-                </div>
-
-                <div class="logger-content-controls pure-u-1-2">
-                    <button class="secondary-button pure-button save-button">Save</button>
-                    <button class="secondary-button pure-button remove-button">Remove</button>
+    
+    <div class="pure-u-1">
+        <div id="socket_tab" class="tab-pane d-none">
+            <div class="pure-u-1 list"></div>
+            <div class="pure-u-1 main">
+                <div class="logger-content">
+                    <div class="logger-content-header pure-g">
+                        <div class="logger-info pure-u-1-2"></div>
+                        <div class="logger-content-controls pure-u-1-2">
+                            
+                        </div>
+                    </div>
+        
+                    <div class="logger-content-body"></div>
                 </div>
             </div>
-
-            <div class="logger-content-body">
-                <div id="editor">function foo(items) {
-                    var x = "All this is syntax highlighted";
-                    return x;
-                }</div>
+        </div>
+        <div id="logger_tab" class="tab-pane">
+            <div class="pure-u-1 list"></div>
+            <div class="pure-u-1 main">
+                <div class="logger-content">
+                    <div class="logger-content-header pure-g">
+                        <div class="logger-info pure-u-1-2">
+                            
+                        </div>
+        
+                        <div class="logger-content-controls pure-u-1-2">
+                            <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                Sample
+                            </button>
+                            <button class="secondary-button pure-button save-button">Save</button>
+                            <button class="secondary-button pure-button remove-button">Remove</button>
+                        </div>
+                    </div>
+        
+                    <div class="logger-content-body">
+                        <div id="editor"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="hist_tab" class="tab-pane d-none">
+            <div class="pure-u-1 list"></div>
+            <div id="main" class="pure-u-1 main">
+                <div class="logger-content">
+                    <div class="logger-content-header pure-g">
+                        <div class="logger-info pure-u-1-2"></div>
+                        <div class="logger-content-controls pure-u-1-2">
+                            <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                Sample
+                            </button>
+                            <button class="secondary-button pure-button save-button">Save</button>
+                            <button class="secondary-button pure-button remove-button">Remove</button>
+                        </div>
+                    </div>
+        
+                    <div class="logger-content-body">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="pure-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Genrated Log</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 <!-- Script to make the Menu link work -->
 <!-- Just stripped down version of the js/ui.js script for the side-menu layout -->
-<script>
-    function getElements() {
-        return {
-            menu: document.getElementById('nav'),
-            menuLink: document.getElementById('menuLink')
-        };
-    }
 
-    function toggleClass(element, className) {
-        var classes = element.className.split(/\s+/);
-        var length = classes.length;
-        var i = 0;
-
-        for (; i < length; i++) {
-            if (classes[i] === className) {
-                classes.splice(i, 1);
-                break;
-            }
-        }
-        // The className is not found
-        if (length === classes.length) {
-            classes.push(className);
-        }
-
-        element.className = classes.join(' ');
-    }
-
-    function toggleMenu() {
-        var active = 'active';
-        var elements = getElements();
-
-        toggleClass(elements.menu, active);
-    }
-
-    function handleEvent(e) {
-        var elements = getElements();
-
-        if (e.target.id === elements.menuLink.id) {
-            toggleMenu();
-            e.preventDefault();
-        } else if (elements.menu.className.indexOf('active') !== -1) {
-            toggleMenu();
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        document.addEventListener('click', handleEvent);
-    });
-</script>
 </body>
 </html>

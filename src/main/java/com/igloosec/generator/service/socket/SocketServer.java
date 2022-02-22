@@ -1,25 +1,22 @@
 package com.igloosec.generator.service.socket;
 
-import java.util.Map;
-import java.util.Queue;
-
-import com.igloosec.generator.engine.LogVO;
+import com.igloosec.generator.queue.LogQueueService;
 
 public class SocketServer implements ISocketServer {
     
     private Thread t;
     private SocketServerInstance ssi;
     private int port;
-    private Queue<Map<String, Object>> queue;
+    private LogQueueService queueService;
     
-    public SocketServer(int port, Queue<Map<String, Object>> queue) {
+    public SocketServer(int port, LogQueueService queueService) {
         this.port = port;
-        this.queue = queue;
+        this.queueService = queueService;
     }
     
     @Override
     public void startServer() {
-        this.ssi = new SocketServerInstance(this.port, this.queue);
+        this.ssi = new SocketServerInstance(this.port, this.queueService);
         this.t = new Thread(() -> ssi.start());
         this.t.start();
         

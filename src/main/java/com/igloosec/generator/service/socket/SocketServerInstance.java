@@ -1,9 +1,6 @@
 package com.igloosec.generator.service.socket;
 
-import java.util.Map;
-import java.util.Queue;
-
-import com.igloosec.generator.engine.LogVO;
+import com.igloosec.generator.queue.LogQueueService;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -14,9 +11,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
@@ -26,13 +20,17 @@ public class SocketServerInstance {
     
     private EventLoopGroup parentGroup;
     private EventLoopGroup childGroup;
-    private Queue<Map<String, Object>> queue;
-    
-    public SocketServerInstance(int port, Queue<Map<String, Object>> queue) {
+    private LogQueueService queueService;
+
+    private SocketServerHandler handler;
+    public SocketServerInstance(int port, LogQueueService queueService) {
         this.port = port;
-        this.queue = queue;
+        this.queueService = queueService;
     }
 
+    public double getConsumerEps() {
+        return handler.getEPS();
+    }
     public void start() {
         this.parentGroup = new NioEventLoopGroup(10);
         this.childGroup = new NioEventLoopGroup();
@@ -46,9 +44,10 @@ public class SocketServerInstance {
                 @Override
                 protected void initChannel(SocketChannel sc) throws Exception {
                     ChannelPipeline p = sc.pipeline();
+                    handler = new SocketServerHandler(port, queueService);
 //                    p.addLast("encoder", new ObjectEncoder());
 //                    p.addLast("decoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-                    p.addLast(new SocketServerHandler(queue));
+                    p.addLast(handler);
                 }
             });
 

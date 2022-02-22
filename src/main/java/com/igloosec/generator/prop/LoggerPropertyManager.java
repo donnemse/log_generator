@@ -2,6 +2,8 @@ package com.igloosec.generator.prop;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -10,11 +12,13 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.annotation.PostConstruct;
 
@@ -23,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
@@ -33,11 +39,9 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @Log4j2
 public class LoggerPropertyManager {
-    
+    private final int SAMEPLE_CNT = 100; 
     private Map<Integer, LoggerPropertyInfo> cache;
     private ObjectMapper om = new ObjectMapper(new YAMLFactory());
-    
-    private File configDir = new File("./config");
     
     @Autowired
     private LoggerMapper mapper;
@@ -46,26 +50,36 @@ public class LoggerPropertyManager {
     private void init() {
         this.cache = new HashMap<>();
         List<LoggerPropertyInfo> listInfo = this.mapper.listLogger();
-        Map<String, LoggerPropertyInfo> mapInfo = listInfo.stream()
-            .collect(Collectors.toMap(LoggerPropertyInfo::getName, x -> x));
-        
-        List<File> files = (List<File>) FileUtils.listFiles(configDir, new String[] {"yaml"}, true);
-        for (File f: files) {
-            try {
-                LoggerProperty lp = om.readValue(f, LoggerProperty.class);
-                
-                LoggerPropertyInfo info = null;
-                if (mapInfo.containsKey(f.getName())) {
-                    info = mapInfo.get(f.getName());
-                } else {
-                    info = this.createLogger(f);
+        this.cache = listInfo.stream()
+            .collect(Collectors.toMap(LoggerPropertyInfo::getId, x -> {
+                try {
+                    LoggerProperty lp = om.readValue(x.getYamlStr(), LoggerProperty.class);
+                    x.setLogger(lp);
+                } catch (JsonMappingException e) {
+                    log.error(e.getMessage(), e);
+                } catch (JsonProcessingException e) {
+                    log.error(e.getMessage(), e);
                 }
-                info.setLogger(lp);
-                this.cache.put(info.getId(), info);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+                return x;
+            }));
+        
+//        List<File> files = (List<File>) FileUtils.listFiles(configDir, new String[] {"yaml"}, true);
+//        for (File f: files) {
+//            try {
+//                LoggerProperty lp = om.readValue(f, LoggerProperty.class);
+//                
+//                LoggerPropertyInfo info = null;
+//                if (mapInfo.containsKey(f.getName())) {
+//                    info = mapInfo.get(f.getName());
+//                } else {
+//                    info = this.createLogger(f);
+//                }
+//                info.setLogger(lp);
+//                this.cache.put(info.getId(), info);
+//            } catch (Exception e) {
+//                log.error(e.getMessage(), e);
+//            }
+//        }
     }
     
     private LoggerPropertyInfo createLogger(File f) throws Exception {
@@ -184,20 +198,20 @@ public class LoggerPropertyManager {
         }
     }
     
-//    LogProperty a = mapper.readValue(new File("config/apache.yaml"), LogProperty.class);
-//    while(true) {
-//        Map<String, Object> b = a.generateLog();
-//        queueService.pushLog(b);
-//        log.debug(b);
-//        try {
-//            Thread.sleep(5000);
-//        } catch (InterruptedException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//    }
-//} catch (IOException e1) {
-//    // TODO Auto-generated catch block
-//    e1.printStackTrace();
-//}
+    public List<Map<String, Object>> sample(LoggerRequestVO vo) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        try {
+            LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
+            IntStream.range(0, SAMEPLE_CNT).forEach(x ->{
+                list.add(lp.generateLog());
+            });
+        } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            Map<String, Object> map = new HashMap<>();
+            map.put("error", sw.toString());
+            list.add(map);
+        }
+        return list;
+    }
 }

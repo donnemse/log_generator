@@ -111,6 +111,12 @@ public class LoggerPropertyManager {
         return true;
     }
     
+    public boolean addHistory(LoggerRequestVO vo, String msg, String etc) {
+        mapper.insertHistory(vo.getId(), vo.getIp(), new Date().getTime(), msg, etc);
+        return true;
+    }
+    
+    
     /**
      * @param name
      * @param yaml
@@ -130,9 +136,11 @@ public class LoggerPropertyManager {
             info.setLastModified(new Date().getTime());
             info.setYamlStr(vo.getYaml());
             mapper.updateLogger(info);
+            this.addHistory(vo, "logger was modified. " + vo.getName(), vo.getYaml());
             this.cache.put(vo.getId(), info);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            this.addHistory(vo, "could not modified logger. " + vo.getName(), e.getMessage());
             return false;
         }
         return true;

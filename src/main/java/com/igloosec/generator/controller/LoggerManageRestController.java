@@ -50,7 +50,6 @@ public class LoggerManageRestController {
     public @ResponseBody SingleObjectResponse modify(
             @RequestBody LoggerRequestVO vo,
             HttpServletRequest request) {
-        
         vo.setIp(NetUtil.getClientIP(request));
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.modifyLogger(vo));
     }

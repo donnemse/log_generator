@@ -11,14 +11,18 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="/js/moments.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://unpkg.com/gridjs-jquery/dist/gridjs.production.min.js"></script>
+<!--     <script src="https://unpkg.com/gridjs-jquery/dist/gridjs.production.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" />
-
+-->
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css">
+    
     <script type="text/javascript">
-        
+    
         $(function() {
-            $("#table").Grid({
-                columns: ['ID', 'IP','Time',  'Message'],
+            //$("#table").Grid({
+            new gridjs.Grid({
+                columns: ['ID', 'IP','Time',  'Message', 'etc.'],
                 pagination: {
                     enabled: true,
                     limit: 10,
@@ -29,11 +33,15 @@
                 server: {
                     url: '/api/history/list/logger',
                     then: data => data.data.list.map(hist => [
-                        hist.id, hist.ip, moment(hist.last_modified).format("YYYY/MM/DD HH:mm:ss"), hist.msg
+                        hist.id,
+                        hist.ip,
+                        moment(hist.last_modified).format("YYYY/MM/DD HH:mm:ss"),
+                        hist.msg,
+                        gridjs.html("<pre>" + hist.etc + "<pre>")
                     ]),
                     total: data => data.data.total_cnt
                     } 
-                });
+                }).render(document.getElementById('table'))
         });
             
     </script>
@@ -46,7 +54,7 @@
     {{>nav}}
     
     <div class="pure-u-1">
-        <div class="pure-u-1 list">
+        <div class="pure-u-1 list" style="width:180px !important">
             <div class="logger-item pure-g logger-item-selected logger-item-unread">
 	            <div class="pure-u-7-8">
 	                <h5 class="logger-name">Logger</h5>

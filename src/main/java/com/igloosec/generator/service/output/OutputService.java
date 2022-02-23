@@ -57,7 +57,7 @@ public class OutputService {
         
         if (cache.containsKey(vo.getPort())) {
             String message = "Already opened " + vo.getPort() + " port.";
-            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message);
+            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message, null);
             return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
         } else {
             vo.setServer(new TCPSocketServer(vo.getPort(), queueService));
@@ -65,7 +65,7 @@ public class OutputService {
             queueService.getQueue(vo.getPort(), vo.getMaxQueueSize());
             this.cache.put(vo.getPort(), vo);
             String message = "Sucessfully opened " + vo.getPort() + " port.";
-            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message);
+            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message, null);
             return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }
     }
@@ -76,11 +76,11 @@ public class OutputService {
             cache.remove(port);
             queueService.removeQueue(port);
             String message = "Sucessfully closed " + port + " port.";
-            outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message);
+            outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message, null);
             return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }
         String message = "Could not close " + port + " port.";
-        outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message);
+        outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message, null);
         return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
     }
 

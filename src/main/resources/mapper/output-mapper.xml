@@ -4,9 +4,9 @@
 <mapper namespace="com.igloosec.generator.mybatis.mapper.OutputMapper">
     <insert id="insertHistory" parameterType="map" useGeneratedKeys="true">
         insert into output_hist (
-          output_id, type, ip, last_modified, msg
+          output_id, type, ip, last_modified, msg, etc
         )values (
-          #{outputId}, #{type}, #{ip}, #{lastModified}, #{msg}
+          #{outputId}, #{type}, #{ip}, #{lastModified}, #{msg}, #{etc}
         )
     </insert>
 </mapper>

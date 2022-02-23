@@ -55,7 +55,7 @@ public class GeneratorManager {
     public SingleObjectResponse start(int id, String ip) {
         if (cache.containsKey(id)) {
             String message = "Already runnig: " + loggerPropMng.getLogger(id).getName();
-            mapper.insertHistory(id, ip, new Date().getTime(), message);
+            mapper.insertHistory(id, ip, new Date().getTime(), message, null);
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
@@ -79,7 +79,7 @@ public class GeneratorManager {
             this.cache.remove(id);
         } else {
             String message = "Genrator was not runnig status: " + loggerPropMng.getLogger(id).getName();
-            mapper.insertHistory(id, ip, new Date().getTime(), message);
+            mapper.insertHistory(id, ip, new Date().getTime(), message, null);
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
@@ -94,6 +94,6 @@ public class GeneratorManager {
     private void updateLoggerStatus(int id, int status, String ip) {
         mapper.updateLoggerStatus(id, status);
         String message = "Successfully " + (status == 1? "started. ": "stopped. ") + loggerPropMng.getLogger(id).getName();
-        mapper.insertHistory(id, ip, new Date().getTime(), message);
+        mapper.insertHistory(id, ip, new Date().getTime(), message, null);
     }
 }

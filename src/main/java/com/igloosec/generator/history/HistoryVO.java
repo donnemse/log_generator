@@ -11,5 +11,6 @@ public class HistoryVO {
     private String type;
     private long lastModified;
     private String msg;
+    private String etc;
     
 }

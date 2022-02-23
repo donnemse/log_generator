@@ -17,5 +17,5 @@ public interface LoggerMapper {
 
     int updateLoggerStatus(int id, int status);
 
-    int insertHistory(int loggerId, String ip, long lastModified, String msg);
+    int insertHistory(int loggerId, String ip, long lastModified, String msg, String etc);
 }

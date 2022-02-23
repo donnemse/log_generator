@@ -40,9 +40,9 @@
     
     <insert id="insertHistory" parameterType="map" useGeneratedKeys="true">
         insert into logger_hist (
-          logger_id, ip, last_modified, msg
+          logger_id, ip, last_modified, msg, etc
         )values (
-          #{loggerId}, #{ip}, #{lastModified}, #{msg}
+          #{loggerId}, #{ip}, #{lastModified}, #{msg}, #{etc}
         )
     </insert>
 </mapper>

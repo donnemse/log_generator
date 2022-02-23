@@ -14,7 +14,7 @@ import com.igloosec.generator.service.socket.SocketInfoVO;
 import com.igloosec.generator.service.socket.SocketService;
 
 @RestController
-@RequestMapping(value = "/api/socket")
+@RequestMapping(value = "/api/output")
 public class SocketRestController {
     
     @Autowired
@@ -27,12 +27,16 @@ public class SocketRestController {
     
     @RequestMapping(value = "/open", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse open(@RequestBody SocketInfoVO vo) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", socketService.open(vo));
+        return socketService.open(vo);
     }
     
     @RequestMapping(value = "/close/{port}", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse close(@PathVariable(value = "port") int port) {
-        socketService.close(port);
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", null);
+        return socketService.close(port);
+    }
+    
+    @RequestMapping(value = "/get/{port}", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse get(@PathVariable(value = "port") int port) {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", socketService.get(port));
     }
 }

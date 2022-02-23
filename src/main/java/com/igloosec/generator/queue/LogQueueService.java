@@ -62,7 +62,7 @@ public class LogQueueService {
             
             int port = entry.getKey();
             if (!producerEpsCache.containsKey(port)) {
-                producerEpsCache.put(port, new HashMap<>());
+                producerEpsCache.put(port, new ConcurrentHashMap<>());
             }
             
             if (!producerEpsCache.get(port).containsKey(loggerId)) {

@@ -15,6 +15,17 @@ public class SocketInfoVO {
     private int maxQueueSize;
     private int currentQueueSize;
     private transient ISocketServer server;
+    private long startedTime;
+    private long runningTime;
+    
+    public SocketInfoVO() {
+        this.startedTime = System.currentTimeMillis();
+    }
+    
+    public long getRunningTime() {
+        this.runningTime = System.currentTimeMillis() - this.startedTime;
+        return runningTime;
+    }
     
     public List<String> getClients(){
         if (clients == null) {

@@ -1,0 +1,17 @@
+<div id="nav" class="pure-u">
+    <a href="#" id="menuLink" class="nav-menu-button">Menu</a>
+    <div class="nav-inner">
+        <button class="primary-button pure-button new-button" {{#output}}data-bs-toggle="modal" data-bs-target="#new_output_modal"{{/output}}>New</button>
+        <div class="pure-menu">
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item" name="output">   <a href="/output" class="pure-menu-link {{#output}}pure-menu-active{{/output}}">Output <span class="logger-count">(2)</span></a></li>
+                <li class="pure-menu-item" name="logger">   <a href="/logger" class="pure-menu-link {{#logger}}pure-menu-active{{/logger}}">Logger</a></li>
+                <li class="pure-menu-item" name="hist">     <a href="/hist"   class="pure-menu-link {{#hist}}pure-menu-active{{/hist}}">History</a></li>
+                <li class="pure-menu-heading">Labels</li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-personal"></span>Personal</a></li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-work"></span>Work</a></li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-travel"></span>Travel</a></li>
+            </ul>
+        </div>
+    </div>
+</div>

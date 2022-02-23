@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example that shows off a responsive logger layout.">
+    <title>ILogger</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/moments.js" type="text/javascript" charset="utf-8"></script>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/bootstrap-notify.min.js"></script>
+    <script type="text/javascript">
+    function refreshList(){
+    	$(".list").empty();
+    	axios.get('/api/socket/list')
+            .then(function (response) {
+                let i = 0;
+                console.log(response);
+                $.each(response.data.data, function(k, v) {
+                    let $div = $(
+                        "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
+                        "   <div class=\"pure-u-1\">" +
+                        "       <h5 class=\"logger-name\">TCP: " + v.port + "</h5>" + 
+                        "       <h6 class=\"logger-subject\">" +
+                        "           Max Queue: " + v.max_queue_size + "<br />Current Queue: " + v.current_queue_size +
+                        "       </h6>" +
+                        "   </div>" +
+                        "</div>");
+                    $div.data("output_port", v.port);
+                    $(".list").append($div);
+                });
+            }).catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+            	$(".logger-item").eq(0).trigger("click");
+            });
+        };
+        
+        $(function() {
+        	refreshList();
+        	
+            $(document).on('click',".open-port-button",function (e) {
+            	let port = $(".pure-form").find("#new_port").val();
+            	let max_queue = $(".pure-form").find("#new_max_queue").val();
+            	if (port == '') {
+            		port = "3303";
+            	}
+            	if (max_queue == '') {
+            		max_queue = "10000";
+            	}
+            	axios({
+                    url: "/api/socket/open",
+                    method: "post",
+                    data: {
+                    	port: port,
+                    	max_queue_size: max_queue
+                    }
+                }).then(function (response) {
+                	console.log(response);
+                    if (response.data.status == 200) {
+                    	$("#new_output_modal").find("form")[0].reset()
+                    	$("#new_output_modal").modal("hide");
+                    	refreshList();
+                    } else {
+                    	$.notify({message: response.data.msg},{type: 'danger'});
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                }).then(function () {
+                    // always executed
+                });
+            });
+            
+            $(document).on("click", ".logger-item", function (e) {
+                if ($(e.target).hasClass("button-change-state")) {
+                    return;
+                }
+                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
+                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
+                
+                axios.get('/api/logger/get/' + $(e.currentTarget).data("output_port"))
+                .then(function (response) {
+                    console.log(response.data);
+                    let data = response.data.data;
+                    editor.setValue(data.yaml_str, -1)
+                    
+                    let $div = $(
+                        "<h2 class=\"logger-content-title\">" +
+                        "   <input type=\"text\" id=\"selected_name\" value=\"" + data.name + "\">" +
+                        "</h2>" +
+                        "<p class=\"logger-content-subtitle\">" +
+                            "From <a>" + data.ip + "</a> at <span>" + moment(data.last_modified).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
+                        "</p>" +
+                        "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
+                        "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
+                    );
+                    $(".logger-info").html($div);
+                    
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                })
+                .then(function () {
+                    // always executed
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+
+
+<!-- History -->
+<div id="layout" class="content pure-g">
+    {{>nav}}
+    <div class="pure-u-1">
+        <div class="pure-u-1 list"></div>
+        <div class="pure-u-1 main">
+            <div class="logger-content">
+                <div class="logger-content-header pure-g">
+                    <div class="logger-info pure-u-1-2"></div>
+                    <div class="logger-content-controls pure-u-1-2">
+                    </div>
+                </div>
+    
+                <div class="logger-content-body"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="new_output_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">TCP 소켓 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="pure-form pure-form-stacked">
+                    <label for="new_port">Port</label>
+                    <input id="new_port" type="text" placeholder="3303">
+                    <label for="new_max_queue">최대큐사이즈</label>
+                    <input id="new_max_queue" type="text" placeholder="10000">
+                    <!-- <label for="state">State</label>
+                    <select id="state">
+                        <option>AL</option>
+                        <option>CA</option>
+                        <option>IL</option>
+                    </select>
+                    <label class="pure-checkbox">
+                    <input type="checkbox"> Remember me
+                    </label> -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="pure-button pure-button-primary open-port-button">Open</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<!-- Script to make the Menu link work -->
+<!-- Just stripped down version of the js/ui.js script for the side-menu layout -->
+
+</body>
+</html>

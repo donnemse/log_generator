@@ -21,6 +21,7 @@
             
             axios.get('/api/logger/list')
                 .then(function (response) {
+                	console.log(response);
                     let i = 0;
                     $.each(response.data.data, function(k, v) {
                         let $div = $(
@@ -39,22 +40,22 @@
                             "       </div>" +
                             "   </div>" +
                             "</div>")
-                       $div.data("logger_id", k)
-                        $("#logger_tab .list").append($div);
+                       $div.data("logger_id", v.id)
+                        $(".list").append($div);
                     });
                 })
                 .catch(function (error) {
                     console.log(error);
                 })
                 .then(function () {
-                    $("#logger_tab .logger-item").eq(0).trigger("click");
+                    $(".logger-item").eq(0).trigger("click");
                 });
             
-            $(document).on("click", "#logger_tab .logger-item", function (e) {
+            $(document).on("click", ".logger-item", function (e) {
                 if ($(e.target).hasClass("button-change-state")) {
                 	return;
                 }
-                $("#logger_tab .logger-item").removeClass("logger-item-selected logger-item-unread");
+                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
                 $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
                 
                 axios.get('/api/logger/get/' + $(e.currentTarget).data("logger_id"))
@@ -73,7 +74,7 @@
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
                     );
-                    $("#logger_tab .logger-info").html($div);
+                    $(".logger-info").html($div);
                     
                 })
                 .catch(function (error) {
@@ -85,9 +86,9 @@
                 });
             });
             
-            $(document).on("click", "#logger_tab .save-button", function (e) {
-                let name = $("#logger_tab #selected_name").val();
-                let id = $("#logger_tab #selected_id").val();
+            $(document).on("click", ".save-button", function (e) {
+                let name = $("#selected_name").val();
+                let id = $("#selected_id").val();
                 let yaml = editor.getValue();
                 
                 axios({
@@ -107,12 +108,12 @@
                 });
             });
             
-            $(document).on("click", "#logger_tab .sample-button", function (e) {
+            $(document).on("click", ".sample-button", function (e) {
                 $tbody = $(".modal .modal-body .pure-table tbody")
                 $tbody.empty();
                 let re = /(\{|,\s)(?<key>[a-zA-Z0-9\-\_]{1,})(=)(?<val>.+?)(\,\s|\})/gm
                 axios({
-                    url: "/logger/sample",
+                    url: "/api/logger/sample",
                     method: "post",
                     data: {
                         yaml: editor.getValue()
@@ -139,24 +140,17 @@
                 });
             });
             
-            $(document).on('click', "li.pure-menu-item", function(e) {
-            	let name = $(this).attr("name");
-            	$(".tab-pane").addClass("d-none");
-            	$(".tab-pane#" + name + "_tab").removeClass("d-none");
-            	console.log(name)
-            });
-            
-            $(document).on('mouseenter',"#logger_tab .field-key",function (e) {
+            $(document).on('mouseenter',".field-key",function (e) {
             	let name = $(e.currentTarget).attr("name");
-                $("#logger_tab .field-key[name=\"" + name + "\"]").addClass("field-key-hover");
+                $(".field-key[name=\"" + name + "\"]").addClass("field-key-hover");
             });
 
-            $(document).on('mouseleave',"#logger_tab .field-key",function (e) {
+            $(document).on('mouseleave',".field-key",function (e) {
             	let name = $(e.currentTarget).attr("name");
-                $("#logger_tab .field-key[name=\"" + name + "\"]").removeClass("field-key-hover");
+                $(".field-key[name=\"" + name + "\"]").removeClass("field-key-hover");
             });
             
-            $(document).on('click',"#logger_tab .button-change-state-tag .button-change-state",function (e) {
+            $(document).on('click',".button-change-state-tag .button-change-state",function (e) {
             	$button = $(this);
             	let id = $(e.target).parents(".logger-item").data("logger_id");
             	let flag = $button.hasClass("button-error");
@@ -166,10 +160,6 @@
                     method: "get"
                 }).then(function (response) {
                     if (response.data.data) {
-                    	console.log(response.data.data)
-                    	console.log(flag);
-                    	console.log(e)
-                    	console.log($(e))
                     	if (flag) {
                     		$button.removeClass("button-error");
                     		$button.addClass("button-success");
@@ -187,46 +177,6 @@
                 });
             });
         });
-        var triggerTabList = [].slice.call(document.querySelectorAll('.nav-pills li'))
-        triggerTabList.forEach(function (triggerEl) {
-          var tabTrigger = new bootstrap.Tab(triggerEl)
-
-          triggerEl.addEventListener('click', function (event) {
-            event.preventDefault()
-            tabTrigger.show()
-          })
-        })
-        
-        
-        
-        
-        
-        
-        ///////////////////////// Socket ///////////////////////////////
-        
-        axios.get('/api/socket/list')
-            .then(function (response) {
-                let i = 0;
-                console.log(response);
-                $.each(response.data.data, function(k, v) {
-                    let $div = $(
-                        "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                        "   <div class=\"pure-u-1\">" +
-                        "       <h5 class=\"logger-name\">" + v.port + "</h5>" + 
-                        "       <h6 class=\"logger-subject\">" +
-                        "           최대큐사이즈: " + v.max_queue_size + "\n현재큐사이즈: " + v.current_queue_size +
-                        "       </h6>" +
-                        "   </div>" +
-                        "</div>")
-                    $("#socket_tab .list").append($div);
-                });
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
-            .then(function () {
-                $("#socket_tab .logger-item").eq(0).trigger("click");
-            });
     </script>
 </head>
 <body>
@@ -234,82 +184,24 @@
 
 <!-- History -->
 <div id="layout" class="content pure-g">
-    <div id="nav" class="pure-u">
-        <a href="#" id="menuLink" class="nav-menu-button">Menu</a>
-
-        <div class="nav-inner">
-            <button class="primary-button pure-button">New</button>
-            <div class="pure-menu">
-                <ul class="pure-menu-list">
-                    <li class="pure-menu-item" name="socket"><a href="#" class="pure-menu-link">Port <span class="logger-count">(2)</span></a></li>
-                    <li class="pure-menu-item" name="logger"><a href="#" class="pure-menu-link">Logger</a></li>
-                    <li class="pure-menu-item" name="hist"><a href="#" class="pure-menu-link">History</a></li>
-                    <li class="pure-menu-heading">Labels</li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-personal"></span>Personal</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-work"></span>Work</a></li>
-                    <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="logger-label-travel"></span>Travel</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
+    {{>nav}}
     <div class="pure-u-1">
-        <div id="socket_tab" class="tab-pane d-none">
-            <div class="pure-u-1 list"></div>
-            <div class="pure-u-1 main">
-                <div class="logger-content">
-                    <div class="logger-content-header pure-g">
-                        <div class="logger-info pure-u-1-2"></div>
-                        <div class="logger-content-controls pure-u-1-2">
-                            
-                        </div>
-                    </div>
-        
-                    <div class="logger-content-body"></div>
-                </div>
-            </div>
-        </div>
-        <div id="logger_tab" class="tab-pane">
-            <div class="pure-u-1 list"></div>
-            <div class="pure-u-1 main">
-                <div class="logger-content">
-                    <div class="logger-content-header pure-g">
-                        <div class="logger-info pure-u-1-2">
-                            
-                        </div>
-        
-                        <div class="logger-content-controls pure-u-1-2">
-                            <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                Sample
-                            </button>
-                            <button class="secondary-button pure-button save-button">Save</button>
-                            <button class="secondary-button pure-button remove-button">Remove</button>
-                        </div>
-                    </div>
-        
-                    <div class="logger-content-body">
-                        <div id="editor"></div>
+        <div class="pure-u-1 list"></div>
+        <div class="pure-u-1 main">
+            <div class="logger-content">
+                <div class="logger-content-header pure-g">
+                    <div class="logger-info pure-u-1-2"></div>
+                    <div class="logger-content-controls pure-u-1-2">
+                        <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            Sample
+                        </button>
+                        <button class="secondary-button pure-button save-button">Save</button>
+                        <button class="secondary-button pure-button remove-button">Remove</button>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div id="hist_tab" class="tab-pane d-none">
-            <div class="pure-u-1 list"></div>
-            <div id="main" class="pure-u-1 main">
-                <div class="logger-content">
-                    <div class="logger-content-header pure-g">
-                        <div class="logger-info pure-u-1-2"></div>
-                        <div class="logger-content-controls pure-u-1-2">
-                            <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                Sample
-                            </button>
-                            <button class="secondary-button pure-button save-button">Save</button>
-                            <button class="secondary-button pure-button remove-button">Remove</button>
-                        </div>
-                    </div>
-        
-                    <div class="logger-content-body">
-                    </div>
+    
+                <div class="logger-content-body">
+                    <div id="editor"></div>
                 </div>
             </div>
         </div>
@@ -341,7 +233,7 @@
     </div>
 </div>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"></script>
 <!-- Script to make the Menu link work -->
 <!-- Just stripped down version of the js/ui.js script for the side-menu layout -->
 

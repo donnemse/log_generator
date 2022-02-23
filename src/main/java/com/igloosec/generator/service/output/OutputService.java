@@ -1,6 +1,7 @@
 package com.igloosec.generator.service.output;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.igloosec.generator.mybatis.mapper.OutputMapper;
 import com.igloosec.generator.queue.LogQueueService;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 
@@ -27,6 +29,9 @@ public class OutputService {
     
     @Autowired
     private LogQueueService queueService;
+    
+    @Autowired
+    private OutputMapper outputMapper;
     
     @PostConstruct
     public void init() {
@@ -51,23 +56,32 @@ public class OutputService {
     public SingleObjectResponse open(OutputInfoVO vo) {
         
         if (cache.containsKey(vo.getPort())) {
-            return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Already opened " + vo.getPort() + " port.");
+            String message = "Already opened " + vo.getPort() + " port.";
+            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message);
+            return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
         } else {
             vo.setServer(new TCPSocketServer(vo.getPort(), queueService));
             vo.getServer().startServer();
             queueService.getQueue(vo.getPort(), vo.getMaxQueueSize());
             this.cache.put(vo.getPort(), vo);
-            return new SingleObjectResponse(HttpStatus.OK.value(), "OK");
+            String message = "Sucessfully opened " + vo.getPort() + " port.";
+            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message);
+            return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }
     }
 
-    public SingleObjectResponse close(int port) {
+    public SingleObjectResponse close(int port, String ip) {
         if (cache.containsKey(port)) {
             cache.get(port).getServer().stopServer();
             cache.remove(port);
-            return new SingleObjectResponse(HttpStatus.OK.value(), "OK");
+            queueService.removeQueue(port);
+            String message = "Sucessfully closed " + port + " port.";
+            outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message);
+            return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }
-        return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Could not close " + port + " port.");
+        String message = "Could not close " + port + " port.";
+        outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message);
+        return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
     }
 
     public Collection<OutputInfoVO> list() {

@@ -37,8 +37,10 @@ public class OutputRestController {
     }
     
     @RequestMapping(value = "/close/{port}", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse close(@PathVariable(value = "port") int port) {
-        return socketService.close(port);
+    public @ResponseBody SingleObjectResponse close(
+            @PathVariable(value = "port") int port,
+            HttpServletRequest request) {
+        return socketService.close(port, NetUtil.getClientIP(request));
     }
     
     @RequestMapping(value = "/get/{port}", method = RequestMethod.GET)

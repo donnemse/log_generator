@@ -9,8 +9,6 @@ import com.igloosec.generator.prop.LoggerPropertyInfo;
 
 @Mapper
 public interface LoggerMapper {
-    int selectNumber(@Param("number") int number);
-
     List<LoggerPropertyInfo> listLogger();
 
     int insertLogger(LoggerPropertyInfo info);

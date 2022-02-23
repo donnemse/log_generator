@@ -18,10 +18,12 @@ public class OutputInfoVO {
     private transient ISocketServer server;
     private long startedTime;
     private long runningTime;
+    private String type;
     
     public OutputInfoVO() {
         this.startedTime = System.currentTimeMillis();
         this.openedIp = "System";
+        this.type = "TCP";
     }
     
     public long getRunningTime() {

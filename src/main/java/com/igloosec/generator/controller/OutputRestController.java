@@ -1,5 +1,7 @@
 package com.igloosec.generator.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 import com.igloosec.generator.service.output.OutputInfoVO;
 import com.igloosec.generator.service.output.OutputService;
+import com.igloosec.generator.util.NetUtil;
 
 @RestController
 @RequestMapping(value = "/api/output")
@@ -26,7 +29,10 @@ public class OutputRestController {
     }
     
     @RequestMapping(value = "/open", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse open(@RequestBody OutputInfoVO vo) {
+    public @ResponseBody SingleObjectResponse open(
+            @RequestBody OutputInfoVO vo,
+            HttpServletRequest request) {
+        vo.setOpenedIp(NetUtil.getClientIP(request));
         return socketService.open(vo);
     }
     

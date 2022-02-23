@@ -11,8 +11,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.igloosec.generator.prop.LoggerPropertyManager;
 import com.igloosec.generator.service.output.EpsVO;
 
 import lombok.Getter;
@@ -29,6 +31,9 @@ public class LogQueueService {
     
     @Getter
     private Map<Integer, EpsVO> consumerEpsCache;
+    
+    @Autowired
+    private LoggerPropertyManager loggerMgr;
     
     @PostConstruct
     private void init() {
@@ -67,16 +72,17 @@ public class LogQueueService {
             
             if (!producerEpsCache.get(port).containsKey(loggerId)) {
                 EpsVO epsVO = new EpsVO();
-                epsVO.setProducerLastCheckTime(time);
+                epsVO.setName(loggerMgr.getLogger(loggerId).getName());
+                epsVO.setLastCheckTime(time);
                 producerEpsCache.get(port).put(loggerId, epsVO);
             }
-            producerEpsCache.get(port).get(loggerId).addProducerCnt();
-            long diff = time - producerEpsCache.get(port).get(loggerId).getProducerLastCheckTime();
+            producerEpsCache.get(port).get(loggerId).addCnt();
+            long diff = time - producerEpsCache.get(port).get(loggerId).getLastCheckTime();
             if (diff > 5 * 1000) {
-                producerEpsCache.get(port).get(loggerId).setProducerEps(
-                        producerEpsCache.get(port).get(loggerId).getProducerCnt() / (diff / 1000.d));
-                producerEpsCache.get(port).get(loggerId).setProducerCnt(0);
-                producerEpsCache.get(port).get(loggerId).setProducerLastCheckTime(time);
+                producerEpsCache.get(port).get(loggerId).setEps(
+                        producerEpsCache.get(port).get(loggerId).getCnt() / (diff / 1000.d));
+                producerEpsCache.get(port).get(loggerId).setCnt(0);
+                producerEpsCache.get(port).get(loggerId).setLastCheckTime(time);
             }
         }
     }
@@ -86,21 +92,21 @@ public class LogQueueService {
         
         if (!consumerEpsCache.containsKey(port)) {
             EpsVO epsVO = new EpsVO();
-            epsVO.setConsumerLastCheckTime(time);
+            epsVO.setLastCheckTime(time);
             consumerEpsCache.put(port, epsVO);
         }
         
         List<Map<String, Object>> list = new ArrayList<>();
         while(!queue.get(port).isEmpty() && list.size() < maxBuffer) {
             list.add(queue.get(port).poll());
-            consumerEpsCache.get(port).addConsumerCnt();
+            consumerEpsCache.get(port).addCnt();
         }
-        long diff = time - consumerEpsCache.get(port).getConsumerLastCheckTime();
+        long diff = time - consumerEpsCache.get(port).getLastCheckTime();
         if (diff > 5 * 1000) {
-            consumerEpsCache.get(port).setConsumerEps(
-                    consumerEpsCache.get(port).getConsumerCnt() / (diff / 1000.d));
-            consumerEpsCache.get(port).setConsumerCnt(0);
-            consumerEpsCache.get(port).setConsumerLastCheckTime (time);
+            consumerEpsCache.get(port).setEps(
+                    consumerEpsCache.get(port).getCnt() / (diff / 1000.d));
+            consumerEpsCache.get(port).setCnt(0);
+            consumerEpsCache.get(port).setLastCheckTime (time);
         }
         return list;
     }

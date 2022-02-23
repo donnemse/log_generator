@@ -33,7 +33,11 @@ public class Generator extends AGenerator {
           cnt++;
           try {
               if (eps < 1000) {
-                  Thread.sleep((1000 - (System.currentTimeMillis() - time)) / eps);
+                  long t = System.currentTimeMillis() - time;
+                  if (t >= 1000) {
+                      continue;
+                  }
+                  Thread.sleep((1000 - t) / eps);
                   time = System.currentTimeMillis();
               } else if (cnt % 100 == 0){
                   long diff = System.currentTimeMillis() - time;

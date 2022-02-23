@@ -5,19 +5,23 @@ import lombok.Data;
 @Data
 public class EpsVO {
     private String name;
+    private long lastCheckTime;
+    private int cnt;
+    private double eps;
+    private long startedTime;
+    private long runningTime;
     
-    private long producerLastCheckTime;
-    private long consumerLastCheckTime;
-    private int producerCnt;
-    private int consumerCnt;
-    private double producerEps;
-    private double consumerEps;
-    
-    public void addProducerCnt() {
-        this.producerCnt += 1;
+    public EpsVO() {
+        this.startedTime = System.currentTimeMillis();
     }
     
-    public void addConsumerCnt() {
-        this.consumerCnt += 1;
+    public long getRunningTime() {
+        this.runningTime = System.currentTimeMillis() - this.startedTime;
+        return runningTime;
+    }
+    
+    
+    public void addCnt() {
+        this.cnt++;
     }
 }

@@ -67,10 +67,11 @@ public class GeneratorManager {
         this.updateLoggerStatus(id, 1, ip);
         return new SingleObjectResponse(
                 HttpStatus.OK.value(), 
-                "Successfully started: " + id, true);
+                "Successfully started: " + logger.getName(), true);
     }
     
     public SingleObjectResponse stop(int id, String ip) {
+        
         if (this.cache.containsKey(id)) {
             this.cache.get(id).stopGenerator();
             this.cache.remove(id);
@@ -83,7 +84,7 @@ public class GeneratorManager {
         this.updateLoggerStatus(id, 0, ip);
         return new SingleObjectResponse(
                 HttpStatus.OK.value(), 
-                "Successfully stopped: " + id, true);
+                "Successfully stopped: " + loggerPropMng.getLogger(id).getName(), true);
     }
 
     private void updateLoggerStatus(int id, int status, String ip) {

@@ -348,9 +348,20 @@ textarea {
     font-size: 125%;
 }
 
-.button-change-state-tag {
+.change-state {
 	position: absolute;
-	right:0
+    height: 120px;
+    right: 0;
+    display: flex;
+    align-items: center;
+}
+
+.output-close-button {
+    position: absolute;
+    height: 50px;
+    right: 0;
+    display: flex;
+    align-items: center;
 }
 
 .modal-dialog {

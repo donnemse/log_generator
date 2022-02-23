@@ -7,11 +7,13 @@
     <title>ILogger</title>
     <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css">
     <link rel="stylesheet" href="/css/main.css">
-    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="/js/moments.js" type="text/javascript" charset="utf-8"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/bootstrap-notify.min.js"></script>
     <script type="text/javascript">
         
         $(function() {
@@ -34,9 +36,9 @@
                             "       </h6>" +
                             "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
                             "   </div>" +
-                            "   <div class=\"pure-u-1-4 button-change-state-tag\">" +
-                            "       <div class=\"button-change-state " + (v.status == 1? "button-success": "button-error") + " pure-button button-xsmall\">" +
-                            "           " + (v.status == 1? "running": "stopped") +
+                            "   <div class=\"pure-u-1-8 change-state\">" +
+                            "       <div class=\"form-check form-switch\">" +
+                            "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
                             "       </div>" +
                             "   </div>" +
                             "</div>")
@@ -150,25 +152,20 @@
                 $(".field-key[name=\"" + name + "\"]").removeClass("field-key-hover");
             });
             
-            $(document).on('click',".button-change-state-tag .button-change-state",function (e) {
-            	$button = $(this);
+            $(document).on('click',".change-state .checkbox-change-state",function (e) {
+            	$checkbox = $(this);
             	let id = $(e.target).parents(".logger-item").data("logger_id");
-            	let flag = $button.hasClass("button-error");
-            	
+            	let flag = $checkbox.is(":checked");
+            	console.log(flag)
             	axios({
                     url: "/api/logger/" + (flag? "start": "stop") + "/" + id,
                     method: "get"
                 }).then(function (response) {
+                	console.log(response)
                     if (response.data.data) {
-                    	if (flag) {
-                    		$button.removeClass("button-error");
-                    		$button.addClass("button-success");
-                    		$button.text("Running");
-                    	} else {
-                    		$button.removeClass("button-success");
-                    		$button.addClass("button-error");
-                    		$button.text("Stopped");
-                    	}
+                    	$.notify({message: response.data.msg},{type: 'success'});
+                    } else {
+                    	$.notify({message: response.data.msg},{type: 'danger'});
                     }
                 }).catch(function (error) {
                     console.log(error);

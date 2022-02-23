@@ -8,6 +8,7 @@ import lombok.Data;
 
 @Data
 public class OutputInfoVO {
+    private String openedIp;
     private int port;
     private List<String> clients;
     private Map<Integer, EpsVO> producerEps;
@@ -20,6 +21,7 @@ public class OutputInfoVO {
     
     public OutputInfoVO() {
         this.startedTime = System.currentTimeMillis();
+        this.openedIp = "System";
     }
     
     public long getRunningTime() {

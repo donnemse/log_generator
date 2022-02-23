@@ -62,24 +62,6 @@ public class LoggerPropertyManager {
                 }
                 return x;
             }));
-        
-//        List<File> files = (List<File>) FileUtils.listFiles(configDir, new String[] {"yaml"}, true);
-//        for (File f: files) {
-//            try {
-//                LoggerProperty lp = om.readValue(f, LoggerProperty.class);
-//                
-//                LoggerPropertyInfo info = null;
-//                if (mapInfo.containsKey(f.getName())) {
-//                    info = mapInfo.get(f.getName());
-//                } else {
-//                    info = this.createLogger(f);
-//                }
-//                info.setLogger(lp);
-//                this.cache.put(info.getId(), info);
-//            } catch (Exception e) {
-//                log.error(e.getMessage(), e);
-//            }
-//        }
     }
     
     private LoggerPropertyInfo createLogger(File f) throws Exception {

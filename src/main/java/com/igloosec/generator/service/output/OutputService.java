@@ -31,7 +31,6 @@ public class OutputService {
     @PostConstruct
     public void init() {
         this.cache = new HashMap<>();
-        
     }
     
     @Scheduled(fixedDelay = 15 * 1000)

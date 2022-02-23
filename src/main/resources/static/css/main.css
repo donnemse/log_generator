@@ -363,6 +363,11 @@ textarea {
     overflow: scroll;
 }
 
+#new_output_modal .modal-dialog {
+    max-width: 20% !important;
+    min-width: 20% !important;
+}
+
 .field-key {
     background: #f7f8c7;
     font-weight: 500;
@@ -377,3 +382,7 @@ textarea {
     border-radius: 3px;
     border: 1px solid #acabab;
 }
+.pure-menu-active {
+	background: rgb(55, 60, 90);
+}
+

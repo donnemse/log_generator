@@ -93,7 +93,7 @@ public class GeneratorManager {
 
     private void updateLoggerStatus(int id, int status, String ip) {
         mapper.updateLoggerStatus(id, status);
-        String message = "Successfully " + (status == 1? "started": "stopped") + loggerPropMng.getLogger(id).getName();
+        String message = "Successfully " + (status == 1? "started. ": "stopped. ") + loggerPropMng.getLogger(id).getName();
         mapper.insertHistory(id, ip, new Date().getTime(), message);
     }
 }

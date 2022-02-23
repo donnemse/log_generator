@@ -7,226 +7,35 @@
     <title>ILogger</title>
     <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css">
     <link rel="stylesheet" href="/css/main.css">
-    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="/js/moments.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://unpkg.com/gridjs-jquery/dist/gridjs.production.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" />
+
     <script type="text/javascript">
         
         $(function() {
-            var editor = ace.edit("editor");
-            editor.session.setMode("ace/mode/yaml");
-            editor.setTheme("ace/theme/tomorrow");
-            
-            axios.get('/api/logger/list')
-                .then(function (response) {
-                    let i = 0;
-                    $.each(response.data.data, function(k, v) {
-                        let $div = $(
-                            "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                            "   <div class=\"pure-u-1\">" +
-                            "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
-                            "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
-                            "       <h6 class=\"logger-subject\">" +
-                            "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
-                            "       </h6>" +
-                            "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
-                            "   </div>" +
-                            "   <div class=\"pure-u-1-4 button-change-state-tag\">" +
-                            "       <div class=\"button-change-state " + (v.status == 1? "button-success": "button-error") + " pure-button button-xsmall\">" +
-                            "           " + (v.status == 1? "running": "stopped") +
-                            "       </div>" +
-                            "   </div>" +
-                            "</div>")
-                       $div.data("logger_id", k)
-                        $("#logger_tab .list").append($div);
-                    });
-                })
-                .catch(function (error) {
-                    console.log(error);
-                })
-                .then(function () {
-                    $("#logger_tab .logger-item").eq(0).trigger("click");
-                });
-            
-            $(document).on("click", "#logger_tab .logger-item", function (e) {
-                if ($(e.target).hasClass("button-change-state")) {
-                	return;
-                }
-                $("#logger_tab .logger-item").removeClass("logger-item-selected logger-item-unread");
-                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
-                
-                axios.get('/api/logger/get/' + $(e.currentTarget).data("logger_id"))
-                .then(function (response) {
-                	console.log(response.data);
-                    let data = response.data.data;
-                    editor.setValue(data.yaml_str, -1)
-                    
-                    let $div = $(
-                        "<h2 class=\"logger-content-title\">" +
-                        "   <input type=\"text\" id=\"selected_name\" value=\"" + data.name + "\">" +
-                        "</h2>" +
-                        "<p class=\"logger-content-subtitle\">" +
-                            "From <a>" + data.ip + "</a> at <span>" + moment(data.last_modified).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
-                        "</p>" +
-                        "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
-                        "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
-                    );
-                    $("#logger_tab .logger-info").html($div);
-                    
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error);
-                })
-                .then(function () {
-                    // always executed
-                });
-            });
-            
-            $(document).on("click", "#logger_tab .save-button", function (e) {
-                let name = $("#logger_tab #selected_name").val();
-                let id = $("#logger_tab #selected_id").val();
-                let yaml = editor.getValue();
-                
-                axios({
-                    url: "/api/logger/modify",
-                    method: "patch",
-                    data: {
-                        name: name,
-                        id: id,
-                        yaml: yaml
+            $("#table").Grid({
+                columns: ['ID', 'IP','Time',  'Message'],
+                pagination: {
+                    enabled: true,
+                    limit: 10,
+                    server: {
+                        url: (prev, page, limit) => `${prev}/${page+1}`
                     }
-                }).then(function (response) {
-                    console.log(response.data);
-                }).catch(function (error) {
-                    console.log(error);
-                }).then(function () {
-                    // always executed
+                },
+                server: {
+                    url: '/api/history/list/logger',
+                    then: data => data.data.list.map(hist => [
+                        hist.id, hist.ip, moment(hist.last_modified).format("YYYY/MM/DD HH:mm:ss"), hist.msg
+                    ]),
+                    total: data => data.data.total_cnt
+                    } 
                 });
-            });
-            
-            $(document).on("click", "#logger_tab .sample-button", function (e) {
-                $tbody = $(".modal .modal-body .pure-table tbody")
-                $tbody.empty();
-                let re = /(\{|,\s)(?<key>[a-zA-Z0-9\-\_]{1,})(=)(?<val>.+?)(\,\s|\})/gm
-                axios({
-                    url: "/logger/sample",
-                    method: "post",
-                    data: {
-                        yaml: editor.getValue()
-                    }
-                }).then(function (response) {
-                    $.each(response.data.data, function(idx, val) {
-                        let list = [];
-                        $.each(val, function(k, v) {
-                            list.push("<span class=\"field-key\" name=\"" + k + "\">" + k + "</span>=" +
-                            "<span class=\"field-val\" name=\"" + v + "\">" + v + "</span>");
-                        });
-                        
-                        $tbody.append(
-                            "<tr class=\"" + (idx % 2 == 0? "": "pure-table-odd") + "\">" +
-                            "    <td>" + (idx + 1) + "</td>" +
-                            "    <td>" + list.join(", ") + "</td>" +
-                            "</tr>");
-                    });
-                    console.log(response.data);
-                }).catch(function (error) {
-                    console.log(error);
-                }).then(function () {
-                    // always executed
-                });
-            });
-            
-            $(document).on('click', "li.pure-menu-item", function(e) {
-            	let name = $(this).attr("name");
-            	$(".tab-pane").addClass("d-none");
-            	$(".tab-pane#" + name + "_tab").removeClass("d-none");
-            	console.log(name)
-            });
-            
-            $(document).on('mouseenter',"#logger_tab .field-key",function (e) {
-            	let name = $(e.currentTarget).attr("name");
-                $("#logger_tab .field-key[name=\"" + name + "\"]").addClass("field-key-hover");
-            });
-
-            $(document).on('mouseleave',"#logger_tab .field-key",function (e) {
-            	let name = $(e.currentTarget).attr("name");
-                $("#logger_tab .field-key[name=\"" + name + "\"]").removeClass("field-key-hover");
-            });
-            
-            $(document).on('click',"#logger_tab .button-change-state-tag .button-change-state",function (e) {
-            	$button = $(this);
-            	let id = $(e.target).parents(".logger-item").data("logger_id");
-            	let flag = $button.hasClass("button-error");
-            	
-            	axios({
-                    url: "/api/logger/" + (flag? "start": "stop") + "/" + id,
-                    method: "get"
-                }).then(function (response) {
-                    if (response.data.data) {
-                    	console.log(response.data.data)
-                    	console.log(flag);
-                    	console.log(e)
-                    	console.log($(e))
-                    	if (flag) {
-                    		$button.removeClass("button-error");
-                    		$button.addClass("button-success");
-                    		$button.text("Running");
-                    	} else {
-                    		$button.removeClass("button-success");
-                    		$button.addClass("button-error");
-                    		$button.text("Stopped");
-                    	}
-                    }
-                }).catch(function (error) {
-                    console.log(error);
-                }).then(function () {
-                    // always executed
-                });
-            });
         });
-        var triggerTabList = [].slice.call(document.querySelectorAll('.nav-pills li'))
-        triggerTabList.forEach(function (triggerEl) {
-          var tabTrigger = new bootstrap.Tab(triggerEl)
-
-          triggerEl.addEventListener('click', function (event) {
-            event.preventDefault()
-            tabTrigger.show()
-          })
-        })
-        
-        
-        
-        
-        
-        
-        ///////////////////////// Socket ///////////////////////////////
-        
-        axios.get('/api/socket/list')
-            .then(function (response) {
-                let i = 0;
-                console.log(response);
-                $.each(response.data.data, function(k, v) {
-                    let $div = $(
-                        "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                        "   <div class=\"pure-u-1\">" +
-                        "       <h5 class=\"logger-name\">" + v.port + "</h5>" + 
-                        "       <h6 class=\"logger-subject\">" +
-                        "           최대큐사이즈: " + v.max_queue_size + "\n현재큐사이즈: " + v.current_queue_size +
-                        "       </h6>" +
-                        "   </div>" +
-                        "</div>")
-                    $("#socket_tab .list").append($div);
-                });
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
-            .then(function () {
-                $("#socket_tab .logger-item").eq(0).trigger("click");
-            });
+            
     </script>
 </head>
 <body>
@@ -237,26 +46,40 @@
     {{>nav}}
     
     <div class="pure-u-1">
-        <div id="hist_tab" class="tab-pane d-none">
-            <div class="pure-u-1 list"></div>
-            <div id="main" class="pure-u-1 main">
-                <div class="logger-content">
-                    <div class="logger-content-header pure-g">
-                        <div class="logger-info pure-u-1-2"></div>
-                        <div class="logger-content-controls pure-u-1-2">
-                            <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                Sample
-                            </button>
-                            <button class="secondary-button pure-button save-button">Save</button>
-                            <button class="secondary-button pure-button remove-button">Remove</button>
-                        </div>
-                    </div>
-        
-                    <div class="logger-content-body">
-                    </div>
+        <div class="pure-u-1 list">
+            <div class="logger-item pure-g logger-item-selected logger-item-unread">
+	            <div class="pure-u-7-8">
+	                <h5 class="logger-name">Logger</h5>
+	                <h6 class="logger-subject">
+	                   Logger History
+	                </h6>
+	            </div>
+	        </div>
+	        <div class="logger-item pure-g">
+                <div class="pure-u-7-8">
+                    <h5 class="logger-name">Output</h5>
+                    <h6 class="logger-subject">
+                        Output History
+                    </h6>
                 </div>
             </div>
+        
         </div>
+        <div id="main" class="pure-u-1 main">
+            <div class="logger-content">
+                <div class="logger-content-header pure-g">
+                    <div class="logger-info pure-u-1-2"></div>
+                    <div class="logger-content-controls pure-u-1-2">
+                        <button class="secondary-button pure-button save-button">Logger</button>
+                        <button class="secondary-button pure-button remove-button">Output</button>
+                    </div>
+                </div>
+    
+                <div class="logger-content-body">
+                    <div id="table"></div>
+                </div>
+            </div>
+       </div>
     </div>
 </div>
 

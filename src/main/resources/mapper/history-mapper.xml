@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.igloosec.generator.mybatis.mapper.HistoryMapper">
+
+    
+    <select id="totalCnt" resultType="int">
+        select count(*) from ${type}_hist
+    </select>
+    
+    <select id="list" parameterType="com.igloosec.generator.history.HistoryResponse" 
+    resultType="com.igloosec.generator.history.HistoryVO">
+        select * from ${type}_hist order by last_modified desc limit #{limit} offset #{offset}
+    </select>
+    
+</mapper>

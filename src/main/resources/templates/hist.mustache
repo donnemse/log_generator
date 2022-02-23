@@ -17,12 +17,30 @@
     <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js" type="text/javascript" charset="utf-8"></script>
     <link rel="stylesheet" href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css">
     
+    <style type="text/css">
+        @media (min-width: 60em) {
+		    .list {
+		        width:200px;
+		        margin-left: -200px;
+		    }
+		}
+		
+		@media (min-width: 40em) {
+
+		    #layout {
+		        padding-left: 350px;
+		    }
+		    #nav {
+		        margin-left: -350px;
+		    }
+		  }
+    </style>
     <script type="text/javascript">
     
         $(function() {
             //$("#table").Grid({
             new gridjs.Grid({
-                columns: ['ID', 'IP','Time',  'Message', 'etc.'],
+                columns: ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'],
                 pagination: {
                     enabled: true,
                     limit: 10,
@@ -34,6 +52,7 @@
                     url: '/api/history/list/logger',
                     then: data => data.data.list.map(hist => [
                         hist.id,
+                        hist.name,
                         hist.ip,
                         moment(hist.last_modified).format("YYYY/MM/DD HH:mm:ss"),
                         hist.msg,
@@ -54,7 +73,7 @@
     {{>nav}}
     
     <div class="pure-u-1">
-        <div class="pure-u-1 list" style="width:180px !important">
+        <div class="pure-u-1 list">
             <div class="logger-item pure-g logger-item-selected logger-item-unread">
 	            <div class="pure-u-7-8">
 	                <h5 class="logger-name">Logger</h5>

@@ -10,7 +10,23 @@
     
     <select id="list" parameterType="com.igloosec.generator.history.HistoryResponse" 
     resultType="com.igloosec.generator.history.HistoryVO">
-        select * from ${type}_hist order by last_modified desc limit #{limit} offset #{offset}
+        <choose>
+            <when test="type eq 'logger'">
+                select b.name, a.* from 
+				    (select 
+				        *
+				    from 
+				        logger_hist
+				    order by last_modified desc limit #{limit} offset #{offset}
+				    ) a 
+				left join 
+				    logger b 
+				on a.logger_id = b.id
+            </when>
+            <otherwise>
+                select * from ${type}_hist order by last_modified desc limit #{limit} offset #{offset}
+            </otherwise>
+        </choose>
     </select>
     
 </mapper>

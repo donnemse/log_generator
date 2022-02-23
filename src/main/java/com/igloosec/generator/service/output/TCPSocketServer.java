@@ -1,22 +1,22 @@
-package com.igloosec.generator.service.socket;
+package com.igloosec.generator.service.output;
 
 import com.igloosec.generator.queue.LogQueueService;
 
-public class SocketServer implements ISocketServer {
+public class TCPSocketServer implements ISocketServer {
     
     private Thread t;
-    private SocketServerInstance ssi;
+    private TCPSocketServerInstance ssi;
     private int port;
     private LogQueueService queueService;
     
-    public SocketServer(int port, LogQueueService queueService) {
+    public TCPSocketServer(int port, LogQueueService queueService) {
         this.port = port;
         this.queueService = queueService;
     }
     
     @Override
     public void startServer() {
-        this.ssi = new SocketServerInstance(this.port, this.queueService);
+        this.ssi = new TCPSocketServerInstance(this.port, this.queueService);
         this.t = new Thread(() -> ssi.start());
         this.t.start();
         

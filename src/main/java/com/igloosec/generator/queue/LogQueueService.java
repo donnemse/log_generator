@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Service;
 
-import com.igloosec.generator.service.socket.EpsVO;
+import com.igloosec.generator.service.output.EpsVO;
 
 import lombok.Getter;
 

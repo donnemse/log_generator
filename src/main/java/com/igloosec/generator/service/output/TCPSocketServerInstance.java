@@ -1,4 +1,4 @@
-package com.igloosec.generator.service.socket;
+package com.igloosec.generator.service.output;
 
 import com.igloosec.generator.queue.LogQueueService;
 
@@ -14,7 +14,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-public class SocketServerInstance {
+public class TCPSocketServerInstance {
     private int port;
     private ChannelFuture cf;
     
@@ -22,8 +22,8 @@ public class SocketServerInstance {
     private EventLoopGroup childGroup;
     private LogQueueService queueService;
 
-    private SocketServerHandler handler;
-    public SocketServerInstance(int port, LogQueueService queueService) {
+    private TCPSocketServerHandler handler;
+    public TCPSocketServerInstance(int port, LogQueueService queueService) {
         this.port = port;
         this.queueService = queueService;
     }
@@ -44,7 +44,7 @@ public class SocketServerInstance {
                 @Override
                 protected void initChannel(SocketChannel sc) throws Exception {
                     ChannelPipeline p = sc.pipeline();
-                    handler = new SocketServerHandler(port, queueService);
+                    handler = new TCPSocketServerHandler(port, queueService);
 //                    p.addLast("encoder", new ObjectEncoder());
 //                    p.addLast("decoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     p.addLast(handler);

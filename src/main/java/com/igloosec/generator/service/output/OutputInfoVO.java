@@ -1,4 +1,4 @@
-package com.igloosec.generator.service.socket;
+package com.igloosec.generator.service.output;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.Map;
 import lombok.Data;
 
 @Data
-public class SocketInfoVO {
+public class OutputInfoVO {
     private int port;
     private List<String> clients;
     private Map<Integer, EpsVO> producerEps;
@@ -18,7 +18,7 @@ public class SocketInfoVO {
     private long startedTime;
     private long runningTime;
     
-    public SocketInfoVO() {
+    public OutputInfoVO() {
         this.startedTime = System.currentTimeMillis();
     }
     

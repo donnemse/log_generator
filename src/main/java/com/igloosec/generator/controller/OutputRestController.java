@@ -10,15 +10,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igloosec.generator.restful.model.SingleObjectResponse;
-import com.igloosec.generator.service.socket.SocketInfoVO;
-import com.igloosec.generator.service.socket.SocketService;
+import com.igloosec.generator.service.output.OutputInfoVO;
+import com.igloosec.generator.service.output.OutputService;
 
 @RestController
 @RequestMapping(value = "/api/output")
-public class SocketRestController {
+public class OutputRestController {
     
     @Autowired
-    private SocketService socketService;
+    private OutputService socketService;
     
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
@@ -26,7 +26,7 @@ public class SocketRestController {
     }
     
     @RequestMapping(value = "/open", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse open(@RequestBody SocketInfoVO vo) {
+    public @ResponseBody SingleObjectResponse open(@RequestBody OutputInfoVO vo) {
         return socketService.open(vo);
     }
     

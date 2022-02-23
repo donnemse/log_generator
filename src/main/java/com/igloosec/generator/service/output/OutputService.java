@@ -1,4 +1,4 @@
-package com.igloosec.generator.service.socket;
+package com.igloosec.generator.service.output;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,9 +21,9 @@ import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
-public class SocketService {
+public class OutputService {
     
-    private Map<Integer, SocketInfoVO> cache;
+    private Map<Integer, OutputInfoVO> cache;
     
     @Autowired
     private LogQueueService queueService;
@@ -49,12 +49,12 @@ public class SocketService {
         }
     }
     
-    public SingleObjectResponse open(SocketInfoVO vo) {
+    public SingleObjectResponse open(OutputInfoVO vo) {
         
         if (cache.containsKey(vo.getPort())) {
             return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Already opened " + vo.getPort() + " port.");
         } else {
-            vo.setServer(new SocketServer(vo.getPort(), queueService));
+            vo.setServer(new TCPSocketServer(vo.getPort(), queueService));
             vo.getServer().startServer();
             queueService.getQueue(vo.getPort(), vo.getMaxQueueSize());
             this.cache.put(vo.getPort(), vo);
@@ -71,7 +71,7 @@ public class SocketService {
         return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Could not close " + port + " port.");
     }
 
-    public Collection<SocketInfoVO> list() {
+    public Collection<OutputInfoVO> list() {
         for (Entry<Integer, Queue<Map<String, Object>>> entry: queueService.getQueue().entrySet()) {
             if(this.cache.containsKey(entry.getKey())) {
                 int size = entry.getValue().size();
@@ -87,8 +87,8 @@ public class SocketService {
         return this.cache.values();
     }
 
-    public SocketInfoVO get(int port) {
-        SocketInfoVO vo = this.cache.get(port);
+    public OutputInfoVO get(int port) {
+        OutputInfoVO vo = this.cache.get(port);
         int size = queueService.getQueue(port, 10000).size();
         vo.setCurrentQueueSize(size);
         vo.setMaxQueueSize(

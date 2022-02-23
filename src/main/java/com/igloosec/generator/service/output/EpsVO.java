@@ -1,4 +1,4 @@
-package com.igloosec.generator.service.socket;
+package com.igloosec.generator.service.output;
 
 import lombok.Data;
 

@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.prop.LoggerPropertyManager;
-import com.igloosec.generator.service.socket.SocketInfoVO;
-import com.igloosec.generator.service.socket.SocketService;
+import com.igloosec.generator.service.output.OutputInfoVO;
+import com.igloosec.generator.service.output.OutputService;
 
 @Service
 public class LogGeneratorStarter {
@@ -17,7 +17,7 @@ public class LogGeneratorStarter {
     private LoggerPropertyManager logPropMng;
     
     @Autowired
-    private SocketService socketService;
+    private OutputService socketService;
     
 //    @Autowired
 //    private Generator gen;
@@ -27,7 +27,7 @@ public class LogGeneratorStarter {
         try {
             logPropMng.run();
 //            gen.run();
-            SocketInfoVO vo =new SocketInfoVO();
+            OutputInfoVO vo =new OutputInfoVO();
             vo.setPort(3000);
             vo.setMaxQueueSize(1000);
             socketService.open(vo);

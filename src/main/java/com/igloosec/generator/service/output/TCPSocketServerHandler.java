@@ -1,4 +1,4 @@
-package com.igloosec.generator.service.socket;
+package com.igloosec.generator.service.output;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +12,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class SocketServerHandler extends ChannelInboundHandlerAdapter {
+public class TCPSocketServerHandler extends ChannelInboundHandlerAdapter {
     
     private LogQueueService queueService;
     private int maxBuffer = 200;
@@ -22,7 +22,7 @@ public class SocketServerHandler extends ChannelInboundHandlerAdapter {
     private Map<String, Channel> clients;
     private int port;
     
-    public SocketServerHandler(int port, LogQueueService queueService) {
+    public TCPSocketServerHandler(int port, LogQueueService queueService) {
         this.port = port;
         this.queueService = queueService;
         this.clients = new HashMap<>();

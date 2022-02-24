@@ -5,18 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A layout example that shows off a responsive logger layout.">
     <title>ILogger</title>
-    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css">
-    <link rel="stylesheet" href="/css/main.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="/js/moments.js" type="text/javascript" charset="utf-8"></script>
-<!--     <script src="https://unpkg.com/gridjs-jquery/dist/gridjs.production.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" />
--->
-    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js" type="text/javascript" charset="utf-8"></script>
-    <link rel="stylesheet" href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css">
-    
+    {{>import}}
     <style type="text/css">
         @media (min-width: 60em) {
 		    .list {
@@ -36,11 +25,17 @@
 		  }
     </style>
     <script type="text/javascript">
-    
-        $(function() {
-            //$("#table").Grid({
-            new gridjs.Grid({
-                columns: ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'],
+    var grid;
+        function grid(type) {
+        	let columns = ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'];
+        	if (type === "output") { 
+        		columns = ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'];
+        	}
+        	let button_tag = "<button type=\"button\" class=\"btn btn-outline-success diff-button\"" + 
+        	   "data-bs-toggle=\"modal\" data-bs-target=\"#exampleModal\">Diff</button>";
+        	
+        	grid = new gridjs.Grid({
+                columns: columns,
                 pagination: {
                     enabled: true,
                     limit: 10,
@@ -48,21 +43,55 @@
                         url: (prev, page, limit) => `${prev}/${page+1}`
                     }
                 },
+                attributes: (cell) => {
+                	
+                	// add these attributes to the td elements only
+                	
+                    	return {
+                        	'data-cell-content':cell,
+                        	'onclick': () => alert(cell)
+                	}
+                },
                 server: {
-                    url: '/api/history/list/logger',
+                    url: '/api/history/list/' + type,
                     then: data => data.data.list.map(hist => [
                         hist.id,
                         hist.name,
                         hist.ip,
                         moment(hist.last_modified).format("YYYY/MM/DD HH:mm:ss"),
                         hist.msg,
-                        gridjs.html("<pre>" + hist.etc + "<pre>")
+                        hist.etc != null? gridjs.html(button_tag): ""
+                        /* gridjs.html("<pre>" + hist.etc + "<pre>") */
                     ]),
                     total: data => data.data.total_cnt
                     } 
-                }).render(document.getElementById('table'))
-        });
+                }).render(document.getElementById('table'));
+        }
+        
+        $(function() {
+        	grid("logger");
             
+            $(document).on("click", ".logger-item", function (e) {
+            	console.log($(e.currentTarget));
+                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
+                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
+                grid($(e.currentTarget).attr("name"));
+            });
+            
+            $(document).on("click", ".diff-button", function (e) {
+            	const differ = new AceDiff({
+        		  ace: window.ace, // You Ace Editor instance
+        		  element: '.acediff',
+        		  left: {
+        		    content: 'your first file content here',
+        		  },
+        		  right: {
+        		    content: 'your second file content here',
+        		  },
+        		});
+            });
+            
+        });
     </script>
 </head>
 <body>
@@ -71,10 +100,9 @@
 <!-- History -->
 <div id="layout" class="content pure-g">
     {{>nav}}
-    
     <div class="pure-u-1">
         <div class="pure-u-1 list">
-            <div class="logger-item pure-g logger-item-selected logger-item-unread">
+            <div class="logger-item pure-g logger-item-selected logger-item-unread" name="logger">
 	            <div class="pure-u-7-8">
 	                <h5 class="logger-name">Logger</h5>
 	                <h6 class="logger-subject">
@@ -82,7 +110,7 @@
 	                </h6>
 	            </div>
 	        </div>
-	        <div class="logger-item pure-g">
+	        <div class="logger-item pure-g" name="output">
                 <div class="pure-u-7-8">
                     <h5 class="logger-name">Output</h5>
                     <h6 class="logger-subject">
@@ -118,15 +146,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <table class="pure-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Genrated Log</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="acediff"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>
@@ -134,8 +154,6 @@
         </div>
     </div>
 </div>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 <!-- Script to make the Menu link work -->
 <!-- Just stripped down version of the js/ui.js script for the side-menu layout -->
 

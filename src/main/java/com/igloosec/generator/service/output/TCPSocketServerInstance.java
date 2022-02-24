@@ -47,20 +47,16 @@ public class TCPSocketServerInstance {
         this.startSender();
     }
 
-//  if ((System.currentTimeMillis() - this.lastCheckTime) > 60 * 1000) {
-//  this.eps = this.cnt / ((System.currentTimeMillis() - this.lastCheckTime) / 1000.d);
-//  this.cnt = 0;
-//  this.lastCheckTime = System.currentTimeMillis();
-//}
-//  cnt += list.size();
-//  ctx;
-    
     public void startSender() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (state) {
                     try {
+                        if (clients.keySet().size() == 0) {
+                            Thread.sleep(1_000);
+                            continue;
+                        }
                         List<Map<String, Object>> list = queueService.poll(port, maxBuffer);
                         if (list.size() == 0) {
                             Thread.sleep(1_000);

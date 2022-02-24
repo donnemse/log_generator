@@ -25,32 +25,24 @@
 		  }
     </style>
     <script type="text/javascript">
+
     var grid;
         function grid(type) {
         	let columns = ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'];
-        	if (type === "output") { 
+        	if (type === "output") { "src/main/resources/templates/hist.mustache"
         		columns = ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'];
         	}
         	let button_tag = "<button type=\"button\" class=\"btn btn-outline-success diff-button\"" + 
         	   "data-bs-toggle=\"modal\" data-bs-target=\"#exampleModal\">Diff</button>";
         	
         	grid = new gridjs.Grid({
-                columns: columns,
+                columns: ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'],
                 pagination: {
                     enabled: true,
                     limit: 10,
                     server: {
                         url: (prev, page, limit) => `${prev}/${page+1}`
                     }
-                },
-                attributes: (cell) => {
-                	
-                	// add these attributes to the td elements only
-                	
-                    	return {
-                        	'data-cell-content':cell,
-                        	'onclick': () => alert(cell)
-                	}
                 },
                 server: {
                     url: '/api/history/list/' + type,

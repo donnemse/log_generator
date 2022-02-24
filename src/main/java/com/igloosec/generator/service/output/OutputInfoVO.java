@@ -32,8 +32,10 @@ public class OutputInfoVO {
     }
     
     public List<String> getClients(){
-        if (clients == null) {
+        if (this.getServer() == null) {
             this.clients = new ArrayList<>();
+        } else {
+            this.clients = new ArrayList<String>(this.getServer().getClients().keySet());
         }
         return this.clients;
     }

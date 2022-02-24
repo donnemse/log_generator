@@ -1,9 +1,14 @@
 package com.igloosec.generator.service.output;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.igloosec.generator.queue.LogQueueService;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -11,9 +16,15 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class TCPSocketServerInstance {
     private int port;
     private ChannelFuture cf;
@@ -21,16 +32,53 @@ public class TCPSocketServerInstance {
     private EventLoopGroup parentGroup;
     private EventLoopGroup childGroup;
     private LogQueueService queueService;
-
+    
+    private int maxBuffer = 200;
+    private volatile boolean state = true;
+    @Getter
+    private Map<String, ChannelHandlerContext> clients;
+    
     private TCPSocketServerHandler handler;
+    
     public TCPSocketServerInstance(int port, LogQueueService queueService) {
         this.port = port;
         this.queueService = queueService;
+        this.clients = new ConcurrentHashMap<>();
+        this.startSender();
     }
 
-    public double getConsumerEps() {
-        return handler.getEPS();
+//  if ((System.currentTimeMillis() - this.lastCheckTime) > 60 * 1000) {
+//  this.eps = this.cnt / ((System.currentTimeMillis() - this.lastCheckTime) / 1000.d);
+//  this.cnt = 0;
+//  this.lastCheckTime = System.currentTimeMillis();
+//}
+//  cnt += list.size();
+//  ctx;
+    
+    public void startSender() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (state) {
+                    try {
+                        List<Map<String, Object>> list = queueService.poll(port, maxBuffer);
+                        if (list.size() == 0) {
+                            Thread.sleep(1_000);
+                            continue;
+                        }
+                        clients.entrySet().forEach(x -> {
+                            x.getValue().writeAndFlush(list);
+                        });
+
+                        Thread.sleep(0, 10);
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }).start();
     }
+    
     public void start() {
         this.parentGroup = new NioEventLoopGroup(10);
         this.childGroup = new NioEventLoopGroup();
@@ -44,9 +92,9 @@ public class TCPSocketServerInstance {
                 @Override
                 protected void initChannel(SocketChannel sc) throws Exception {
                     ChannelPipeline p = sc.pipeline();
-                    handler = new TCPSocketServerHandler(port, queueService);
-//                    p.addLast("encoder", new ObjectEncoder());
-//                    p.addLast("decoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                    handler = new TCPSocketServerHandler(clients);
+                    p.addLast("encoder", new ObjectEncoder());
+                    p.addLast("decoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     p.addLast(handler);
                 }
             });
@@ -73,6 +121,18 @@ public class TCPSocketServerInstance {
         }
         if (this.childGroup != null) {
             this.childGroup.shutdownGracefully();
+        }
+        this.state = false;
+        return true;
+    }
+    
+    public boolean stopClient(String id) {
+        if (!this.clients.containsKey(id)) {
+            return false;
+        }
+        synchronized (this.clients) {
+            this.clients.get(id).disconnect();
+            this.clients.remove(id);
         }
         
         return true;

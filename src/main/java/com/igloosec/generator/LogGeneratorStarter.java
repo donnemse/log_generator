@@ -24,16 +24,11 @@ public class LogGeneratorStarter {
     
     @PostConstruct
     private void init() {
-        try {
-            logPropMng.run();
+//            logPropMng.run();
 //            gen.run();
-            OutputInfoVO vo =new OutputInfoVO();
-            vo.setPort(3000);
-            vo.setMaxQueueSize(1000);
-            socketService.open(vo);
-        } catch (IOException | InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        OutputInfoVO vo =new OutputInfoVO();
+        vo.setPort(3305);
+        vo.setMaxQueueSize(1000);
+        socketService.open(vo);
     }
 }

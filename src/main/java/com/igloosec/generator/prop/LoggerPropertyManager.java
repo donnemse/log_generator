@@ -1,17 +1,9 @@
 package com.igloosec.generator.prop;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,7 +16,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -160,33 +151,33 @@ public class LoggerPropertyManager {
         return true;
     }
     
-    @Async
-    public void run() throws IOException, InterruptedException {
-        log.debug("Start Log Property manager");
-        WatchService watchService = FileSystems.getDefault().newWatchService();
-        Path path = Paths.get("./config");
-        path.register(watchService,
-                StandardWatchEventKinds.ENTRY_CREATE,
-                StandardWatchEventKinds.ENTRY_DELETE,
-                StandardWatchEventKinds.ENTRY_MODIFY);
-
-        WatchKey key;
-        while ((key = watchService.take()) != null) {
-            for (WatchEvent<?> event : key.pollEvents()) {
-                log.debug("Event kind:" + event.kind() + ". File affected: " + event.context() + ".");
-                if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
-                    
-                } else if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    
-                } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-                    this.cache.remove(event.context());
-                }
-                
-            }
-            log.debug(this.cache);
-            key.reset();
-        }
-    }
+//    @Async
+//    public void run() throws IOException, InterruptedException {
+//        log.debug("Start Log Property manager");
+//        WatchService watchService = FileSystems.getDefault().newWatchService();
+//        Path path = Paths.get("./config");
+//        path.register(watchService,
+//                StandardWatchEventKinds.ENTRY_CREATE,
+//                StandardWatchEventKinds.ENTRY_DELETE,
+//                StandardWatchEventKinds.ENTRY_MODIFY);
+//
+//        WatchKey key;
+//        while ((key = watchService.take()) != null) {
+//            for (WatchEvent<?> event : key.pollEvents()) {
+//                log.debug("Event kind:" + event.kind() + ". File affected: " + event.context() + ".");
+//                if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
+//                    
+//                } else if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+//                    
+//                } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+//                    this.cache.remove(event.context());
+//                }
+//                
+//            }
+//            log.debug(this.cache);
+//            key.reset();
+//        }
+//    }
     
     public List<Map<String, Object>> sample(LoggerRequestVO vo) {
         List<Map<String, Object>> list = new ArrayList<>();

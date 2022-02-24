@@ -111,5 +111,16 @@ public class OutputService {
         vo.setConsumerEps(queueService.getConsumerEpsCache().get(port));
         return vo;
     }
+    
+    public SingleObjectResponse stopClient(int port, String id) {
+        if (!this.cache.containsKey(port) ||
+                this.cache.get(port).getServer() == null) {
+            return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), port + " is not opened");
+        }
+        if (!this.cache.get(port).getServer().stopClient(id)) {
+            return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "server error");
+        }
+        return new SingleObjectResponse(HttpStatus.OK.value(), "successfully stopped");
+    }
 
 }

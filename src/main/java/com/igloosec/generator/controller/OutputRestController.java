@@ -47,4 +47,11 @@ public class OutputRestController {
     public @ResponseBody SingleObjectResponse get(@PathVariable(value = "port") int port) {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", socketService.get(port));
     }
+    
+    @RequestMapping(value = "/stop_client/{port}/{clientId}", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse stopClient(
+            @PathVariable(value = "port") int port,
+            @PathVariable(value = "clientId") String clientId) {
+        return socketService.stopClient(port, clientId);
+    }
 }

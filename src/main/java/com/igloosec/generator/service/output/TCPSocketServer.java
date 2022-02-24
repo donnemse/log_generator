@@ -1,6 +1,10 @@
 package com.igloosec.generator.service.output;
 
+import java.util.Map;
+
 import com.igloosec.generator.queue.LogQueueService;
+
+import io.netty.channel.ChannelHandlerContext;
 
 public class TCPSocketServer implements ISocketServer {
     
@@ -19,7 +23,6 @@ public class TCPSocketServer implements ISocketServer {
         this.ssi = new TCPSocketServerInstance(this.port, this.queueService);
         this.t = new Thread(() -> ssi.start());
         this.t.start();
-        
     }
 
     @Override
@@ -31,6 +34,16 @@ public class TCPSocketServer implements ISocketServer {
     @Override
     public boolean isActive() {
         return this.ssi.isActive();
+    }
+
+    @Override
+    public Map<String, ChannelHandlerContext> getClients() {
+        return this.ssi.getClients();
+    }
+
+    @Override
+    public boolean stopClient(String id) {
+        return ssi.stopClient(id);
     }
     
 

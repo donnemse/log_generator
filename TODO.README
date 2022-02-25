@@ -1,0 +1,55 @@
+TODO LIST
+
+-------- 1. deny modify logger when status is running
+2. Memory usage of Queue
+3. force stop client by client id
+4. stop gracefully
+-------- 5. if etc is not null showing diff on history
+-------- 6. if error is not null showing error message
+-------- 7. history diff now and diff with last version
+8. search history
+9. new logger
+10. diff title
+11. stopped logger cache remove
+
+
+
+package com.igloosec.funnel.util;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public final class CommonUtil {
+    private CommonUtil() {
+        throw new IllegalStateException("CommonUtil is Utility class");
+    }
+    public static int calcObjectSize(Object obj) {
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream oos = null;
+        int size = 0;
+        try {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(baos);
+            oos.writeObject(obj);
+            size = baos.size();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            try {
+                if (oos != null) {
+                    oos.close();
+                }
+                if (baos != null) {
+                    baos.close();
+                }
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        return size;
+    }
+}

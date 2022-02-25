@@ -2,7 +2,6 @@ package com.igloosec.generator.LogGenerator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.stream.IntStream;
 
@@ -13,7 +12,6 @@ import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.igloosec.generator.finnegan.Finnegan;
-import com.igloosec.generator.model.FieldInfoVO;
 import com.igloosec.generator.model.LoggerPropVO;
 import com.igloosec.generator.util.NetUtil;
 

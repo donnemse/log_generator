@@ -5,8 +5,8 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.igloosec.generator.service.output.OutputInfoVO;
-import com.igloosec.generator.service.output.OutputService;
+import com.igloosec.generator.output.OutputService;
+import com.igloosec.generator.restful.model.OutputInfoVO;
 
 @Service
 public class LogGeneratorStarter {

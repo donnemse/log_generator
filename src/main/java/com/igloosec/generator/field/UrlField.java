@@ -9,9 +9,11 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import com.igloosec.generator.finnegan.Finnegan;
+import com.igloosec.generator.restful.model.FieldInfoVO;
+import com.igloosec.generator.restful.model.FieldVO;
 import com.igloosec.generator.util.Constants;
 
-public class UrlField extends FieldInfo implements IFieldGenerator {
+public class UrlField extends FieldInfoVO implements IFieldGenerator {
     
     private List<String> keys;
     private List<Double> arr;
@@ -42,13 +44,13 @@ public class UrlField extends FieldInfo implements IFieldGenerator {
     }
     
     @Override
-    public FieldValue get() {
+    public FieldVO get() {
         double val =  r.nextInt(Constants.I_THOUSAND) * 1.d;
         int originIdx = Collections.binarySearch(arr, val);
         int idx = originIdx >= 0 ? originIdx : originIdx * -1 -1;
         
         String v = generatePayload(this.keys.get(idx));
-        return new FieldValue(v, v);
+        return new FieldVO(v, v);
     }
 
     private String generatePayload(String str) {

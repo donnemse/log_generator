@@ -2,6 +2,8 @@ package com.igloosec.generator.history;
 
 import java.util.List;
 
+import com.igloosec.generator.restful.model.HistoryVO;
+
 import lombok.Data;
 
 @Data

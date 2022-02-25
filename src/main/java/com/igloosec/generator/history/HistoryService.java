@@ -4,7 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
-import com.igloosec.generator.prop.LoggerPropertyManager;
+import com.igloosec.generator.prop.LoggerManager;
+import com.igloosec.generator.restful.model.HistoryVO;
 
 @Service
 public class HistoryService {
@@ -12,7 +13,7 @@ public class HistoryService {
     private HistoryMapper mapper;
     
     @Autowired
-    private LoggerPropertyManager loggerPropMng;
+    private LoggerManager loggerPropMng;
     
     public HistoryResponse list(int page) {
         HistoryResponse res = new HistoryResponse(page);

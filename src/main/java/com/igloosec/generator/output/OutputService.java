@@ -1,4 +1,4 @@
-package com.igloosec.generator.service.output;
+package com.igloosec.generator.output;
 
 import java.util.Collection;
 import java.util.Date;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.queue.QueueService;
+import com.igloosec.generator.restful.model.OutputInfoVO;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 import com.igloosec.generator.util.CommonUtil;
 

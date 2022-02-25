@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.igloosec.generator.history.HistoryResponse;
-import com.igloosec.generator.history.HistoryVO;
+import com.igloosec.generator.restful.model.HistoryVO;
 
 @Mapper
 public interface HistoryMapper {

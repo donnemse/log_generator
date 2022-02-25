@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
-import com.igloosec.generator.prop.LoggerPropertyInfo;
-import com.igloosec.generator.prop.LoggerPropertyManager;
+import com.igloosec.generator.prop.LoggerVO;
+import com.igloosec.generator.prop.LoggerManager;
 import com.igloosec.generator.queue.QueueService;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 import com.igloosec.generator.util.NetUtil;
@@ -32,7 +32,7 @@ public class GeneratorManager {
     private Map<Integer, AGenerator> cache;
     
     @Autowired
-    private LoggerPropertyManager loggerPropMng;
+    private LoggerManager loggerPropMng;
     
     @Autowired
     private LoggerMapper loggerMapper;
@@ -48,7 +48,7 @@ public class GeneratorManager {
     @Scheduled(initialDelay = 1_000, fixedDelay = 60 * 1000)
     private void schedule() {
         
-        for (Entry<Integer, LoggerPropertyInfo> entry: loggerPropMng.listLogger().entrySet()){
+        for (Entry<Integer, LoggerVO> entry: loggerPropMng.listLogger().entrySet()){
             if (entry.getValue().getStatus() == 1) {
                 if (!cache.containsKey(entry.getKey()) || cache.get(entry.getKey()).checkStatus() == 0) {
                     this.start(entry.getKey(), NetUtil.getLocalHostIp());
@@ -66,7 +66,7 @@ public class GeneratorManager {
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
         }
-        LoggerPropertyInfo logger = loggerPropMng.getLogger(id);
+        LoggerVO logger = loggerPropMng.getLogger(id);
         AGenerator gen = new Generator(queueService, logger);
         gen.startGenerator();
         this.cache.put(id, gen);

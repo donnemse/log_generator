@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.igloosec.generator.prop.LoggerPropertyManager;
-import com.igloosec.generator.service.output.EpsVO;
+import com.igloosec.generator.prop.LoggerManager;
+import com.igloosec.generator.restful.model.EpsVO;
 
 import lombok.Getter;
 
@@ -36,7 +36,7 @@ public class QueueService {
     private Map<Integer, EpsVO> consumerEpsCache;
     
     @Autowired
-    private LoggerPropertyManager loggerMgr;
+    private LoggerManager loggerMgr;
     
     @PostConstruct
     private void init() {

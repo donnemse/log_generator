@@ -5,10 +5,10 @@ import java.util.Date;
 import lombok.Data;
 
 @Data
-public class LoggerPropertyInfo {
+public class LoggerVO {
     private int id;
     private String name;
-    private LoggerProperty logger;
+    private LoggerPropVO logger;
     private String yamlStr;
     private String ip;
     private long created;

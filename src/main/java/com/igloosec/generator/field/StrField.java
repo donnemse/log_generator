@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import com.igloosec.generator.restful.model.FieldInfoVO;
+import com.igloosec.generator.restful.model.FieldVO;
 import com.igloosec.generator.util.Constants;
 
-public class StrField extends FieldInfo implements IFieldGenerator {
+public class StrField extends FieldInfoVO implements IFieldGenerator {
     
     private List<String> keys;
     private List<Double> arr;
@@ -32,12 +34,12 @@ public class StrField extends FieldInfo implements IFieldGenerator {
     }
     
     @Override
-    public FieldValue get() {
+    public FieldVO get() {
         double val =  r.nextInt(Constants.I_THOUSAND) * 1.d;
         int originIdx = Collections.binarySearch(arr, val);
         int idx = originIdx >= 0 ? originIdx : originIdx * -1 -1;
         
         Object v = this.keys.get(idx);
-        return new FieldValue(v, v);
+        return new FieldVO(v, v);
     }
 }

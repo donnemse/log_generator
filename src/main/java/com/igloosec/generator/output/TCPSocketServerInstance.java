@@ -1,4 +1,4 @@
-package com.igloosec.generator.service.output;
+package com.igloosec.generator.output;
 
 import java.util.List;
 import java.util.Map;

@@ -12,9 +12,9 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.igloosec.generator.field.FieldInfo;
 import com.igloosec.generator.finnegan.Finnegan;
-import com.igloosec.generator.prop.LoggerProperty;
+import com.igloosec.generator.prop.LoggerPropVO;
+import com.igloosec.generator.restful.model.FieldInfoVO;
 import com.igloosec.generator.util.NetUtil;
 
 
@@ -43,7 +43,7 @@ public class ApacheYamlTest {
     public void test() throws StreamReadException, DatabindException, IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         
-        LoggerProperty a = mapper.readValue(new File("config/apache.yaml"), LoggerProperty.class);
+        LoggerPropVO a = mapper.readValue(new File("config/apache.yaml"), LoggerPropVO.class);
         
         IntStream.range(1, 100).forEach(x -> {
 //            a.generateLog()

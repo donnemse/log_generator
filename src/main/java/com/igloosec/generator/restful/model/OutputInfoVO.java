@@ -1,9 +1,10 @@
-package com.igloosec.generator.service.output;
+package com.igloosec.generator.restful.model;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.igloosec.generator.output.ISocketServer;
 import com.igloosec.generator.util.NetUtil;
 
 import lombok.Data;

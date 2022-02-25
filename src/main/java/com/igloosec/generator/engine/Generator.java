@@ -35,6 +35,7 @@ public class Generator extends AGenerator {
               if (eps < 1000) {
                   long t = System.currentTimeMillis() - time;
                   if (t >= 1000) {
+                      time = System.currentTimeMillis();
                       continue;
                   }
                   Thread.sleep((1000 - t) / eps);

@@ -37,13 +37,15 @@ public class LoggerManageRestController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
         Gson gson = new Gson();
-        log.debug(gson.toJson(loggerPropMng.listLogger()));
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.listLogger());
     }
     
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse create(@RequestBody LoggerRequestVO vo) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.createLogger(vo));
+    public @ResponseBody SingleObjectResponse create(
+            @RequestBody LoggerRequestVO vo,
+            HttpServletRequest request) {
+        vo.setIp(NetUtil.getClientIP(request));
+        return loggerPropMng.createLogger(vo);
     }
     
     @RequestMapping(value = "/modify", method = RequestMethod.PATCH)

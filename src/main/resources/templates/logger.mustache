@@ -7,6 +7,116 @@
     <title>ILogger</title>
     {{>import}}
     <script type="text/javascript">
+        let sample_yaml = `################################
+# this is a example for logger #
+################################
+# 
+# Check out the yaml syntex here.
+# https://en.wikipedia.org/wiki/YAML
+#
+
+log: EXAMPLE  # required
+eps: 10       # required - number
+logtype: WEB  # required - str
+raw: |
+    $\{sip\} - - [$\{event_time\}] "$\{method\} $\{url\} $\{http_version\}" $\{status\} $\{event_size\}
+
+data:         # required - this is field list
+    logtype:  # this is a field name
+        type: str    # type can be str, int, ip, time, url, payload
+        values:
+            WEB: 1
+    sip:
+        type: ip
+        values:
+            "192.168.1.1/24": 0.1  # 0.1 is a probability of appearing = 10%
+            "192.168.1.100": 0.1   # If the sum is less than 1, it is randomly generated.
+            ###############################
+            # ip type cans define like this
+            # 1. range
+            #    192.168.1.1/24
+            #    192.168.1.1~192.168.1.255
+            # 2. specific
+            #    192.168.0.1
+            ###############################
+    dip:
+        type: ip
+        values:
+            "192.168.1.1/16": 0.1
+            "192.168.1.110": 0.1
+            
+    date:
+        type: str
+        values:
+            "20220217": 1
+
+    randome_value:
+        type: str
+        values:
+            sdfsdhfouhsofsf: 0.1
+            dvkjfvojhdogjdfg: 0.9
+            
+    event_time:
+        type: time
+        raw_format: dd/MMM/yyyy:HH:mm:ss Z  # time type is support only current time.
+        parse_format: yyyyMMddHHmmssSSS     # you can define format of raw and parsed
+        
+    method:
+        type: str
+        values:
+            GET: 0.4
+            POST: 0.4
+            UPDATE: 0.1
+            DELETE: 0.1
+            
+    url:
+        type: url
+        values:
+            "/cabletb/605/update/CBOXUpdate.xml": 0.1
+    
+    http_version:
+        type: str
+        values:
+            "HTTP/1.1": 1
+    
+    status:
+        type: int
+        values:
+            10-100: 0.5
+            500: 0.3
+            400: 0.2
+            
+    event_size:
+        type: int
+        values:
+            1~10: 0.5
+            8080: 0.4
+    payload:
+        type: payload
+        values: 
+            "sdfdsfsdfsdfsdfsdfsdfsdfdsfsdfsdfsdf sdfdsf \\nsdfdsfsdfsfdsfsdfdsf": 0.1
+            "34rti34ti34ujt0p3uj": 0.2
+`
+        function addItemList(v) {
+            let $div = $(
+	            "<div class=\"logger-item pure-g " + ($(".logger-item").length == 0? "logger-item-selected logger-item-unread": "") + "\">" +
+	              "   <div class=\"pure-u-1\">" +
+	              "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
+	              "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
+	              "       <h6 class=\"logger-subject\">" +
+	              "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
+	              "       </h6>" +
+	              "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
+	              "   </div>" +
+	              "   <div class=\"pure-u-1-8 change-state\">" +
+	              "       <div class=\"form-check form-switch\">" +
+	              "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
+	              "       </div>" +
+	              "   </div>" +
+	              "</div>")
+	         $div.data("logger_id", v.id)
+	        $(".list").append($div);
+        }
         
         $(function() {
             var editor = ace.edit("editor");
@@ -20,24 +130,7 @@
                 	console.log(response);
                     let i = 0;
                     $.each(response.data.data, function(k, v) {
-                        let $div = $(
-                            "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                            "   <div class=\"pure-u-1\">" +
-                            "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
-                            "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
-                            "       <h6 class=\"logger-subject\">" +
-                            "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
-                            "       </h6>" +
-                            "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
-                            "   </div>" +
-                            "   <div class=\"pure-u-1-8 change-state\">" +
-                            "       <div class=\"form-check form-switch\">" +
-                            "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
-                            "       </div>" +
-                            "   </div>" +
-                            "</div>")
-                       $div.data("logger_id", v.id)
-                        $(".list").append($div);
+                        addItemList(v);
                     });
                 })
                 .catch(function (error) {
@@ -88,21 +181,27 @@
                 let yaml = editor.getValue();
                 
                 axios({
-                    url: "/api/logger/modify",
-                    method: "patch",
+                    url: "/api/logger/" + (id < 0? "create": "modify"),
+                    method: (id < 0? "post": "patch"),
                     data: {
                         name: name,
                         id: id,
                         yaml: yaml
                     }
                 }).then(function (response) {
+                	console.log(response.data)
                     if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
+                        if (response.data.data != null){
+                        	addItemList(response.data.data)
+                        	$(".logger-item:last").trigger("click");
+                        	$(".remove-button").removeClass("d-none");
+                        }
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});
                     }
                 }).catch(function (error) {
-                    console.log(error);
+                	$.notify({message: error},{type: 'danger'});
                 }).then(function () {
                     // always executed
                 });
@@ -171,6 +270,16 @@
                     // always executed
                 });
             });
+            
+            $(document).on('click',".new-button",function (e) {
+            	$("#selected_id").val("-1");
+            	$("#selected_name").val("");
+            	$("#selected_status").val("0");
+            	$(".logger-content-subtitle").empty();
+            	$(".remove-button").addClass("d-none");
+            	editor.setValue(sample_yaml, -1)
+            });
+            
         });
     </script>
 </head>
@@ -207,7 +316,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Sample genrated event</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

@@ -12,11 +12,11 @@
     
     <insert id="insertLogger" parameterType="com.igloosec.generator.prop.LoggerPropertyInfo"
         useGeneratedKeys="true" keyProperty="id">
-	    insert into logger (
-	      name, created, last_modified, ip, yaml_str
-	    )values (
-	      #{name}, #{created}, #{lastModified}, #{ip}, #{yamlStr}
-	    )
+        insert into logger (
+            name, created, last_modified, ip, yaml_str
+        ) values (
+            #{name}, #{created}, #{lastModified}, #{ip}, #{yamlStr}
+        )
     </insert>
     
     <update id="updateLogger" parameterType="com.igloosec.generator.prop.LoggerPropertyInfo">

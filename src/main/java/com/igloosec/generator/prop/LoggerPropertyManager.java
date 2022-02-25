@@ -1,9 +1,7 @@
 package com.igloosec.generator.prop;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,7 +12,6 @@ import java.util.stream.IntStream;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,7 +24,6 @@ import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
 import com.igloosec.generator.restful.model.LoggerRequestVO;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
-import com.igloosec.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -63,23 +59,23 @@ public class LoggerPropertyManager {
             }));
     }
     
-    private LoggerPropertyInfo createLogger(File f) throws Exception {
-        LoggerPropertyInfo info = new LoggerPropertyInfo();
-        
-        info.setName(f.getName());
-        info.setCreated(new Date().getTime());
-        info.setLastModified(new Date().getTime());
-        info.setIp(NetUtil.getLocalHostIp());
-        info.setStatus(0);
-        info.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
-        int i = loggerMapper.insertLogger(info);
-        log.debug("********************");
-        log.debug(info);
-        if (i == 0) {
-            throw new Exception("can not insert logger");
-        }
-        return info;
-    }
+//    private LoggerPropertyInfo createLogger(File f) throws Exception {
+//        LoggerPropertyInfo info = new LoggerPropertyInfo();
+//        
+//        info.setName(f.getName());
+//        info.setCreated(new Date().getTime());
+//        info.setLastModified(new Date().getTime());
+//        info.setIp(NetUtil.getLocalHostIp());
+//        info.setStatus(0);
+//        info.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
+//        int i = loggerMapper.insertLogger(info);
+//        log.debug("********************");
+//        log.debug(info);
+//        if (i == 0) {
+//            throw new Exception("can not insert logger");
+//        }
+//        return info;
+//    }
 
     public LoggerPropertyInfo getLogger(int id) {
         return this.cache.get(id);
@@ -93,21 +89,31 @@ public class LoggerPropertyManager {
      * @param yaml
      * @return
      */
-    public boolean createLogger(LoggerRequestVO vo) {
+    public SingleObjectResponse createLogger(LoggerRequestVO vo) {
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
             LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
             LoggerPropertyInfo info = new LoggerPropertyInfo();
             info.setLogger(lp);
             info.setName(vo.getName());
+            info.setYamlStr(vo.getYaml());
+            info.setIp(vo.getIp());
+            info.setCreated(new Date().getTime());
+            info.setLastModified(new Date().getTime());
             
-            // TODO validateCheck
+            loggerMapper.insertLogger(info);
             this.cache.put(info.getId(), info);
-            // TODO write File
+            res.setMsg("Successfully saved " + vo.getName());
+            res.setData(info);
+            this.addHistory(vo, "Successfully saved " + vo.getName(), vo.getYaml(), null);
+//            
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return false;
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            res.setMsg(e.getMessage());
+            this.addHistory(vo, "Failed save logger " + vo.getName(), null, e.getMessage());
         }
-        return true;
+        return res;
     }
     
     public boolean addHistory(LoggerRequestVO vo, String msg, String detail, String error) {

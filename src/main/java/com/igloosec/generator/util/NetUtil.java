@@ -1,5 +1,7 @@
 package com.igloosec.generator.util;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -108,5 +110,13 @@ public final class NetUtil {
         }
 
         return ip;
+    }
+    
+    public static String getLocalHostIp() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            return "127.0.0.1";
+        }
     }
 }

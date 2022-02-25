@@ -3,21 +3,21 @@ package com.igloosec.generator.engine;
 import java.util.Map;
 
 import com.igloosec.generator.prop.LoggerPropertyInfo;
-import com.igloosec.generator.queue.LogQueueService;
+import com.igloosec.generator.queue.QueueService;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class Generator extends AGenerator {
     
-    private LogQueueService queueService;
+    private QueueService queueService;
     private LoggerPropertyInfo logger;
     
     private volatile boolean state = true;
     
     private long eps;
     
-    public Generator(LogQueueService queueService, LoggerPropertyInfo logger) {
+    public Generator(QueueService queueService, LoggerPropertyInfo logger) {
         this.queueService = queueService;
         this.logger = logger;
         this.eps = logger.getLogger().getEps();

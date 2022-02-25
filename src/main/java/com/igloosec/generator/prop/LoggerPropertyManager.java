@@ -105,6 +105,7 @@ public class LoggerPropertyManager {
             this.cache.put(info.getId(), info);
             res.setMsg("Successfully saved " + vo.getName());
             res.setData(info);
+            vo.setId(info.getId());
             this.addHistory(vo, "Successfully saved " + vo.getName(), vo.getYaml(), null);
 //            
         } catch (Exception e) {

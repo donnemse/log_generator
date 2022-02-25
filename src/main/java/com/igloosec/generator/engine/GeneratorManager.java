@@ -16,7 +16,7 @@ import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
 import com.igloosec.generator.prop.LoggerPropertyInfo;
 import com.igloosec.generator.prop.LoggerPropertyManager;
-import com.igloosec.generator.queue.LogQueueService;
+import com.igloosec.generator.queue.QueueService;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 import com.igloosec.generator.util.NetUtil;
 
@@ -27,7 +27,7 @@ import lombok.extern.log4j.Log4j2;
 public class GeneratorManager {
     private static final String TYPE = "logger";
     @Autowired
-    private LogQueueService queueService;
+    private QueueService queueService;
     
     private Map<Integer, AGenerator> cache;
     

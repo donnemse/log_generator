@@ -22,7 +22,7 @@ import com.igloosec.generator.service.output.EpsVO;
 import lombok.Getter;
 
 @Service
-public class LogQueueService {
+public class QueueService {
     private final int DEFAULT_QUEUE_MAX = 10_000;
     
     @Getter

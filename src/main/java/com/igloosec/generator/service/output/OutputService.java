@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
-import com.igloosec.generator.queue.LogQueueService;
+import com.igloosec.generator.queue.QueueService;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 
 import lombok.extern.log4j.Log4j2;
@@ -29,7 +29,7 @@ public class OutputService {
     private Map<Integer, OutputInfoVO> cache;
     
     @Autowired
-    private LogQueueService queueService;
+    private QueueService queueService;
     
     @Autowired
     private HistoryMapper histMapper;

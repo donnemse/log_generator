@@ -26,6 +26,9 @@
         .acediff {
           height: 70vh
         }
+        .new-button {
+            display: none
+        }
     </style>
     <script type="text/javascript">
     let differ = undefined;
@@ -83,7 +86,7 @@
            ];
            new gridjs.Grid({
             columns: columns,
-            height: "calc(100vh - 200px)",
+            maxHeight: "calc(100vh - 200px)",
             pagination: {
                 enabled: true,
                 limit: 10,
@@ -182,10 +185,12 @@
         <div id="main" class="pure-u-1 main">
             <div class="logger-content">
                 <div class="logger-content-header pure-g">
-                    <div class="logger-info pure-u-1-2"></div>
+                    <div class="logger-info pure-u-1-2">
+                        <h2 class="logger-content-title">
+                            <label>History Log</label>
+                        </h2>
+                    </div>
                     <div class="logger-content-controls pure-u-1-2">
-                        <button class="secondary-button pure-button save-button">Logger</button>
-                        <button class="secondary-button pure-button remove-button">Output</button>
                     </div>
                 </div>
     

@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.prop.LoggerPropertyManager;
@@ -26,7 +27,7 @@ public class QueueService {
     private final int DEFAULT_QUEUE_MAX = 10_000;
     
     @Getter
-    private Map<Integer, Queue<Map<String, Object>>> queue;
+    private Map<Integer, LinkedBlockingQueue<Map<String, Object>>> queue;
     
     @Getter
     private Map<Integer, Map<Integer, EpsVO>> producerEpsCache;
@@ -42,6 +43,38 @@ public class QueueService {
         this.queue = new HashMap<>();
         this.producerEpsCache = new ConcurrentHashMap<>();
         this.consumerEpsCache = new ConcurrentHashMap<>();
+    }
+    
+    @Scheduled(initialDelay = 3000, fixedDelay = 3000)
+    public void monitorEps() {
+        long time = System.currentTimeMillis();
+        
+        for (Entry<Integer, Map<Integer, EpsVO>> entryProducer: producerEpsCache.entrySet()){
+            for (Entry<Integer, EpsVO> entryEps: entryProducer.getValue().entrySet()){
+                long diff = time - entryEps.getValue().getLastCheckTime();
+                entryEps.getValue().setEps(Math.ceil(entryEps.getValue().getCnt() / Math.floor(diff / 1000.d)));
+                entryEps.getValue().setDeletedEps(Math.ceil(entryEps.getValue().getDeleted() / Math.floor(diff / 1000.d)));
+                entryEps.getValue().setCnt(0);
+                entryEps.getValue().setDeleted(0);
+                entryEps.getValue().setLastCheckTime(time);
+            }
+        }
+        
+//        for (Entry<Integer, LinkedBlockingQueue<Map<String, Object>>> entryOutput: queue.entrySet()) {
+//            int port = entryOutput.getKey();
+//            for (Entry<Integer, Map<Integer, EpsVO>> entryProducer: producerEpsCache.entrySet()){
+//                int loggerId = entryProducer.getKey();
+//                long diff = time - producerEpsCache.get(port).get(loggerId).getLastCheckTime();
+//                if (diff > 5 * 1000) {
+//                    producerEpsCache.get(port).get(loggerId).setEps(producerEpsCache.get(port).get(loggerId).getCnt() / (diff / 1000.d));
+//                    producerEpsCache.get(port).get(loggerId).setEps(producerEpsCache.get(port).get(loggerId).getDeleted() / (diff / 1000.d));
+//                    producerEpsCache.get(port).get(loggerId).setCnt(0);
+//                    producerEpsCache.get(port).get(loggerId).setDeleted(0);
+//                    producerEpsCache.get(port).get(loggerId).setLastCheckTime(time);
+//                }
+//            }
+            
+//        }
     }
     
     public void newQueue(int port, int queueSize) {
@@ -72,10 +105,7 @@ public class QueueService {
     }
     
     public void push(Map<String, Object> vo, int loggerId) {
-        long time = System.currentTimeMillis();
-        for (Entry<Integer, Queue<Map<String, Object>>> entry: queue.entrySet()) {
-            entry.getValue().offer(vo);
-            
+        for (Entry<Integer, LinkedBlockingQueue<Map<String, Object>>> entry: queue.entrySet()) {
             int port = entry.getKey();
             if (!producerEpsCache.containsKey(port)) {
                 producerEpsCache.put(port, new ConcurrentHashMap<>());
@@ -84,17 +114,17 @@ public class QueueService {
             if (!producerEpsCache.get(port).containsKey(loggerId)) {
                 EpsVO epsVO = new EpsVO();
                 epsVO.setName(loggerMgr.getLogger(loggerId).getName());
-                epsVO.setLastCheckTime(time);
+                epsVO.setLastCheckTime(System.currentTimeMillis());
                 producerEpsCache.get(port).put(loggerId, epsVO);
             }
-            producerEpsCache.get(port).get(loggerId).addCnt();
-            long diff = time - producerEpsCache.get(port).get(loggerId).getLastCheckTime();
-            if (diff > 5 * 1000) {
-                producerEpsCache.get(port).get(loggerId).setEps(
-                        producerEpsCache.get(port).get(loggerId).getCnt() / (diff / 1000.d));
-                producerEpsCache.get(port).get(loggerId).setCnt(0);
-                producerEpsCache.get(port).get(loggerId).setLastCheckTime(time);
+            
+            if (entry.getValue().remainingCapacity() == 0) {
+                entry.getValue().poll();
+                producerEpsCache.get(port).get(loggerId).addDeleted();
             }
+            entry.getValue().offer(vo);
+            producerEpsCache.get(port).get(loggerId).addCnt();
+            
         }
     }
 
@@ -108,10 +138,13 @@ public class QueueService {
         }
         
         List<Map<String, Object>> list = new ArrayList<>();
-        while(!queue.get(port).isEmpty() && list.size() < maxBuffer) {
-            list.add(queue.get(port).poll());
-            consumerEpsCache.get(port).addCnt();
-        }
+//        while(!queue.get(port).isEmpty() && list.size() < maxBuffer) {
+//            list.add(queue.get(port).poll());
+//            consumerEpsCache.get(port).addCnt();
+//        }
+        int cnt = queue.get(port).drainTo(list, maxBuffer);
+        consumerEpsCache.get(port).addCnt(cnt);
+        
         long diff = time - consumerEpsCache.get(port).getLastCheckTime();
         if (diff > 5 * 1000) {
             consumerEpsCache.get(port).setEps(

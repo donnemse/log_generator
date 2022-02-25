@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.annotation.PostConstruct;
@@ -18,11 +17,9 @@ import org.springframework.stereotype.Service;
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.queue.QueueService;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
-
-import lombok.extern.log4j.Log4j2;
+import com.igloosec.generator.util.CommonUtil;
 
 @Service
-@Log4j2
 public class OutputService {
     private static final String TYPE = "output";
     
@@ -41,13 +38,11 @@ public class OutputService {
     
     @Scheduled(fixedDelay = 15 * 1000)
     public void schedule() {
-        for (Entry<Integer, Queue<Map<String, Object>>> entry: queueService.getQueue().entrySet()) {
+        for (Entry<Integer, LinkedBlockingQueue<Map<String, Object>>> entry: queueService.getQueue().entrySet()) {
             if(this.cache.containsKey(entry.getKey())) {
                 int size = entry.getValue().size();
                 this.cache.get(entry.getKey()).setCurrentQueueSize(size);
-                this.cache.get(entry.getKey()).setMaxQueueSize(
-                        size +
-                        ((LinkedBlockingQueue<Map<String, Object>>)entry.getValue()).remainingCapacity());
+                this.cache.get(entry.getKey()).setMaxQueueSize(size + entry.getValue().remainingCapacity());
                 this.cache.get(entry.getKey()).setProducerEps(queueService.getProducerEpsCache().get(entry.getKey()));
                 this.cache.get(entry.getKey()).setConsumerEps(queueService.getConsumerEpsCache().get(entry.getKey()));
             }
@@ -86,16 +81,14 @@ public class OutputService {
     }
 
     public Collection<OutputInfoVO> list() {
-        for (Entry<Integer, Queue<Map<String, Object>>> entry: queueService.getQueue().entrySet()) {
+        for (Entry<Integer, LinkedBlockingQueue<Map<String, Object>>> entry: queueService.getQueue().entrySet()) {
             if(this.cache.containsKey(entry.getKey())) {
                 int size = entry.getValue().size();
                 this.cache.get(entry.getKey()).setCurrentQueueSize(size);
-                this.cache.get(entry.getKey()).setMaxQueueSize(
-                        size +
-                        ((LinkedBlockingQueue<Map<String, Object>>) entry.getValue()).remainingCapacity());
+                this.cache.get(entry.getKey()).setMaxQueueSize(size + entry.getValue().remainingCapacity());
                 this.cache.get(entry.getKey()).setProducerEps(queueService.getProducerEpsCache().get(entry.getKey()));
                 this.cache.get(entry.getKey()).setConsumerEps(queueService.getConsumerEpsCache().get(entry.getKey()));
-                
+                this.cache.get(entry.getKey()).setCurrentQueueByte(CommonUtil.calcObjectSize(entry.getValue()));
             }
         }
         return this.cache.values();

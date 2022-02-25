@@ -69,6 +69,7 @@ public class GeneratorManager {
                     message, false);
         }
         LoggerVO logger = loggerPropMng.getLogger(id);
+
         AGenerator gen = new Generator(outputService, logger);
         gen.startGenerator();
         this.cache.put(id, gen);

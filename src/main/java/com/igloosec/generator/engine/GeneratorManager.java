@@ -12,17 +12,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
 import com.igloosec.generator.prop.LoggerPropertyInfo;
 import com.igloosec.generator.prop.LoggerPropertyManager;
 import com.igloosec.generator.queue.LogQueueService;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
+import com.igloosec.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
 public class GeneratorManager {
+    private static final String TYPE = "logger";
     @Autowired
     private LogQueueService queueService;
     
@@ -32,7 +35,10 @@ public class GeneratorManager {
     private LoggerPropertyManager loggerPropMng;
     
     @Autowired
-    private LoggerMapper mapper;
+    private LoggerMapper loggerMapper;
+    
+    @Autowired
+    private HistoryMapper histMapper;
     
     @PostConstruct
     private void init() {
@@ -45,7 +51,7 @@ public class GeneratorManager {
         for (Entry<Integer, LoggerPropertyInfo> entry: loggerPropMng.listLogger().entrySet()){
             if (entry.getValue().getStatus() == 1) {
                 if (!cache.containsKey(entry.getKey()) || cache.get(entry.getKey()).checkStatus() == 0) {
-                    this.start(entry.getKey(), "System by reboot");
+                    this.start(entry.getKey(), NetUtil.getLocalHostIp());
                     log.debug("started generator by scheduler: " + entry.getKey());
                 }
             }
@@ -53,9 +59,9 @@ public class GeneratorManager {
     }
     
     public SingleObjectResponse start(int id, String ip) {
-        if (cache.containsKey(id)) {
+        if (this.isRunning(id)) {
             String message = "Already runnig: " + loggerPropMng.getLogger(id).getName();
-            mapper.insertHistory(id, ip, new Date().getTime(), message, null);
+            histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
@@ -77,9 +83,10 @@ public class GeneratorManager {
         if (this.cache.containsKey(id)) {
             this.cache.get(id).stopGenerator();
             this.cache.remove(id);
+            this.queueService.removeProducerEps(id);
         } else {
             String message = "Genrator was not runnig status: " + loggerPropMng.getLogger(id).getName();
-            mapper.insertHistory(id, ip, new Date().getTime(), message, null);
+            histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
@@ -90,10 +97,14 @@ public class GeneratorManager {
                 HttpStatus.OK.value(), 
                 "Successfully stopped: " + loggerPropMng.getLogger(id).getName(), true);
     }
+    
+    public boolean isRunning(int id) {
+        return this.cache.containsKey(id);
+    }
 
     private void updateLoggerStatus(int id, int status, String ip) {
-        mapper.updateLoggerStatus(id, status);
+        loggerMapper.updateLoggerStatus(id, status);
         String message = "Successfully " + (status == 1? "started. ": "stopped. ") + loggerPropMng.getLogger(id).getName();
-        mapper.insertHistory(id, ip, new Date().getTime(), message, null);
+        histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
     }
 }

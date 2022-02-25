@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -47,6 +49,15 @@ public class LogQueueService {
             queueSize = DEFAULT_QUEUE_MAX;
         }
         this.queue.put(port, new LinkedBlockingQueue<>(queueSize));
+    }
+    
+    public void removeProducerEps(int loggerId) {
+        Set<Integer> set = new TreeSet<>(producerEpsCache.keySet());
+        for (int port: set) {
+            if (this.producerEpsCache.get(port).containsKey(loggerId)) {
+                this.producerEpsCache.get(port).remove(loggerId);
+            }
+        }
     }
     
     public void removeQueue(int port) {

@@ -8,8 +8,8 @@
     {{>import}}
     <script type="text/javascript">
         function refreshList(){
-        	$(".list").empty();
-        	axios.get('/api/output/list')
+            $(".list").empty();
+            axios.get('/api/output/list')
                 .then(function (response) {
                     let i = 0;
                     console.log(response);
@@ -33,28 +33,28 @@
                     console.log(error);
                 })
                 .then(function () {
-                	$(".logger-item").eq(0).trigger("click");
+                    $(".logger-item").eq(0).trigger("click");
                 });
         };
         
         function cleanOutputJson(obj) {
             for(prop in obj) {
-            	if (prop == "cnt" || prop == "last_check_time" || prop == "deleted"){
-            		delete obj[prop];
-            	} else if(typeof(obj[prop]) == "object"){
+                if (prop == "cnt" || prop == "last_check_time" || prop == "deleted"){
+                    delete obj[prop];
+                } else if(typeof(obj[prop]) == "object"){
                     cleanOutputJson(obj[prop]);
                 } else {
-                	
-                	if(prop.indexOf("_byte") > -1) {
-                		obj[prop] = getByteStr(obj[prop])
-                	} else if(prop.indexOf("_time") > -1) {
+                    
+                    if(prop.indexOf("_byte") > -1) {
+                        obj[prop] = getByteStr(obj[prop])
+                    } else if(prop.indexOf("_time") > -1) {
                         if (prop == "running_time") {
                             obj[prop] = getRunningTimeStr(obj[prop]);
                         } else {
                             obj[prop] = moment(obj[prop]).format("YYYY/MM/DD HH:mm:ss")
                         }
                     } else if(typeof(obj[prop]) == "number"){
-                    	obj[prop] = parseInt(obj[prop]);
+                        obj[prop] = parseInt(obj[prop]);
                     }
                 }
             }
@@ -64,16 +64,16 @@
             let result = "";
             console.log(time);
             let map = {
-            	"일": 24,
-            	"시간": 60,
-            	"분": 60,
-            	"초": 1000
+                "일": 24,
+                "시간": 60,
+                "분": 60,
+                "초": 1000
             };
             let millis = 1000 * 60 * 60 * 24;
             
             for (let key of Object.keys(map)) {
                 if (parseInt(time / millis) > 0) {
-                	result += " " + parseInt(time / millis) + key;
+                    result += " " + parseInt(time / millis) + key;
                 }
                 time = time % millis;
                 millis = millis / map[key];
@@ -83,48 +83,48 @@
         
         function getByteStr(val) {
             if (val >= 1024 ** 3) {
-            	return (parseInt((val / (1024 ** 3)) * 10) / 10) + "GB"; 
+                return (parseInt((val / (1024 ** 3)) * 10) / 10) + "GB"; 
             } else if (val >= 1024 ** 2) {
                 return (parseInt((val / (1024 ** 2)) * 10) / 10) + "MB"; 
             } else if (val >= 1024 ** 1) {
                 return (parseInt((val / (1024 ** 1)) * 10) / 10) + "KB"; 
             } else {
-            	return val;
+                return val;
             }
         }
         
         $(function() {
-        	var editor = ace.edit("editor");
+            var editor = ace.edit("editor");
             editor.session.setMode("ace/mode/yaml");
             editor.setTheme("ace/theme/tomorrow");
             editor.setReadOnly(false);
-        	refreshList();
-        	
+            refreshList();
+            
             $(document).on('click',".open-port-button",function (e) {
-            	let port = $(".pure-form").find("#new_port").val();
-            	let max_queue = $(".pure-form").find("#new_max_queue").val();
-            	if (port == '') {
-            		port = "3303";
-            	}
-            	if (max_queue == '') {
-            		max_queue = "10000";
-            	}
-            	axios({
+                let port = $(".pure-form").find("#new_port").val();
+                let max_queue = $(".pure-form").find("#new_max_queue").val();
+                if (port == '') {
+                    port = "3303";
+                }
+                if (max_queue == '') {
+                    max_queue = "10000";
+                }
+                axios({
                     url: "/api/output/open",
                     method: "post",
                     data: {
-                    	port: port,
-                    	max_queue_size: max_queue
+                        port: port,
+                        max_queue_size: max_queue
                     }
                 }).then(function (response) {
-                	console.log(response);
+                    console.log(response);
                     if (response.data.status == 200) {
-                    	$("#new_output_modal").find("form")[0].reset()
-                    	$("#new_output_modal").modal("hide");
-                    	refreshList();
-                    	$.notify({message: response.data.msg},{type: 'success'});
+                        $("#new_output_modal").find("form")[0].reset()
+                        $("#new_output_modal").modal("hide");
+                        refreshList();
+                        $.notify({message: response.data.msg},{type: 'success'});
                     } else {
-                    	$.notify({message: response.data.msg},{type: 'danger'});
+                        $.notify({message: response.data.msg},{type: 'danger'});
                     }
                 }).catch(function (error) {
                     console.log(error);
@@ -134,11 +134,11 @@
             });
             
             $(document).on("click", ".output-close-button", function (e) {
-            	axios({
+                axios({
                     url: '/api/output/close/' + $(e.target).parents(".logger-item").data("output_port"),
                     method: "post"
                 }).then(function (response) {
-                	console.log(response);
+                    console.log(response);
                     if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                         refreshList();

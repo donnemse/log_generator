@@ -59,22 +59,6 @@ public class QueueService {
                 entryEps.getValue().setLastCheckTime(time);
             }
         }
-        
-//        for (Entry<Integer, LinkedBlockingQueue<Map<String, Object>>> entryOutput: queue.entrySet()) {
-//            int port = entryOutput.getKey();
-//            for (Entry<Integer, Map<Integer, EpsVO>> entryProducer: producerEpsCache.entrySet()){
-//                int loggerId = entryProducer.getKey();
-//                long diff = time - producerEpsCache.get(port).get(loggerId).getLastCheckTime();
-//                if (diff > 5 * 1000) {
-//                    producerEpsCache.get(port).get(loggerId).setEps(producerEpsCache.get(port).get(loggerId).getCnt() / (diff / 1000.d));
-//                    producerEpsCache.get(port).get(loggerId).setEps(producerEpsCache.get(port).get(loggerId).getDeleted() / (diff / 1000.d));
-//                    producerEpsCache.get(port).get(loggerId).setCnt(0);
-//                    producerEpsCache.get(port).get(loggerId).setDeleted(0);
-//                    producerEpsCache.get(port).get(loggerId).setLastCheckTime(time);
-//                }
-//            }
-            
-//        }
     }
     
     public void newQueue(int port, int queueSize) {

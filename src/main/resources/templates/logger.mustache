@@ -99,23 +99,23 @@ data:         # required - this is field list
 `
         function addItemList(v) {
             let $div = $(
-	            "<div class=\"logger-item pure-g " + ($(".logger-item").length == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-	              "   <div class=\"pure-u-1\">" +
-	              "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
-	              "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
-	              "       <h6 class=\"logger-subject\">" +
-	              "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
-	              "       </h6>" +
-	              "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
-	              "   </div>" +
-	              "   <div class=\"pure-u-1-8 change-state\">" +
-	              "       <div class=\"form-check form-switch\">" +
-	              "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
-	              "       </div>" +
-	              "   </div>" +
-	              "</div>")
-	         $div.data("logger_id", v.id)
-	        $(".list").append($div);
+                "<div class=\"logger-item pure-g " + ($(".logger-item").length == 0? "logger-item-selected logger-item-unread": "") + "\">" +
+                  "   <div class=\"pure-u-1\">" +
+                  "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
+                  "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
+                  "       <h6 class=\"logger-subject\">" +
+                  "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
+                  "       </h6>" +
+                  "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
+                  "   </div>" +
+                  "   <div class=\"pure-u-1-8 change-state\">" +
+                  "       <div class=\"form-check form-switch\">" +
+                  "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
+                  "       </div>" +
+                  "   </div>" +
+                  "</div>")
+             $div.data("logger_id", v.id)
+            $(".list").append($div);
         }
         
         $(function() {
@@ -127,7 +127,7 @@ data:         # required - this is field list
             
             axios.get('/api/logger/list')
                 .then(function (response) {
-                	console.log(response);
+                    console.log(response);
                     let i = 0;
                     $.each(response.data.data, function(k, v) {
                         addItemList(v);
@@ -142,14 +142,14 @@ data:         # required - this is field list
             
             $(document).on("click", ".logger-item", function (e) {
                 if ($(e.target).hasClass("button-change-state")) {
-                	return;
+                    return;
                 }
                 $(".logger-item").removeClass("logger-item-selected logger-item-unread");
                 $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
                 
                 axios.get('/api/logger/get/' + $(e.currentTarget).data("logger_id"))
                 .then(function (response) {
-                	console.log(response.data);
+                    console.log(response.data);
                     let data = response.data.data;
                     editor.setValue(data.yaml_str, -1)
                     
@@ -189,23 +189,23 @@ data:         # required - this is field list
                         yaml: yaml
                     }
                 }).then(function (response) {
-                	console.log(response.data)
+                    console.log(response.data)
                     if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                         if (response.data.data != null){
-                        	if (id < 0) {
-                        		addItemList(response.data.data)
+                            if (id < 0) {
+                                addItemList(response.data.data)
                                 $(".logger-item:last").trigger("click");
                                 $(".remove-button").removeClass("d-none");
-                        	} else {
-                        		
-                        	}
+                            } else {
+                                
+                            }
                         }
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});
                     }
                 }).catch(function (error) {
-                	$.notify({message: error},{type: 'danger'});
+                    $.notify({message: error},{type: 'danger'});
                 }).then(function () {
                     // always executed
                 });
@@ -244,29 +244,29 @@ data:         # required - this is field list
             });
             
             $(document).on('mouseenter',".field-key",function (e) {
-            	let name = $(e.currentTarget).attr("name");
+                let name = $(e.currentTarget).attr("name");
                 $(".field-key[name=\"" + name + "\"]").addClass("field-key-hover");
             });
 
             $(document).on('mouseleave',".field-key",function (e) {
-            	let name = $(e.currentTarget).attr("name");
+                let name = $(e.currentTarget).attr("name");
                 $(".field-key[name=\"" + name + "\"]").removeClass("field-key-hover");
             });
             
             $(document).on('click',".change-state .checkbox-change-state",function (e) {
-            	$checkbox = $(this);
-            	let id = $(e.target).parents(".logger-item").data("logger_id");
-            	let flag = $checkbox.is(":checked");
-            	console.log(flag)
-            	axios({
+                $checkbox = $(this);
+                let id = $(e.target).parents(".logger-item").data("logger_id");
+                let flag = $checkbox.is(":checked");
+                console.log(flag)
+                axios({
                     url: "/api/logger/" + (flag? "start": "stop") + "/" + id,
                     method: "get"
                 }).then(function (response) {
-                	console.log(response)
+                    console.log(response)
                     if (response.data.data) {
-                    	$.notify({message: response.data.msg},{type: 'success'});
+                        $.notify({message: response.data.msg},{type: 'success'});
                     } else {
-                    	$.notify({message: response.data.msg},{type: 'danger'});
+                        $.notify({message: response.data.msg},{type: 'danger'});
                     }
                 }).catch(function (error) {
                     console.log(error);
@@ -276,12 +276,12 @@ data:         # required - this is field list
             });
             
             $(document).on('click',".new-button",function (e) {
-            	$("#selected_id").val("-1");
-            	$("#selected_name").val("");
-            	$("#selected_status").val("0");
-            	$(".logger-content-subtitle").empty();
-            	$(".remove-button").addClass("d-none");
-            	editor.setValue(sample_yaml, -1)
+                $("#selected_id").val("-1");
+                $("#selected_name").val("");
+                $("#selected_status").val("0");
+                $(".logger-content-subtitle").empty();
+                $(".remove-button").addClass("d-none");
+                editor.setValue(sample_yaml, -1)
             });
             
         });

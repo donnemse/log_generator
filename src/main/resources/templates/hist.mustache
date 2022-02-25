@@ -8,80 +8,80 @@
     {{>import}}
     <style type="text/css">
         @media (min-width: 60em) {
-		    .list {
-		        width:200px;
-		        margin-left: -200px;
-		    }
-		}
-		
-		@media (min-width: 40em) {
+            .list {
+                width:200px;
+                margin-left: -200px;
+            }
+        }
+        
+        @media (min-width: 40em) {
 
-		    #layout {
-		        padding-left: 150px;
-		    }
-		    #nav {
-		        margin-left: -150px;
-		    }
-		}
-		.acediff {
-		  height: 70vh
-		}
+            #layout {
+                padding-left: 150px;
+            }
+            #nav {
+                margin-left: -150px;
+            }
+        }
+        .acediff {
+          height: 70vh
+        }
     </style>
     <script type="text/javascript">
     let differ = undefined;
     $(function() {
-       	let columns = [
-       		'id',{
+           let columns = [
+               'id',{
                    name: "fid",
                    hidden: true
                }, {
-       			name: 'name',
-       			formatter: (cell, row) => {
+                   name: 'name',
+                   formatter: (cell, row) => {
                        return row.cells[2].data != null? row.cells[2].data: row.cells[1].data;
                    },
-       		},
-       		'ip','time', 'message',
-       		{
-       			name: 'detail',
-       			formatter: (cell, row) => {
-       				if (row.cells[6].data == null) {
+               },
+               'ip','time', 'message',
+               {
+                   name: 'detail',
+                   formatter: (cell, row) => {
+                       if (row.cells[6].data == null) {
                         return "";
                     }
-       				but = [
-       					gridjs.h('button', {
+                       but = [
+                           gridjs.h('button', {
                             className: 'btn btn-outline-success diff-button',
                             onClick: () => diffInit(`${row.cells[1].data}`, `${row.cells[6].data}`)
                           }, 'Diff(now)'),
-       				];
-       				if (row.cells[8].data != null) {
-       				    but.push(
-	                      gridjs.h('button', {
-	                          className: 'btn btn-outline-success diff-button',
-	                          onClick: () => diffInit(`${row.cells[8].data}`, `${row.cells[6].data}`)
-	                        }, 'Diff(last)')
-	                   );
-       				}
-       				return but;
+                       ];
+                       if (row.cells[8].data != null) {
+                           but.push(
+                          gridjs.h('button', {
+                              className: 'btn btn-outline-success diff-button',
+                              onClick: () => diffInit(`${row.cells[8].data}`, `${row.cells[6].data}`)
+                            }, 'Diff(last)')
+                       );
+                       }
+                       return but;
                 }
-       		},
-       		{
-       	        name: 'error',
-       	        formatter: (cell, row) => {
-       	        	if (row.cells[7].data == null) {
-       	        		return "";
-       	        	}
-       	            return gridjs.h('button', {
-        	            className: 'btn btn-outline-danger diff-button',
-        	            onClick: () => errorModal(`${row.cells[7].data}`)
-        	        }, 'Error');
-       	        }
-       		},
-       		{
+               },
+               {
+                   name: 'error',
+                   formatter: (cell, row) => {
+                       if (row.cells[7].data == null) {
+                           return "";
+                       }
+                       return gridjs.h('button', {
+                        className: 'btn btn-outline-danger diff-button',
+                        onClick: () => errorModal(`${row.cells[7].data}`)
+                    }, 'Error');
+                   }
+               },
+               {
                 name: "last",
                 hidden: true
             }
-       	];
-       	new gridjs.Grid({
+           ];
+           new gridjs.Grid({
             columns: columns,
             height: "calc(100vh - 200px)",
             pagination: {
@@ -110,7 +110,7 @@
     });
     
     function initModal(){
-    	if (differ != undefined) {
+        if (differ != undefined) {
             differ.destroy();
             differ = undefined;
         }
@@ -118,16 +118,16 @@
     }
     
     function errorModal(error) {
-    	initModal();
-    	$(".modal-title").text("Error history")
-    	$(".acediff").html(error);
-    	$(".modal").modal("show");
+        initModal();
+        $(".modal-title").text("Error history")
+        $(".acediff").html(error);
+        $(".modal").modal("show");
     }
     
     function diffInit(origin, yaml) {
-    	
-    	if(!isNaN(parseInt(origin))){
-    		axios.get('/api/logger/get/' + origin)
+        
+        if(!isNaN(parseInt(origin))){
+            axios.get('/api/logger/get/' + origin)
             .then(function (response) {
                 let data = response.data.data;
                 origin = data.yaml_str;
@@ -136,16 +136,16 @@
                 console.log(error);
             })
             .then(function () {
-            	diffModal(origin, yaml);
+                diffModal(origin, yaml);
             });
-    	}
-    	diffModal(origin, yaml);
+        }
+        diffModal(origin, yaml);
     }
     
     function diffModal(origin, yaml){
-    	initModal();
+        initModal();
         $(".modal-title").text("Diff")
-    	differ = new AceDiff({
+        differ = new AceDiff({
             ace: window.ace, // You Ace Editor instance
             theme: "ace/theme/tomorrow",
             mode: "ace/mode/yaml",

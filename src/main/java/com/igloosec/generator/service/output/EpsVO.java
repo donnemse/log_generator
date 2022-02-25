@@ -8,6 +8,8 @@ public class EpsVO {
     private long lastCheckTime;
     private int cnt;
     private double eps;
+    private int deleted;
+    private double deletedEps;
     private long startedTime;
     private long runningTime;
     
@@ -20,8 +22,15 @@ public class EpsVO {
         return runningTime;
     }
     
+    public void addDeleted() {
+        this.deleted++;
+    }
     
     public void addCnt() {
         this.cnt++;
+    }
+    
+    public void addCnt(int cnt) {
+        this.cnt += cnt;
     }
 }

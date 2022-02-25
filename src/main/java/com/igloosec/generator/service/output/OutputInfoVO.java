@@ -17,6 +17,7 @@ public class OutputInfoVO {
     private EpsVO consumerEps;
     private int maxQueueSize;
     private int currentQueueSize;
+    private long currentQueueByte;
     private transient ISocketServer server;
     private long startedTime;
     private long runningTime;

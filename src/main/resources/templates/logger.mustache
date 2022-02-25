@@ -193,9 +193,13 @@ data:         # required - this is field list
                     if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                         if (response.data.data != null){
-                        	addItemList(response.data.data)
-                        	$(".logger-item:last").trigger("click");
-                        	$(".remove-button").removeClass("d-none");
+                        	if (id < 0) {
+                        		addItemList(response.data.data)
+                                $(".logger-item:last").trigger("click");
+                                $(".remove-button").removeClass("d-none");
+                        	} else {
+                        		
+                        	}
                         }
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});

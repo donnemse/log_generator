@@ -3,7 +3,10 @@ package com.igloosec.generator.field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class TimeField extends FieldInfo implements IFieldGenerator {
+import com.igloosec.generator.model.FieldInfoVO;
+import com.igloosec.generator.model.FieldVO;
+
+public class TimeField extends FieldInfoVO implements IFieldGenerator {
     
     private transient SimpleDateFormat sdfRaw;
     private transient SimpleDateFormat sdfParsed;
@@ -14,9 +17,9 @@ public class TimeField extends FieldInfo implements IFieldGenerator {
     }
 
     @Override
-    public FieldValue get() {
+    public FieldVO get() {
         Date d = new Date();
-        return new FieldValue(
+        return new FieldVO(
                 sdfRaw.format(d),
                 sdfParsed.format(d));
     }

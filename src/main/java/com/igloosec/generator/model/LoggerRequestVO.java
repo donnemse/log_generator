@@ -1,4 +1,4 @@
-package com.igloosec.generator.restful.model;
+package com.igloosec.generator.model;
 
 import lombok.Data;
 

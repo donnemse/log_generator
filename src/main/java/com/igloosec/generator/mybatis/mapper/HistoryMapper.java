@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.igloosec.generator.history.HistoryResponse;
-import com.igloosec.generator.history.HistoryVO;
+import com.igloosec.generator.model.HistoryResponseVO;
+import com.igloosec.generator.model.HistoryVO;
 
 @Mapper
 public interface HistoryMapper {
@@ -13,7 +13,7 @@ public interface HistoryMapper {
     
     int totalCnt();
     
-    List<HistoryVO> list(HistoryResponse vo);
+    List<HistoryVO> list(HistoryResponseVO vo);
     
     int insertHistory(int fid, String ip, String type, long lastModified, String msg, String detail, String error);
 //    int insertHistory(HistoryVO vo);

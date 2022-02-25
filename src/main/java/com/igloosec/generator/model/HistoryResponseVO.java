@@ -1,11 +1,11 @@
-package com.igloosec.generator.history;
+package com.igloosec.generator.model;
 
 import java.util.List;
 
 import lombok.Data;
 
 @Data
-public class HistoryResponse {
+public class HistoryResponseVO {
     private final int pageSize = 10;
     
     private int totalPage;
@@ -15,7 +15,7 @@ public class HistoryResponse {
     private int limit;
     private List<HistoryVO> list;
     
-    public HistoryResponse(int currPage) {
+    public HistoryResponseVO(int currPage) {
         this.currPage = currPage;
         this.offset = (currPage - 1) * pageSize;
         this.limit = pageSize;

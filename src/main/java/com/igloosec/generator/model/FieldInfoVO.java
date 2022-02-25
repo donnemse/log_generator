@@ -1,14 +1,21 @@
-package com.igloosec.generator.field;
+package com.igloosec.generator.model;
 
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.igloosec.generator.field.IFieldGenerator;
+import com.igloosec.generator.field.IPField;
+import com.igloosec.generator.field.IntField;
+import com.igloosec.generator.field.PayloadField;
+import com.igloosec.generator.field.StrField;
+import com.igloosec.generator.field.TimeField;
+import com.igloosec.generator.field.UrlField;
 import com.igloosec.generator.util.Constants;
 
 import lombok.Data;
 
 @Data
-public class FieldInfo {
+public class FieldInfoVO {
     private String type;
     private Map<String, Double> values;
     @JsonProperty("raw_format")
@@ -36,7 +43,7 @@ public class FieldInfo {
         return null;
     }
     
-    public FieldValue get() {
+    public FieldVO get() {
         if (this.ins == null) {
             this.ins = this.getInstance();
         }

@@ -1,4 +1,4 @@
-package com.igloosec.generator.prop;
+package com.igloosec.generator.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,26 +6,23 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.text.StringSubstitutor;
 
-import com.igloosec.generator.field.FieldInfo;
-import com.igloosec.generator.field.FieldValue;
-
 import lombok.Data;
 
 @Data
-public class LoggerProperty {
+public class LoggerPropVO {
     private String log;
     private long eps;
     private String logtype;
     private String raw;
     
-    private Map<String, FieldInfo> data;
+    private Map<String, FieldInfoVO> data;
     
     
-    public void setData(Map<String, FieldInfo> data){
+    public void setData(Map<String, FieldInfoVO> data){
         this.data = data;
     }
     
-    public Map<String, FieldInfo> getData() {
+    public Map<String, FieldInfoVO> getData() {
         return data;
     }
     
@@ -33,7 +30,7 @@ public class LoggerProperty {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> raw = this.getData().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
                 entry -> {
-                    FieldValue gen = entry.getValue().get();
+                    FieldVO gen = entry.getValue().get();
                     map.put(entry.getKey(), gen.getValue());
                     return gen.getRawValue();
                 }));

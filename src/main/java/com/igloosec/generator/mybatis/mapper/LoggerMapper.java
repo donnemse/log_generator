@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.igloosec.generator.prop.LoggerPropertyInfo;
+import com.igloosec.generator.model.LoggerVO;
 
 @Mapper
 public interface LoggerMapper {
-    List<LoggerPropertyInfo> listLogger();
+    List<LoggerVO> listLogger();
 
-    int insertLogger(LoggerPropertyInfo info);
+    int insertLogger(LoggerVO info);
 
-    int updateLogger(LoggerPropertyInfo info);
+    int updateLogger(LoggerVO info);
 
     int updateLoggerStatus(int id, int status);
 }

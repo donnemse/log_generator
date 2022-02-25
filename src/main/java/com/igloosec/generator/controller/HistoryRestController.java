@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igloosec.generator.history.HistoryService;
-import com.igloosec.generator.restful.model.SingleObjectResponse;
+import com.igloosec.generator.model.SingleObjectResponse;
 
 @RestController
 @RequestMapping(value = "/api/history")

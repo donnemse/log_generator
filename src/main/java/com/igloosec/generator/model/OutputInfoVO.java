@@ -1,9 +1,12 @@
-package com.igloosec.generator.service.output;
+package com.igloosec.generator.model;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
+import com.igloosec.generator.output.ISocketServer;
 import com.igloosec.generator.util.NetUtil;
 
 import lombok.Data;
@@ -22,11 +25,30 @@ public class OutputInfoVO {
     private long startedTime;
     private long runningTime;
     private String type;
+    transient private LinkedBlockingQueue<Map<String, Object>> queue;
+    
+    transient private static final int MAX_QUEUE_SIZE = 10_000;
     
     public OutputInfoVO() {
+        this.initailize(MAX_QUEUE_SIZE);
+    }
+    
+    public OutputInfoVO(int port) {
+        this.port = port;
+        this.initailize(MAX_QUEUE_SIZE);
+    }
+    
+    public OutputInfoVO(int port, int maxQueueSize) {
+        this.port = port;
+        this.initailize(maxQueueSize);
+    }
+    
+    private void initailize(int maxQueueSize) {
         this.startedTime = System.currentTimeMillis();
         this.openedIp = NetUtil.getLocalHostIp();
-        this.type = "TCP";
+        this.maxQueueSize = maxQueueSize;
+        this.queue = new LinkedBlockingQueue<>(this.maxQueueSize);
+        this.producerEps = new ConcurrentHashMap<>();
     }
     
     public long getRunningTime() {

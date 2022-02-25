@@ -6,11 +6,11 @@
         SELECT #{number}
     </select>
     
-    <select id="listLogger" parameterType="int" resultType="com.igloosec.generator.prop.LoggerPropertyInfo">
+    <select id="listLogger" parameterType="int" resultType="com.igloosec.generator.model.LoggerVO">
         SELECT * from logger
     </select>
     
-    <insert id="insertLogger" parameterType="com.igloosec.generator.prop.LoggerPropertyInfo"
+    <insert id="insertLogger" parameterType="com.igloosec.generator.model.LoggerVO"
         useGeneratedKeys="true" keyProperty="id">
         insert into logger (
             name, created, last_modified, ip, yaml_str
@@ -19,7 +19,7 @@
         )
     </insert>
     
-    <update id="updateLogger" parameterType="com.igloosec.generator.prop.LoggerPropertyInfo">
+    <update id="updateLogger" parameterType="com.igloosec.generator.model.LoggerVO">
         update logger 
         set
             name = #{name},

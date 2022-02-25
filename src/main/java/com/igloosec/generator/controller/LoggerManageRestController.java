@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.igloosec.generator.engine.GeneratorManager;
-import com.igloosec.generator.prop.LoggerPropertyManager;
-import com.igloosec.generator.restful.model.LoggerRequestVO;
-import com.igloosec.generator.restful.model.SingleObjectResponse;
+import com.igloosec.generator.logger.LoggerManager;
+import com.igloosec.generator.model.LoggerRequestVO;
+import com.igloosec.generator.model.SingleObjectResponse;
 import com.igloosec.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -27,7 +27,7 @@ public class LoggerManageRestController {
     @Autowired
     private GeneratorManager genMgr;
     @Autowired
-    private LoggerPropertyManager loggerPropMng;
+    private LoggerManager loggerPropMng;
     
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse get(@PathVariable(value = "id") int id) {

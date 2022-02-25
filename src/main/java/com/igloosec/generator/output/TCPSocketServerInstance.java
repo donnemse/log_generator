@@ -1,10 +1,8 @@
-package com.igloosec.generator.service.output;
+package com.igloosec.generator.output;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.igloosec.generator.queue.QueueService;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -31,7 +29,7 @@ public class TCPSocketServerInstance {
     
     private EventLoopGroup parentGroup;
     private EventLoopGroup childGroup;
-    private QueueService queueService;
+    private OutputService outputService;
     
     private int maxBuffer = 200;
     private volatile boolean state = true;
@@ -40,9 +38,9 @@ public class TCPSocketServerInstance {
     
     private TCPSocketServerHandler handler;
     
-    public TCPSocketServerInstance(int port, QueueService queueService) {
+    public TCPSocketServerInstance(int port, OutputService outputService) {
         this.port = port;
-        this.queueService = queueService;
+        this.outputService = outputService;
         this.clients = new ConcurrentHashMap<>();
         this.startSender();
     }
@@ -57,7 +55,7 @@ public class TCPSocketServerInstance {
                             Thread.sleep(1_000);
                             continue;
                         }
-                        List<Map<String, Object>> list = queueService.poll(port, maxBuffer);
+                        List<Map<String, Object>> list = outputService.poll(port, maxBuffer);
                         if (list.size() == 0) {
                             Thread.sleep(1_000);
                             continue;

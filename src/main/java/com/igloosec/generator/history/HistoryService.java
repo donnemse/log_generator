@@ -3,8 +3,10 @@ package com.igloosec.generator.history;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.igloosec.generator.logger.LoggerManager;
+import com.igloosec.generator.model.HistoryResponseVO;
+import com.igloosec.generator.model.HistoryVO;
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
-import com.igloosec.generator.prop.LoggerPropertyManager;
 
 @Service
 public class HistoryService {
@@ -12,10 +14,10 @@ public class HistoryService {
     private HistoryMapper mapper;
     
     @Autowired
-    private LoggerPropertyManager loggerPropMng;
+    private LoggerManager loggerPropMng;
     
-    public HistoryResponse list(int page) {
-        HistoryResponse res = new HistoryResponse(page);
+    public HistoryResponseVO list(int page) {
+        HistoryResponseVO res = new HistoryResponseVO(page);
         res.setTotalCnt(mapper.totalCnt());
         res.setList(mapper.list(res));
         

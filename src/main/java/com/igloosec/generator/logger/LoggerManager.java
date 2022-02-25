@@ -1,4 +1,4 @@
-package com.igloosec.generator.prop;
+package com.igloosec.generator.logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -20,19 +20,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.igloosec.generator.model.LoggerPropVO;
+import com.igloosec.generator.model.LoggerRequestVO;
+import com.igloosec.generator.model.LoggerVO;
+import com.igloosec.generator.model.SingleObjectResponse;
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
-import com.igloosec.generator.restful.model.LoggerRequestVO;
-import com.igloosec.generator.restful.model.SingleObjectResponse;
 
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
-public class LoggerPropertyManager {
+public class LoggerManager {
     private static final String TYPE = "logger";
     private final int SAMEPLE_CNT = 100; 
-    private Map<Integer, LoggerPropertyInfo> cache;
+    private Map<Integer, LoggerVO> cache;
     private ObjectMapper om = new ObjectMapper(new YAMLFactory());
     
     @Autowired
@@ -44,11 +46,11 @@ public class LoggerPropertyManager {
     @PostConstruct
     private void init() {
         this.cache = new HashMap<>();
-        List<LoggerPropertyInfo> listInfo = this.loggerMapper.listLogger();
+        List<LoggerVO> listInfo = this.loggerMapper.listLogger();
         this.cache = listInfo.stream()
-            .collect(Collectors.toMap(LoggerPropertyInfo::getId, x -> {
+            .collect(Collectors.toMap(LoggerVO::getId, x -> {
                 try {
-                    LoggerProperty lp = om.readValue(x.getYamlStr(), LoggerProperty.class);
+                    LoggerPropVO lp = om.readValue(x.getYamlStr(), LoggerPropVO.class);
                     x.setLogger(lp);
                 } catch (JsonMappingException e) {
                     log.error(e.getMessage(), e);
@@ -77,11 +79,11 @@ public class LoggerPropertyManager {
 //        return info;
 //    }
 
-    public LoggerPropertyInfo getLogger(int id) {
+    public LoggerVO getLogger(int id) {
         return this.cache.get(id);
     }
     
-    public Map<Integer, LoggerPropertyInfo> listLogger() {
+    public Map<Integer, LoggerVO> listLogger() {
         return this.cache;
     }
     /**
@@ -92,8 +94,8 @@ public class LoggerPropertyManager {
     public SingleObjectResponse createLogger(LoggerRequestVO vo) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
-            LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
-            LoggerPropertyInfo info = new LoggerPropertyInfo();
+            LoggerPropVO lp = om.readValue(vo.getYaml(), LoggerPropVO.class);
+            LoggerVO info = new LoggerVO();
             info.setLogger(lp);
             info.setName(vo.getName());
             info.setYamlStr(vo.getYaml());
@@ -141,10 +143,10 @@ public class LoggerPropertyManager {
         }
         try {
             // TODO Stop logging
-            LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
+            LoggerPropVO lp = om.readValue(vo.getYaml(), LoggerPropVO.class);
             // TODO validateCheck
             this.cache.remove(vo.getId());
-            LoggerPropertyInfo info = new LoggerPropertyInfo();
+            LoggerVO info = new LoggerVO();
             info.setLogger(lp);
             info.setId(vo.getId());
             info.setIp(vo.getIp());
@@ -210,7 +212,7 @@ public class LoggerPropertyManager {
     public List<Map<String, Object>> sample(LoggerRequestVO vo) {
         List<Map<String, Object>> list = new ArrayList<>();
         try {
-            LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
+            LoggerPropVO lp = om.readValue(vo.getYaml(), LoggerPropVO.class);
             IntStream.range(0, SAMEPLE_CNT).forEach(x ->{
                 list.add(lp.generateLog());
             });

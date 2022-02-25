@@ -1,4 +1,4 @@
-package com.igloosec.generator.history;
+package com.igloosec.generator.model;
 
 import lombok.Data;
 

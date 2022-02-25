@@ -1,8 +1,6 @@
-package com.igloosec.generator.service.output;
+package com.igloosec.generator.output;
 
 import java.util.Map;
-
-import com.igloosec.generator.queue.QueueService;
 
 import io.netty.channel.ChannelHandlerContext;
 
@@ -11,16 +9,20 @@ public class TCPSocketServer implements ISocketServer {
     private Thread t;
     private TCPSocketServerInstance ssi;
     private int port;
-    private QueueService queueService;
+    private OutputService outputService;
     
-    public TCPSocketServer(int port, QueueService queueService) {
+    public TCPSocketServer(int port, OutputService outputService) {
         this.port = port;
-        this.queueService = queueService;
+        this.outputService = outputService;
     }
     
+    public TCPSocketServer(OutputService outputService) {
+        // TODO Auto-generated constructor stub
+    }
+
     @Override
     public void startServer() {
-        this.ssi = new TCPSocketServerInstance(this.port, this.queueService);
+        this.ssi = new TCPSocketServerInstance(this.port, this.outputService);
         this.t = new Thread(() -> ssi.start());
         this.t.start();
     }

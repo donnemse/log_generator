@@ -2,23 +2,23 @@ package com.igloosec.generator.engine;
 
 import java.util.Map;
 
-import com.igloosec.generator.prop.LoggerPropertyInfo;
-import com.igloosec.generator.queue.QueueService;
+import com.igloosec.generator.model.LoggerVO;
+import com.igloosec.generator.output.OutputService;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class Generator extends AGenerator {
     
-    private QueueService queueService;
-    private LoggerPropertyInfo logger;
+    private OutputService outputService;
+    private LoggerVO logger;
     
     private volatile boolean state = true;
     
     private long eps;
     
-    public Generator(QueueService queueService, LoggerPropertyInfo logger) {
-        this.queueService = queueService;
+    public Generator(OutputService outputService, LoggerVO logger) {
+        this.outputService = outputService;
         this.logger = logger;
         this.eps = logger.getLogger().getEps();
     }
@@ -29,7 +29,7 @@ public class Generator extends AGenerator {
         long time = System.currentTimeMillis();
         while(this.state) {
           Map<String, Object> map = logger.getLogger().generateLog();
-          queueService.push(map, logger.getId());
+          outputService.push(map, logger.getId());
           cnt++;
           try {
               if (eps < 1000) {
@@ -72,6 +72,4 @@ public class Generator extends AGenerator {
             return 0;
         }
     }
-
-
 }

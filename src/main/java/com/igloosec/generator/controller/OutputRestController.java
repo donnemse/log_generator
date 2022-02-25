@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.igloosec.generator.restful.model.SingleObjectResponse;
-import com.igloosec.generator.service.output.OutputInfoVO;
-import com.igloosec.generator.service.output.OutputService;
+import com.igloosec.generator.model.OutputInfoVO;
+import com.igloosec.generator.model.SingleObjectResponse;
+import com.igloosec.generator.output.OutputService;
 import com.igloosec.generator.util.NetUtil;
 
 @RestController

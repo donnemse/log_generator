@@ -8,8 +8,8 @@
         select count(*) from history
     </select>
     
-    <select id="list" parameterType="com.igloosec.generator.history.HistoryResponse" 
-    resultType="com.igloosec.generator.history.HistoryVO">
+    <select id="list" parameterType="com.igloosec.generator.model.HistoryResponseVO" 
+    resultType="com.igloosec.generator.model.HistoryVO">
         <!-- <choose>
             <when test="type eq 'logger'">
                 select b.name, a.* from 

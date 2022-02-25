@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.igloosec.generator.util.NetUtil;
+
 import lombok.Data;
 
 @Data
@@ -22,7 +24,7 @@ public class OutputInfoVO {
     
     public OutputInfoVO() {
         this.startedTime = System.currentTimeMillis();
-        this.openedIp = "System";
+        this.openedIp = NetUtil.getLocalHostIp();
         this.type = "TCP";
     }
     

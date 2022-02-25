@@ -51,7 +51,7 @@ public class LoggerManageRestController {
             @RequestBody LoggerRequestVO vo,
             HttpServletRequest request) {
         vo.setIp(NetUtil.getClientIP(request));
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.modifyLogger(vo));
+        return loggerPropMng.modifyLogger(vo);
     }
     
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)

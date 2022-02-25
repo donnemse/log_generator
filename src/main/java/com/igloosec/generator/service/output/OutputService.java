@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.igloosec.generator.mybatis.mapper.OutputMapper;
+import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.queue.LogQueueService;
 import com.igloosec.generator.restful.model.SingleObjectResponse;
 
@@ -24,6 +24,7 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @Log4j2
 public class OutputService {
+    private static final String TYPE = "output";
     
     private Map<Integer, OutputInfoVO> cache;
     
@@ -31,7 +32,7 @@ public class OutputService {
     private LogQueueService queueService;
     
     @Autowired
-    private OutputMapper outputMapper;
+    private HistoryMapper histMapper;
     
     @PostConstruct
     public void init() {
@@ -57,7 +58,7 @@ public class OutputService {
         
         if (cache.containsKey(vo.getPort())) {
             String message = "Already opened " + vo.getPort() + " port.";
-            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message, null);
+            histMapper.insertHistory(vo.getPort(), vo.getOpenedIp(), TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
         } else {
             vo.setServer(new TCPSocketServer(vo.getPort(), queueService));
@@ -65,7 +66,7 @@ public class OutputService {
             queueService.getQueue(vo.getPort(), vo.getMaxQueueSize());
             this.cache.put(vo.getPort(), vo);
             String message = "Sucessfully opened " + vo.getPort() + " port.";
-            outputMapper.insertHistory(vo.getPort(), vo.getType(), vo.getOpenedIp(), new Date().getTime(), message, null);
+            histMapper.insertHistory(vo.getPort(), vo.getOpenedIp(), TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }
     }
@@ -76,11 +77,11 @@ public class OutputService {
             cache.remove(port);
             queueService.removeQueue(port);
             String message = "Sucessfully closed " + port + " port.";
-            outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message, null);
+            histMapper.insertHistory(port, ip, TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }
         String message = "Could not close " + port + " port.";
-        outputMapper.insertHistory(port, "TCP", ip, new Date().getTime(), message, null);
+        histMapper.insertHistory(port,ip, TYPE, new Date().getTime(), message, null, null);
         return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
     }
 

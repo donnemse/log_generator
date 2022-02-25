@@ -5,12 +5,12 @@
 
     
     <select id="totalCnt" resultType="int">
-        select count(*) from ${type}_hist
+        select count(*) from history
     </select>
     
     <select id="list" parameterType="com.igloosec.generator.history.HistoryResponse" 
     resultType="com.igloosec.generator.history.HistoryVO">
-        <choose>
+        <!-- <choose>
             <when test="type eq 'logger'">
                 select b.name, a.* from 
 				    (select 
@@ -21,12 +21,39 @@
 				    ) a 
 				left join 
 				    logger b 
-				on a.logger_id = b.id
+				on a.fid = b.id
             </when>
             <otherwise>
                 select * from ${type}_hist order by last_modified desc limit #{limit} offset #{offset}
             </otherwise>
-        </choose>
+        </choose> -->
+        <![CDATA[
+	       select 
+			    *, 
+			    ( case when detail is not null
+			            then
+			        (select detail from history where id = (select 
+			            max(id) from history where id < a.id and detail is not null) )
+			            else
+			                NULL
+			        end) last
+			        
+			from history  a  order by last_modified desc limit #{limit} offset #{offset}
+		 ]]>
     </select>
+    <insert id="insertHistory" parameterType="map" useGeneratedKeys="true">
+        insert into history (
+          fid, ip, type, last_modified, msg, detail, error
+        )values (
+          #{fid}, #{ip}, #{type}, #{lastModified}, #{msg}, #{detail}, #{error}
+        )
+    </insert>
     
+    <!-- <insert id="insertHistory" parameterType="com.igloosec.generator.history.HistoryVO" useGeneratedKeys="true">
+        insert into history (
+          fid, ip, type, last_modified, msg, detail, error
+        )values (
+          #{fid}, #{ip}, #{type}, #{lastModified}, #{msg}, #{detail}, #{error}
+        )
+    </insert> -->
 </mapper>

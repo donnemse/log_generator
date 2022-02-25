@@ -18,10 +18,9 @@ public class HistoryRestController {
     @Autowired
     private HistoryService historyService;
     
-    @RequestMapping(value = "/list/{type}/{page}", method = RequestMethod.GET)
+    @RequestMapping(value = "/list/{page}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list(
-            @PathVariable(value = "type") String type,
             @PathVariable(value = "page") int page) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", historyService.list(type, page));
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", historyService.list(page));
     }
 }

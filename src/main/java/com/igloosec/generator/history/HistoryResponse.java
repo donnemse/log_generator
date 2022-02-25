@@ -13,11 +13,9 @@ public class HistoryResponse {
     private int totalCnt;
     private int offset;
     private int limit;
-    private String type;
     private List<HistoryVO> list;
     
-    public HistoryResponse(String type, int currPage) {
-        this.type = type;
+    public HistoryResponse(int currPage) {
         this.currPage = currPage;
         this.offset = (currPage - 1) * pageSize;
         this.limit = pageSize;

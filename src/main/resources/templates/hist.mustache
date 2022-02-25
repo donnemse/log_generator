@@ -17,73 +17,159 @@
 		@media (min-width: 40em) {
 
 		    #layout {
-		        padding-left: 350px;
+		        padding-left: 150px;
 		    }
 		    #nav {
-		        margin-left: -350px;
+		        margin-left: -150px;
 		    }
-		  }
+		}
+		.acediff {
+		  height: 70vh
+		}
     </style>
     <script type="text/javascript">
-
-    var grid;
-        function grid(type) {
-        	let columns = ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'];
-        	if (type === "output") { "src/main/resources/templates/hist.mustache"
-        		columns = ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'];
-        	}
-        	let button_tag = "<button type=\"button\" class=\"btn btn-outline-success diff-button\"" + 
-        	   "data-bs-toggle=\"modal\" data-bs-target=\"#exampleModal\">Diff</button>";
-        	
-        	grid = new gridjs.Grid({
-                columns: ['ID', 'Logger', 'IP','Time',  'Message', 'etc.'],
-                pagination: {
-                    enabled: true,
-                    limit: 10,
-                    server: {
-                        url: (prev, page, limit) => `${prev}/${page+1}`
+    let differ = undefined;
+    $(function() {
+       	let columns = [
+       		'id',{
+                   name: "fid",
+                   hidden: true
+               }, {
+       			name: 'name',
+       			formatter: (cell, row) => {
+                       return row.cells[2].data != null? row.cells[2].data: row.cells[1].data;
+                   },
+       		},
+       		'ip','time', 'message',
+       		{
+       			name: 'detail',
+       			formatter: (cell, row) => {
+       				if (row.cells[6].data == null) {
+                        return "";
                     }
-                },
+       				but = [
+       					gridjs.h('button', {
+                            className: 'btn btn-outline-success diff-button',
+                            onClick: () => diffInit(`${row.cells[1].data}`, `${row.cells[6].data}`)
+                          }, 'Diff(now)'),
+       				];
+       				if (row.cells[8].data != null) {
+       				    but.push(
+	                      gridjs.h('button', {
+	                          className: 'btn btn-outline-success diff-button',
+	                          onClick: () => diffInit(`${row.cells[8].data}`, `${row.cells[6].data}`)
+	                        }, 'Diff(last)')
+	                   );
+       				}
+       				return but;
+                }
+       		},
+       		{
+       	        name: 'error',
+       	        formatter: (cell, row) => {
+       	        	if (row.cells[7].data == null) {
+       	        		return "";
+       	        	}
+       	            return gridjs.h('button', {
+        	            className: 'btn btn-outline-danger diff-button',
+        	            onClick: () => errorModal(`${row.cells[7].data}`)
+        	        }, 'Error');
+       	        }
+       		},
+       		{
+                name: "last",
+                hidden: true
+            }
+       	];
+       	new gridjs.Grid({
+            columns: columns,
+            height: "calc(100vh - 200px)",
+            pagination: {
+                enabled: true,
+                limit: 10,
                 server: {
-                    url: '/api/history/list/' + type,
-                    then: data => data.data.list.map(hist => [
-                        hist.id,
-                        hist.name,
-                        hist.ip,
-                        moment(hist.last_modified).format("YYYY/MM/DD HH:mm:ss"),
-                        hist.msg,
-                        hist.etc != null? gridjs.html(button_tag): ""
-                        /* gridjs.html("<pre>" + hist.etc + "<pre>") */
-                    ]),
-                    total: data => data.data.total_cnt
-                    } 
-                }).render(document.getElementById('table'));
+                    url: (prev, page, limit) => `${prev}/${page+1}`
+                }
+            },
+            server: {
+                url: '/api/history/list',
+                then: data => data.data.list.map(hist => [
+                    hist.id,
+                    hist.fid,
+                    hist.name,
+                    hist.ip,
+                    moment(hist.last_modified).format("YYYY/MM/DD HH:mm:ss"),
+                    hist.msg,
+                    hist.detail,
+                    hist.error,
+                    hist.last,
+                ]),
+                total: data => data.data.total_cnt
+                } 
+            }).render(document.getElementById('table'));
+    });
+    
+    function initModal(){
+    	if (differ != undefined) {
+            differ.destroy();
+            differ = undefined;
         }
+        $(".acediff").empty();
+    }
+    
+    function errorModal(error) {
+    	initModal();
+    	$(".modal-title").text("Error history")
+    	$(".acediff").html(error);
+    	$(".modal").modal("show");
+    }
+    
+    function diffInit(origin, yaml) {
+    	
+    	if(!isNaN(parseInt(origin))){
+    		axios.get('/api/logger/get/' + origin)
+            .then(function (response) {
+                let data = response.data.data;
+                origin = data.yaml_str;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+            	diffModal(origin, yaml);
+            });
+    	}
+    	diffModal(origin, yaml);
+    }
+    
+    function diffModal(origin, yaml){
+    	initModal();
+        $(".modal-title").text("Diff")
+    	differ = new AceDiff({
+            ace: window.ace, // You Ace Editor instance
+            theme: "ace/theme/tomorrow",
+            mode: "ace/mode/yaml",
+            diffGranularity: "specific",
+            element: '.acediff',
+            lockScrolling: true,
+            showInvisibles: true,
+            left: {
+                content: origin,
+                editable: false,
+                copyLinkEnabled: true
+            },
+            right: {
+                content: yaml,
+                editable: false,
+                copyLinkEnabled: true
+            },
+       });
+        differ.editors.left.ace.setOption("showInvisibles", true)
+        differ.editors.right.ace.setOption("showInvisibles", true)
+        //differ.setOptions({"showInvisibles": true})
         
-        $(function() {
-        	grid("logger");
-            
-            $(document).on("click", ".logger-item", function (e) {
-            	console.log($(e.currentTarget));
-                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
-                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
-                grid($(e.currentTarget).attr("name"));
-            });
-            
-            $(document).on("click", ".diff-button", function (e) {
-            	const differ = new AceDiff({
-        		  ace: window.ace, // You Ace Editor instance
-        		  element: '.acediff',
-        		  left: {
-        		    content: 'your first file content here',
-        		  },
-        		  right: {
-        		    content: 'your second file content here',
-        		  },
-        		});
-            });
-            
-        });
+        $(".modal").modal("show");
+    }
     </script>
 </head>
 <body>
@@ -93,25 +179,6 @@
 <div id="layout" class="content pure-g">
     {{>nav}}
     <div class="pure-u-1">
-        <div class="pure-u-1 list">
-            <div class="logger-item pure-g logger-item-selected logger-item-unread" name="logger">
-	            <div class="pure-u-7-8">
-	                <h5 class="logger-name">Logger</h5>
-	                <h6 class="logger-subject">
-	                   Logger History
-	                </h6>
-	            </div>
-	        </div>
-	        <div class="logger-item pure-g" name="output">
-                <div class="pure-u-7-8">
-                    <h5 class="logger-name">Output</h5>
-                    <h6 class="logger-subject">
-                        Output History
-                    </h6>
-                </div>
-            </div>
-        
-        </div>
         <div id="main" class="pure-u-1 main">
             <div class="logger-content">
                 <div class="logger-content-header pure-g">
@@ -141,7 +208,7 @@
                 <div class="acediff"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="pure-button close-modal-button" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

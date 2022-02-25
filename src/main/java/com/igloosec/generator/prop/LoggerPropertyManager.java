@@ -16,31 +16,39 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
 import com.igloosec.generator.restful.model.LoggerRequestVO;
+import com.igloosec.generator.restful.model.SingleObjectResponse;
+import com.igloosec.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
 public class LoggerPropertyManager {
+    private static final String TYPE = "logger";
     private final int SAMEPLE_CNT = 100; 
     private Map<Integer, LoggerPropertyInfo> cache;
     private ObjectMapper om = new ObjectMapper(new YAMLFactory());
     
     @Autowired
-    private LoggerMapper mapper;
+    private LoggerMapper loggerMapper;
+    
+    @Autowired
+    private HistoryMapper histMapper;
     
     @PostConstruct
     private void init() {
         this.cache = new HashMap<>();
-        List<LoggerPropertyInfo> listInfo = this.mapper.listLogger();
+        List<LoggerPropertyInfo> listInfo = this.loggerMapper.listLogger();
         this.cache = listInfo.stream()
             .collect(Collectors.toMap(LoggerPropertyInfo::getId, x -> {
                 try {
@@ -61,10 +69,10 @@ public class LoggerPropertyManager {
         info.setName(f.getName());
         info.setCreated(new Date().getTime());
         info.setLastModified(new Date().getTime());
-        info.setIp("System");
+        info.setIp(NetUtil.getLocalHostIp());
         info.setStatus(0);
         info.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
-        int i = mapper.insertLogger(info);
+        int i = loggerMapper.insertLogger(info);
         log.debug("********************");
         log.debug(info);
         if (i == 0) {
@@ -102,8 +110,8 @@ public class LoggerPropertyManager {
         return true;
     }
     
-    public boolean addHistory(LoggerRequestVO vo, String msg, String etc) {
-        mapper.insertHistory(vo.getId(), vo.getIp(), new Date().getTime(), msg, etc);
+    public boolean addHistory(LoggerRequestVO vo, String msg, String detail, String error) {
+        histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), msg, detail, null);
         return true;
     }
     
@@ -113,7 +121,17 @@ public class LoggerPropertyManager {
      * @param yaml
      * @return
      */
-    public boolean modifyLogger(LoggerRequestVO vo) {
+    public SingleObjectResponse modifyLogger(LoggerRequestVO vo) {
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
+        if (!this.cache.containsKey(vo.getId())) {
+            res.setMsg("can not found logger. " + vo.getName());
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return res;
+        } else if (this.cache.get(vo.getId()).getStatus() == 1) {
+            res.setMsg(vo.getName() + " is running now. stop it first.");
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return res;
+        }
         try {
             // TODO Stop logging
             LoggerProperty lp = om.readValue(vo.getYaml(), LoggerProperty.class);
@@ -126,15 +144,18 @@ public class LoggerPropertyManager {
             info.setName(vo.getName());
             info.setLastModified(new Date().getTime());
             info.setYamlStr(vo.getYaml());
-            mapper.updateLogger(info);
-            this.addHistory(vo, "logger was modified. " + vo.getName(), vo.getYaml());
+            loggerMapper.updateLogger(info);
+            this.addHistory(vo, "logger was modified. " + vo.getName(), vo.getYaml(), null);
             this.cache.put(vo.getId(), info);
+            res.setMsg("logger was modified. " + vo.getName());
+            res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            this.addHistory(vo, "could not modified logger. " + vo.getName(), e.getMessage());
-            return false;
+            this.addHistory(vo, "could not modified logger. " + vo.getName(), null, e.getMessage());
+            res.setMsg(e.getMessage());
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-        return true;
+        return res;
     }
 
     public boolean deleteLogger(LoggerRequestVO vo) {

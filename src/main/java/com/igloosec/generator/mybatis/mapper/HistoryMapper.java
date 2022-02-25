@@ -9,9 +9,12 @@ import com.igloosec.generator.history.HistoryVO;
 
 @Mapper
 public interface HistoryMapper {
-    int insertHistory(int outputId, String type, String ip, long lastModified, String msg);
+//    int insertHistory(int outputId, String type, String ip, long lastModified, String msg);
     
-    int totalCnt(String type);
+    int totalCnt();
     
     List<HistoryVO> list(HistoryResponse vo);
+    
+    int insertHistory(int fid, String ip, String type, long lastModified, String msg, String detail, String error);
+//    int insertHistory(HistoryVO vo);
 }

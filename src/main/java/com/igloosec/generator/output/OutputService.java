@@ -3,12 +3,14 @@ package com.igloosec.generator.output;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.annotation.PostConstruct;
 
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.logger.LoggerManager;
+import com.igloosec.generator.model.EpsHistoryVO;
 import com.igloosec.generator.model.EpsVO;
 import com.igloosec.generator.model.OutputInfoVO;
 import com.igloosec.generator.model.SingleObjectResponse;
@@ -124,11 +127,33 @@ public class OutputService {
     }
 
     public void removeProducerEps(int loggerId) {
-      Set<Integer> set = new TreeSet<>(this.cache.keySet());
-      for (int port: set) {
-          if (this.cache.get(port).getProducerEps().containsKey(loggerId)) {
-              this.cache.get(port).getProducerEps().remove(loggerId);
-          }
-      }
-  }
+        Set<Integer> set = new TreeSet<>(this.cache.keySet());
+        for (int port: set) {
+            if (this.cache.get(port).getProducerEps().containsKey(loggerId)) {
+                this.cache.get(port).getProducerEps().remove(loggerId);
+            }
+        }
+    }
+    
+    public List<Map<String, Object>> listProducerEpsHistory(int port){
+        List<Map<String, Object>> res = new ArrayList<>();
+        this.cache.get(port).getProducerEps().entrySet().forEach(e -> {
+            Map<String, Object> logger = new HashMap<>();
+            logger.put("name", loggerMgr.getLogger(e.getKey()).getName());
+            List<Map<String, Long>> list = new ArrayList<>();
+            e.getValue().getEpsHistory().stream().forEach(vo -> {
+                Map<String, Long> tick = new HashMap<>();
+                tick.put("x", vo.getTime());
+                tick.put("y", (long)vo.getEps());
+                list.add(tick);
+            });
+            logger.put("data", list);
+            res.add(logger);
+        });
+        return res;
+    }
+    
+    public LinkedBlockingQueue<EpsHistoryVO> listProducerEpsHistory(int port, int loggerId){
+        return this.cache.get(port).getProducerEps().get(loggerId).getEpsHistory();
+    }
 }

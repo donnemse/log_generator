@@ -6,6 +6,11 @@
     <meta name="description" content="A layout example that shows off a responsive logger layout.">
     <title>ILogger</title>
     {{>import}}
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
+
+    <style rel="stylesheet">
+    </style>
     <script type="text/javascript">
         function refreshList(){
             $(".list").empty();
@@ -191,8 +196,73 @@
                 .then(function () {
                     // always executed
                 });
+                
+                axios.get('/api/output/producer/eps/' + $(e.currentTarget).data("output_port"))
+                .then(function (response) {
+                	
+                	makeChart(response.data.data)
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                })
+                .then(function () {
+                    // always executed
+                });
             });
+            
+            
         });
+        
+        function makeChart(data) {
+        	console.log(data)
+        	var chart = Highcharts.chart('chart', {
+                chart: {
+                  type: 'spline',
+                  height: 350
+                },
+                height: "350px",
+                title: {
+                  text: ''
+                },
+                yAxis: {
+                  title: {
+                    text: 'Producer EPS'
+                  }
+                },
+                xAxis: {
+                  type: 'datetime',
+                },
+                tooltip: {
+                  split: true,
+                  valueDecimals: 0,
+                  valueSuffix: ''
+                },
+                plotOptions: {
+                  series: {
+                    marker: {
+                      enabled: false
+                    },
+                    cursor: 'pointer',
+                    point: {
+                      events: {
+                        
+                      }
+                    }
+                  }
+                },
+                series: data,
+                /* series: [{
+                  name: 'San Diego',
+                  id: 'sd',
+                  color: '#f4b042'
+                }, {
+                  name: 'New York',
+                  id: 'ny',
+                  color: '#41aff4'
+                }] */
+              });
+        }
     </script>
 </head>
 <body>
@@ -212,7 +282,10 @@
                 </div>
     
                 <div class="logger-content-body">
-                    <div id="editor"></div>
+                    <div class="pure-g">
+                        <div id="editor" class="pure-u-1-2"></div>
+                        <div id="chart" class="pure-u-1-2"></div>
+                    </div>
                 </div>
             </div>
         </div>

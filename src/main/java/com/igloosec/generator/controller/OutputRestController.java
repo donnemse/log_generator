@@ -16,6 +16,9 @@ import com.igloosec.generator.model.SingleObjectResponse;
 import com.igloosec.generator.output.OutputService;
 import com.igloosec.generator.util.NetUtil;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @RestController
 @RequestMapping(value = "/api/output")
 public class OutputRestController {
@@ -53,5 +56,22 @@ public class OutputRestController {
             @PathVariable(value = "port") int port,
             @PathVariable(value = "clientId") String clientId) {
         return socketService.stopClient(port, clientId);
+    }
+    
+    @RequestMapping(value = {
+            "/producer/eps/{port}",
+            "/producer/eps/{port}/{loggerId}"
+        }, method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse producerEps(
+            @PathVariable(value = "port") int port,
+            @PathVariable(value = "loggerId", required = false) Integer loggerId) {
+        log.debug(port + " " + loggerId);
+        
+        if (loggerId == null) {
+            return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
+                    socketService.listProducerEpsHistory(port));
+        }
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
+                socketService.listProducerEpsHistory(port, loggerId));
     }
 }

@@ -1,5 +1,7 @@
 package com.igloosec.generator.model;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 import lombok.Data;
 
 @Data
@@ -8,13 +10,15 @@ public class EpsVO {
     private long lastCheckTime;
     private int cnt;
     private double eps;
-    private int deleted;
-    private double deletedEps;
+    private int del;
+    private double delEps;
     private long startedTime;
     private long runningTime;
+    transient private LinkedBlockingQueue<EpsHistoryVO> epsHistory;
     
     public EpsVO() {
         this.startedTime = System.currentTimeMillis();
+        this.epsHistory = new LinkedBlockingQueue<>(200);
     }
     
     public long getRunningTime() {
@@ -23,7 +27,7 @@ public class EpsVO {
     }
     
     public void addDeleted() {
-        this.deleted++;
+        this.del++;
     }
     
     public void addCnt() {
@@ -32,5 +36,17 @@ public class EpsVO {
     
     public void addCnt(int cnt) {
         this.cnt += cnt;
+    }
+    
+    public void setEps(long time) {
+        this.eps = Math.ceil(this.cnt / Math.floor((time - this.lastCheckTime) / 1000.d));
+        this.delEps = Math.ceil(this.del / Math.floor((time - this.lastCheckTime) / 1000.d));
+        this.cnt = 0;
+        this.del = 0;
+        this.lastCheckTime = time;
+        if (this.epsHistory.size() == 200) {
+            this.epsHistory.poll();
+        }
+        this.epsHistory.offer(new EpsHistoryVO(time, eps, delEps));
     }
 }

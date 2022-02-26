@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.igloosec.generator.logger.LoggerManager;
+import com.igloosec.generator.model.EpsHistoryVO;
 import com.igloosec.generator.model.EpsVO;
 import com.igloosec.generator.model.OutputInfoVO;
 import com.igloosec.generator.model.SingleObjectResponse;
@@ -124,11 +127,22 @@ public class OutputService {
     }
 
     public void removeProducerEps(int loggerId) {
-      Set<Integer> set = new TreeSet<>(this.cache.keySet());
-      for (int port: set) {
-          if (this.cache.get(port).getProducerEps().containsKey(loggerId)) {
-              this.cache.get(port).getProducerEps().remove(loggerId);
-          }
-      }
-  }
+        Set<Integer> set = new TreeSet<>(this.cache.keySet());
+        for (int port: set) {
+            if (this.cache.get(port).getProducerEps().containsKey(loggerId)) {
+                this.cache.get(port).getProducerEps().remove(loggerId);
+            }
+        }
+    }
+    
+    public Map<Integer, LinkedBlockingQueue<EpsHistoryVO>> listProducerEpsHistory(int port){
+        return this.cache.get(port).getProducerEps().entrySet()
+            .stream().collect(Collectors.toMap(
+                    e -> e.getKey(),
+                    e -> e.getValue().getEpsHistory()));
+    }
+    
+    public LinkedBlockingQueue<EpsHistoryVO> listProducerEpsHistory(int port, int loggerId){
+        return this.cache.get(port).getProducerEps().get(loggerId).getEpsHistory();
+    }
 }

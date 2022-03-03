@@ -120,6 +120,7 @@ data:         # required - this is field list
         
         $(function() {
             var editor = ace.edit("editor");
+            editor.session.setUseWrapMode(true);
             editor.session.setMode("ace/mode/yaml");
             editor.setTheme("ace/theme/tomorrow");
             editor.setOption("showInvisibles", true)

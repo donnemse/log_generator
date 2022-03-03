@@ -33,7 +33,7 @@
 			    ( case when detail is not null
 			            then
 			        (select detail from history where id = (select 
-			            max(id) from history where id < a.id and detail is not null) )
+			            max(id) from history where id < a.id and detail is not null and fid = a.fid) )
 			            else
 			                NULL
 			        end) last

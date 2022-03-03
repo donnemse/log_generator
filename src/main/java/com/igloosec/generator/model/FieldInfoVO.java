@@ -40,12 +40,16 @@ public class FieldInfoVO {
         } else if (type.equals(Constants.DataType.URL.getValue())) {
             return new UrlField(values);
         }
+//        throw new Exception(this.toString());
         return null;
     }
     
-    public FieldVO get() {
+    public FieldVO get() throws Exception {
         if (this.ins == null) {
             this.ins = this.getInstance();
+        }
+        if (this.ins == null) {
+            throw new Exception("### ERROR ###\n" + this.toString());
         }
         return this.ins.get();
     }

@@ -213,9 +213,13 @@ public class LoggerManager {
         List<Map<String, Object>> list = new ArrayList<>();
         try {
             LoggerPropVO lp = om.readValue(vo.getYaml(), LoggerPropVO.class);
-            IntStream.range(0, SAMEPLE_CNT).forEach(x ->{
+            
+            for (int i = 0; i < SAMEPLE_CNT; i++) {
                 list.add(lp.generateLog());
-            });
+            }
+//            IntStream.range(0, SAMEPLE_CNT).forEach(x ->{
+//                list.add(lp.generateLog());
+//            });
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));

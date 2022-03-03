@@ -28,10 +28,11 @@ public class Generator extends AGenerator {
         int cnt = 0;
         long time = System.currentTimeMillis();
         while(this.state) {
-          Map<String, Object> map = logger.getLogger().generateLog();
-          outputService.push(map, logger.getId());
-          cnt++;
+          
           try {
+              Map<String, Object> map = logger.getLogger().generateLog();
+              outputService.push(map, logger.getId());
+              cnt++;
               if (eps < 1000) {
                   long t = System.currentTimeMillis() - time;
                   if (t >= 1000) {
@@ -48,7 +49,10 @@ public class Generator extends AGenerator {
               }
           } catch (InterruptedException e) {
               log.error(e.getMessage(), e);
-          }
+          } catch (Exception e) {
+              log.error(e.getMessage(), e);
+              this.stopGenerator();
+        }
         }
     }
 

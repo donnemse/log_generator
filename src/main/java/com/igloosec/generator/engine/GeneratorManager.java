@@ -45,21 +45,37 @@ public class GeneratorManager {
     @PostConstruct
     private void init() {
         this.cache = new ConcurrentHashMap<>();
-    }
-    
-    @Scheduled(initialDelay = 1_000, fixedDelay = 60 * 1000)
-    private void schedule() {
         
         for (Entry<Integer, LoggerVO> entry: loggerPropMng.listLogger().entrySet()){
             if (entry.getValue().getStatus() == 1) {
-                if (!cache.containsKey(entry.getKey()) || cache.get(entry.getKey()).checkStatus() == 0) {
                     this.start(entry.getKey(), NetUtil.getLocalHostIp());
                     log.debug("started generator by scheduler: " + entry.getKey());
-                }
+//                }
             }
         }
     }
     
+    @Scheduled(initialDelay = 1_000, fixedDelay = 10 * 1000)
+    private void schedule() {
+        
+        for (Entry<Integer, LoggerVO> entry: loggerPropMng.listLogger().entrySet()){
+            if (entry.getValue().getStatus() == 1 && cache.get(entry.getKey()).checkStatus() == 0) {
+                this.exceptStop(entry.getKey(), NetUtil.getLocalHostIp());
+                log.debug("Stopped generator by unknown error: " + entry.getKey());
+            }
+        }
+    }
+    
+    private void exceptStop(int id, String ip) {
+        this.cache.get(id).stopGenerator();
+        this.cache.remove(id);
+        this.outputService.removeProducerEps(id);
+        loggerPropMng.getLogger(id).setStatus(0);
+        this.updateLoggerStatus(id, 0, ip);
+        histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), 
+                "Stopped logger by error. plz check yaml", null, null);
+    }
+
     public SingleObjectResponse start(int id, String ip) {
         if (this.isRunning(id)) {
             String message = "Already runnig: " + loggerPropMng.getLogger(id).getName();

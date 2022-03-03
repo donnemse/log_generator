@@ -45,7 +45,12 @@ public class ApacheYamlTest {
         
         IntStream.range(1, 100).forEach(x -> {
 //            a.generateLog()
-           System.out.println(a.generateLog()); 
+           try {
+            System.out.println(a.generateLog());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } 
         });
         
         

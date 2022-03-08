@@ -3,9 +3,11 @@ package com.igloosec.generator.model;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.igloosec.generator.field.IDField;
 import com.igloosec.generator.field.IFieldGenerator;
 import com.igloosec.generator.field.IPField;
 import com.igloosec.generator.field.IntField;
+import com.igloosec.generator.field.Ip2LocField;
 import com.igloosec.generator.field.PayloadField;
 import com.igloosec.generator.field.StrField;
 import com.igloosec.generator.field.TimeField;
@@ -23,22 +25,28 @@ public class FieldInfoVO {
     @JsonProperty("parse_format")
     private String parseFormat;
     private String based;
+    @JsonProperty("parser_name")
+    private String parserName;
     
     private IFieldGenerator ins;
     
     public IFieldGenerator getInstance() {
-        if (type.equals(Constants.DataType.IP.getValue())) {
+        if (type.equalsIgnoreCase(Constants.DataType.IP.getValue())) {
             return new IPField(values);
-        } else if (type.equals(Constants.DataType.STR.getValue())) {
+        } else if (type.equalsIgnoreCase(Constants.DataType.STR.getValue())) {
             return new StrField(values);
-        } else if (type.equals(Constants.DataType.TIME.getValue())) {
+        } else if (type.equalsIgnoreCase(Constants.DataType.TIME.getValue())) {
             return new TimeField(rawFormat, parseFormat);
-        } else if (type.equals(Constants.DataType.INT.getValue())) {
+        } else if (type.equalsIgnoreCase(Constants.DataType.INT.getValue())) {
             return new IntField(values);
-        } else if (type.equals(Constants.DataType.PAYLOAD.getValue())) {
+        } else if (type.equalsIgnoreCase(Constants.DataType.PAYLOAD.getValue())) {
             return new PayloadField(values);
-        } else if (type.equals(Constants.DataType.URL.getValue())) {
+        } else if (type.equalsIgnoreCase(Constants.DataType.URL.getValue())) {
             return new UrlField(values);
+        } else if (type.equalsIgnoreCase(Constants.DataType.SPARROW_ID.getValue())) {
+            return new IDField(this.parserName);
+        }else if (type.equalsIgnoreCase(Constants.DataType.IP2Loc.getValue())) {
+            return new Ip2LocField(this.based);
         }
 //        throw new Exception(this.toString());
         return null;

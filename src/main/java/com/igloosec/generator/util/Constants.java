@@ -23,6 +23,8 @@ public final class Constants {
     public static final String UTF_BOM = "\uFEFF";
 
     public enum DataType {
+        IP2Loc("ip2loc"),
+        SPARROW_ID("sparrow_id"),
         IP("ip"),
         TIME("time"),
         STR("str"),

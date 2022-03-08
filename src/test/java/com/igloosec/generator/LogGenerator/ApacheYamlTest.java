@@ -6,18 +6,48 @@ import java.util.Random;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.igloosec.generator.engine.Ip2LocationService;
+import com.igloosec.generator.field.IDField;
 import com.igloosec.generator.finnegan.Finnegan;
+import com.igloosec.generator.model.FieldInfoVO;
 import com.igloosec.generator.model.LoggerPropVO;
 import com.igloosec.generator.util.NetUtil;
 
+import lombok.extern.log4j.Log4j2;
 
+@SpringBootTest
+@Log4j2
 public class ApacheYamlTest {
     
+    @Autowired
+    Ip2LocationService ip2loc;
+    
+    @Test
+    public void test3() {
+        log.debug(ip2loc.getLocation("175.119.119.195").getCode());
+        
+    }
+    
+    @Test
+    public void test2() {
+        FieldInfoVO vo = new IDField(null);
+        IntStream.range(0,  10).forEach(x -> {
+            try {
+                System.out.println(vo.get().getValue());
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        });
+        
+    }
 //    @Test
     public void test1() {
         
@@ -52,8 +82,6 @@ public class ApacheYamlTest {
             e.printStackTrace();
         } 
         });
-        
-        
     }
 //    
 }

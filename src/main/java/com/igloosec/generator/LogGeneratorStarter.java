@@ -14,14 +14,9 @@ public class LogGeneratorStarter {
     @Autowired
     private OutputService socketService;
     
-//    @Autowired
-//    private Generator gen;
-    
     @PostConstruct
     private void init() {
-//            logPropMng.run();
-//            gen.run();
-        OutputInfoVO vo =new OutputInfoVO(3305, 1000);
+        OutputInfoVO vo =new OutputInfoVO(3305, 100000);
         socketService.open(vo);
     }
 }

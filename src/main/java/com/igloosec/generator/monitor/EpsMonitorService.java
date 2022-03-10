@@ -34,19 +34,4 @@ public class EpsMonitorService {
         
         
     }
-    
-//    @Scheduled(fixedDelay = 15 * 1000)
-//    public void schedule() {
-//        
-//        for (Entry<Integer, LinkedBlockingQueue<Map<String, Object>>> entry: queueService.getQueue().entrySet()) {
-//            if(this.outputService.getCache().containsKey(entry.getKey())) {
-//                int size = entry.getValue().size();
-//                this.outputService.get(entry.getKey()).setCurrentQueueSize(size);
-//                this.outputService.get(entry.getKey()).setMaxQueueSize(size + entry.getValue().remainingCapacity());
-//                this.outputService.get(entry.getKey()).setProducerEps(queueService.getProducerEpsCache().get(entry.getKey()));
-//                this.outputService.get(entry.getKey()).setConsumerEps(queueService.getConsumerEpsCache().get(entry.getKey()));
-//            }
-//        }
-//    }
-    
 }

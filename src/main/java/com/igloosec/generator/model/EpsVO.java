@@ -10,11 +10,11 @@ public class EpsVO {
     private long lastCheckTime;
     private int cnt;
     private double eps;
-    private int del;
+    private transient int del;
     private double delEps;
     private long startedTime;
     private long runningTime;
-    transient private LinkedBlockingQueue<EpsHistoryVO> epsHistory;
+    private transient LinkedBlockingQueue<EpsHistoryVO> epsHistory;
     
     public EpsVO() {
         this.startedTime = System.currentTimeMillis();

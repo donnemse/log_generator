@@ -30,7 +30,7 @@ public class FieldInfoVO implements Comparable<Integer> {
     
     private transient int order;
     
-    private IFieldGenerator ins;
+    private transient IFieldGenerator ins;
     
     public IFieldGenerator getInstance() {
         if (type.equalsIgnoreCase(Constants.DataType.IP.getValue())) {

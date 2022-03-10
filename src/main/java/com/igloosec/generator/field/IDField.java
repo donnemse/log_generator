@@ -2,7 +2,6 @@ package com.igloosec.generator.field;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -10,7 +9,7 @@ import com.igloosec.generator.model.FieldInfoVO;
 import com.igloosec.generator.model.FieldVO;
 
 public class IDField extends FieldInfoVO implements IFieldGenerator {
-    private String parserName;
+    private String suffix;
     private SimpleDateFormat yyyyMMddHH;
     private SimpleDateFormat yyyyMMddHHmmssSSS;
     
@@ -19,9 +18,9 @@ public class IDField extends FieldInfoVO implements IFieldGenerator {
     
     public IDField(String parserName) {
         if (parserName == null) {
-            this.parserName = "Parser-Name";
+            this.suffix = "Parser-Name";
         } else {
-            this.parserName = parserName;
+            this.suffix = parserName;
         }
         
         this.yyyyMMddHH = new SimpleDateFormat("yyyyMMddHH");
@@ -45,7 +44,7 @@ public class IDField extends FieldInfoVO implements IFieldGenerator {
         sb.append('_');
         sb.append(hour);
         sb.append(".log_");
-        sb.append(this.parserName);
+        sb.append(this.suffix);
 //        20220103085430265_0000000000012412104_2022010308.log_WEBINSIGHT-V4-500-34808
         
         return new FieldVO(sb.toString(), sb.toString());

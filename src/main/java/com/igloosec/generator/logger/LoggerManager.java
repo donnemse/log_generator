@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import javax.annotation.PostConstruct;
 
@@ -20,9 +19,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.igloosec.generator.engine.Ip2LocationService;
 import com.igloosec.generator.model.LoggerPropVO;
 import com.igloosec.generator.model.LoggerRequestVO;
 import com.igloosec.generator.model.LoggerVO;
+import com.igloosec.generator.model.MapCache;
 import com.igloosec.generator.model.SingleObjectResponse;
 import com.igloosec.generator.mybatis.mapper.HistoryMapper;
 import com.igloosec.generator.mybatis.mapper.LoggerMapper;
@@ -43,6 +44,8 @@ public class LoggerManager {
     @Autowired
     private HistoryMapper histMapper;
     
+    @Autowired
+    private Ip2LocationService ip2LocService;
     @PostConstruct
     private void init() {
         this.cache = new HashMap<>();
@@ -52,6 +55,10 @@ public class LoggerManager {
                 try {
                     LoggerPropVO lp = om.readValue(x.getYamlStr(), LoggerPropVO.class);
                     x.setLogger(lp);
+                    
+                    MapCache mapCache = new MapCache();
+                    mapCache.setIp2Locations(ip2LocService);
+                    x.setMapCache(mapCache);
                 } catch (JsonMappingException e) {
                     log.error(e.getMessage(), e);
                 } catch (JsonProcessingException e) {
@@ -102,6 +109,9 @@ public class LoggerManager {
             info.setIp(vo.getIp());
             info.setCreated(new Date().getTime());
             info.setLastModified(new Date().getTime());
+            MapCache mapCache = new MapCache();
+            mapCache.setIp2Locations(ip2LocService);
+            info.setMapCache(mapCache);
             
             loggerMapper.insertLogger(info);
             this.cache.put(info.getId(), info);
@@ -153,6 +163,9 @@ public class LoggerManager {
             info.setName(vo.getName());
             info.setLastModified(new Date().getTime());
             info.setYamlStr(vo.getYaml());
+            MapCache mapCache = new MapCache();
+            mapCache.setIp2Locations(ip2LocService);
+            info.setMapCache(mapCache);
             loggerMapper.updateLogger(info);
             this.addHistory(vo, "logger was modified. " + vo.getName(), vo.getYaml(), null);
             this.cache.put(vo.getId(), info);
@@ -213,7 +226,9 @@ public class LoggerManager {
         List<Map<String, Object>> list = new ArrayList<>();
         try {
             LoggerPropVO lp = om.readValue(vo.getYaml(), LoggerPropVO.class);
-            
+            MapCache mapCache = new MapCache();
+            mapCache.setIp2Locations(ip2LocService);
+            lp.setMapCache(mapCache);
             for (int i = 0; i < SAMEPLE_CNT; i++) {
                 list.add(lp.generateLog());
             }

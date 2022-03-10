@@ -17,7 +17,7 @@ import com.igloosec.generator.util.Constants;
 import lombok.Data;
 
 @Data
-public class FieldInfoVO {
+public class FieldInfoVO implements Comparable<Integer> {
     private String type;
     private Map<String, Double> values;
     @JsonProperty("raw_format")
@@ -27,6 +27,8 @@ public class FieldInfoVO {
     private String based;
     @JsonProperty("parser_name")
     private String parserName;
+    
+    private transient int order;
     
     private IFieldGenerator ins;
     
@@ -45,8 +47,8 @@ public class FieldInfoVO {
             return new UrlField(values);
         } else if (type.equalsIgnoreCase(Constants.DataType.SPARROW_ID.getValue())) {
             return new IDField(this.parserName);
-        }else if (type.equalsIgnoreCase(Constants.DataType.IP2Loc.getValue())) {
-            return new Ip2LocField(this.based);
+        }else if (type.equalsIgnoreCase(Constants.DataType.IP2LOC.getValue())) {
+            return new Ip2LocField(this.based, 2);
         }
 //        throw new Exception(this.toString());
         return null;
@@ -60,5 +62,10 @@ public class FieldInfoVO {
             throw new Exception("### ERROR ###\n" + this.toString());
         }
         return this.ins.get();
+    }
+
+    @Override
+    public int compareTo(Integer o) {
+        return o.compareTo(order);
     }
 }

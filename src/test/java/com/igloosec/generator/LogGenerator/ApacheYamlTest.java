@@ -31,8 +31,9 @@ public class ApacheYamlTest {
     
     @Test
     public void test3() {
+        long time = System.currentTimeMillis();
         log.debug(ip2loc.getLocation("175.119.119.195").getCode());
-        
+        System.out.println(System.currentTimeMillis() - time);
     }
     
     @Test

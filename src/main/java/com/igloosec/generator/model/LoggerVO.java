@@ -29,6 +29,13 @@ public class LoggerVO {
         return this.lastModified;
     }
     
+    public void setMapCache(MapCache mapCache) {
+        this.logger.setMapCache(mapCache);
+    }
+    
+    public MapCache getMapCache() {
+        return this.logger.getMapCache();
+    }
     
 //    public String getLastModifiedStr() {
 //        return sdf.format(this.lastModified);

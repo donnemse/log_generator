@@ -1,10 +1,15 @@
 package com.igloosec.generator.model;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.text.StringSubstitutor;
+
+import com.igloosec.generator.util.Constants;
 
 import lombok.Data;
 
@@ -14,12 +19,18 @@ public class LoggerPropVO {
     private long eps;
     private String logtype;
     private String raw;
+    private transient MapCache mapCache;
     
     private Map<String, FieldInfoVO> data;
     
     
     public void setData(Map<String, FieldInfoVO> data){
         this.data = data;
+        Comparator<Map.Entry<String, FieldInfoVO>> order = Entry.comparingByValue(Comparator.comparing(FieldInfoVO::getOrder));
+        this.data = data.entrySet().stream()
+                .sorted(order)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
     
     public Map<String, FieldInfoVO> getData() {
@@ -32,6 +43,10 @@ public class LoggerPropVO {
                 entry -> {
                     try {
                         FieldVO gen = entry.getValue().get();
+                        if (entry.getValue().getType().equals(Constants.DataType.IP2LOC.getValue())) {
+                            String val = mapCache.getIp2Locations().getLocation(map.get(entry.getValue().getBased()) + "").getCode();
+                            gen = new FieldVO(val, val);
+                        }
                         map.put(entry.getKey(), gen.getValue());
                         return gen.getRawValue();
                     } catch (Exception e) {
@@ -45,7 +60,5 @@ public class LoggerPropVO {
         }
         map.put("RAW", StringSubstitutor.replace(this.raw, raw));
         return map;
-//        StringSubstitutor subs = new StringSubstitutor();
-//        return null;
     }
 }

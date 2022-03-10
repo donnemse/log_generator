@@ -226,8 +226,10 @@ data:         # required - this is field list
                     $.each(response.data.data, function(idx, val) {
                         let list = [];
                         $.each(val, function(k, v) {
-                            list.push("<span class=\"field-key\" name=\"" + k + "\">" + k + "</span>=" +
-                            "<span class=\"field-val\" name=\"" + v + "\">" + v + "</span>");
+                            list.push(
+                            	"<span class=\"field-span\" name=\"" + k + "\">" + 
+                            		"<span class=\"field-key\" name=\"" + k + "\">" + k + "=</span>" +
+                            v + "</span>");
                         });
                         
                         $tbody.append(
@@ -244,14 +246,14 @@ data:         # required - this is field list
                 });
             });
             
-            $(document).on('mouseenter',".field-key",function (e) {
+            $(document).on('mouseenter',".field-span",function (e) {
                 let name = $(e.currentTarget).attr("name");
-                $(".field-key[name=\"" + name + "\"]").addClass("field-key-hover");
+                $(".field-span[name=\"" + name + "\"]").addClass("field-span-hover");
             });
 
-            $(document).on('mouseleave',".field-key",function (e) {
+            $(document).on('mouseleave',".field-span",function (e) {
                 let name = $(e.currentTarget).attr("name");
-                $(".field-key[name=\"" + name + "\"]").removeClass("field-key-hover");
+                $(".field-span[name=\"" + name + "\"]").removeClass("field-span-hover");
             });
             
             $(document).on('click',".change-state .checkbox-change-state",function (e) {

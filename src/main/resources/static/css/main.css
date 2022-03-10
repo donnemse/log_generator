@@ -387,13 +387,19 @@ textarea {
     border: 1px solid #acabab;
 }
 
-.field-key-hover {
+.field-span-hover {
     background: #fe8282;
     color: #eee;
-    font-weight: 500;
+    /* font-weight: 500; */
     border-radius: 3px;
     border: 1px solid #acabab;
 }
+
+.field-span-hover > .field-key {
+    background: #fcc25b;
+    color: #000;
+}
+
 .pure-menu-active {
 	background: rgb(55, 60, 90);
 }

@@ -67,24 +67,6 @@ public class LoggerManager {
                 return x;
             }));
     }
-    
-//    private LoggerPropertyInfo createLogger(File f) throws Exception {
-//        LoggerPropertyInfo info = new LoggerPropertyInfo();
-//        
-//        info.setName(f.getName());
-//        info.setCreated(new Date().getTime());
-//        info.setLastModified(new Date().getTime());
-//        info.setIp(NetUtil.getLocalHostIp());
-//        info.setStatus(0);
-//        info.setYamlStr(FileUtils.readFileToString(f, Charset.defaultCharset()));
-//        int i = loggerMapper.insertLogger(info);
-//        log.debug("********************");
-//        log.debug(info);
-//        if (i == 0) {
-//            throw new Exception("can not insert logger");
-//        }
-//        return info;
-//    }
 
     public LoggerVO getLogger(int id) {
         return this.cache.get(id);
@@ -141,7 +123,8 @@ public class LoggerManager {
      * @return
      */
     public SingleObjectResponse modifyLogger(LoggerRequestVO vo) {
-        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
+        String msg = "logger was modified. " + vo.getName();
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value(), msg);
         if (!this.cache.containsKey(vo.getId())) {
             res.setMsg("can not found logger. " + vo.getName());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -167,9 +150,9 @@ public class LoggerManager {
             mapCache.setIp2Locations(ip2LocService);
             info.setMapCache(mapCache);
             loggerMapper.updateLogger(info);
-            this.addHistory(vo, "logger was modified. " + vo.getName(), vo.getYaml(), null);
+            this.addHistory(vo, msg, vo.getYaml(), null);
             this.cache.put(vo.getId(), info);
-            res.setMsg("logger was modified. " + vo.getName());
+            res.setMsg(msg);
             res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -180,18 +163,22 @@ public class LoggerManager {
         return res;
     }
 
-    public boolean deleteLogger(LoggerRequestVO vo) {
+    public SingleObjectResponse removeLogger(LoggerRequestVO vo) {
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
-            // TODO Stop logging
-            // TODO validateCheck
-            this.cache.remove(vo.getId());
+            LoggerVO info = this.cache.get(vo.getId());
+            String msg = "logger was removed. " + info.getName();
+            res.setMsg(msg);
             
-            // TODO remove File
+            this.loggerMapper.removeLogger(vo.getId());
+            this.addHistory(vo, msg, info.getYamlStr(), null);
+            this.cache.remove(vo.getId());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return false;
+            this.addHistory(vo, "could not remove logger. " + vo.getName(), null, e.getMessage());
+            res.setMsg(e.getMessage());
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-        return true;
+        return res;
     }
     
 //    @Async

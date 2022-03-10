@@ -37,4 +37,10 @@
         where
             id = #{id}
     </update>
+    
+    <update id="removeLogger" parameterType="int">
+        delete from logger
+        where
+            id = #{id}
+    </update>
 </mapper>

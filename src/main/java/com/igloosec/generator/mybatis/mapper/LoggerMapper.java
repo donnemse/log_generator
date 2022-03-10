@@ -15,4 +15,6 @@ public interface LoggerMapper {
     int updateLogger(LoggerVO info);
 
     int updateLoggerStatus(int id, int status);
+
+    void removeLogger(int id);
 }

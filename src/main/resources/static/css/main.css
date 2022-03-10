@@ -404,3 +404,11 @@ textarea {
 	background: rgb(55, 60, 90);
 }
 
+.alert {
+	top: 80px !important
+}
+
+#removeModal .modal-dialog {
+    max-width: 350px !important;
+    min-width: 350px !important;
+}

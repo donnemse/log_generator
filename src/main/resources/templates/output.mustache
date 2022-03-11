@@ -193,7 +193,7 @@
                         $(".clients").empty();
                         $.each(data.clients, function(i, c) {
                             $(".clients").append(
-                                "<button client-id=\"" + c + "\" type=\"button\" class=\"btn btn-primary position-relative" + (i > 0? " ms-3": "") + "\">"
+                                "<button client-id=\"" + c + "\" type=\"button\" class=\"btn btn-primary position-relative stop-client" + (i > 0? " ms-3": "") + "\">"
                                 + c
                                 + "<span class=\"btn-close position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger\">"
                                 + "<span class=\"visually-hidden\">a</span>"

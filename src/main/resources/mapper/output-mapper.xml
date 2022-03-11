@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.igloosec.generator.mybatis.mapper.OutputMapper">
+<mapper namespace="com.yuganji.generator.mybatis.mapper.OutputMapper">
     <insert id="insertHistory" parameterType="map" useGeneratedKeys="true">
         insert into output_hist (
           output_id, type, ip, last_modified, msg, etc

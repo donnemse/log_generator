@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.igloosec.generator.mybatis.mapper.LoggerMapper">
+<mapper namespace="com.yuganji.generator.mybatis.mapper.LoggerMapper">
     <select id="selectNumber" parameterType="int" resultType="int">
         SELECT #{number}
     </select>
     
-    <select id="listLogger" parameterType="int" resultType="com.igloosec.generator.model.LoggerVO">
+    <select id="listLogger" parameterType="int" resultType="com.yuganji.generator.model.LoggerVO">
         SELECT * from logger
     </select>
     
-    <insert id="insertLogger" parameterType="com.igloosec.generator.model.LoggerVO"
+    <insert id="insertLogger" parameterType="com.yuganji.generator.model.LoggerVO"
         useGeneratedKeys="true" keyProperty="id">
         insert into logger (
             name, created, last_modified, ip, yaml_str
@@ -19,7 +19,7 @@
         )
     </insert>
     
-    <update id="updateLogger" parameterType="com.igloosec.generator.model.LoggerVO">
+    <update id="updateLogger" parameterType="com.yuganji.generator.model.LoggerVO">
         update logger 
         set
             name = #{name},

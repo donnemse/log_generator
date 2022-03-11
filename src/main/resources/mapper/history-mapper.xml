@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.igloosec.generator.mybatis.mapper.HistoryMapper">
+<mapper namespace="com.yuganji.generator.mybatis.mapper.HistoryMapper">
 
     
     <select id="totalCnt" resultType="int">
         select count(*) from history
     </select>
     
-    <select id="list" parameterType="com.igloosec.generator.model.HistoryResponseVO" 
-    resultType="com.igloosec.generator.model.HistoryVO">
+    <select id="list" parameterType="com.yuganji.generator.model.HistoryResponseVO"
+    resultType="com.yuganji.generator.model.HistoryVO">
         <![CDATA[
 	       select 
 			    *, 

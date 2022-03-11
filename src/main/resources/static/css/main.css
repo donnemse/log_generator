@@ -412,3 +412,7 @@ textarea {
     max-width: 350px !important;
     min-width: 350px !important;
 }
+
+.logger-content-body .btn-close {
+    opacity: 1 !important
+}

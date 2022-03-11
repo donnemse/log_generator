@@ -170,9 +170,8 @@
                 
                 axios.get('/api/output/get/' + $(e.currentTarget).data("output_port"))
                 .then(function (response) {
-                    console.log(response.data);
                     let data = response.data.data;
-                    
+                    data.clients = ["client1", "client2"];
                     cleanOutputJson(data);
                     console.log(data)
                     editor.setValue(JSON.stringify(data, null, '\t'), -1)
@@ -188,6 +187,20 @@
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
                     );
                     $(".logger-info").html($div);
+
+                    if (data.clients.length > 0) {
+
+                        $(".clients").empty();
+                        $.each(data.clients, function(i, c) {
+                            $(".clients").append(
+                                "<button client-id=\"" + c + "\" type=\"button\" class=\"btn btn-primary position-relative" + (i > 0? " ms-3": "") + "\">"
+                                + c
+                                + "<span class=\"btn-close position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger\">"
+                                + "<span class=\"visually-hidden\">a</span>"
+                                + "</span>"
+                                + "</button>" );
+                        });
+                    }
                 })
                 .catch(function (error) {
                     // handle error
@@ -199,7 +212,6 @@
                 
                 axios.get('/api/output/producer/eps/' + $(e.currentTarget).data("output_port"))
                 .then(function (response) {
-                	
                 	makeChart(response.data.data)
                 })
                 .catch(function (error) {
@@ -251,16 +263,7 @@
                     }
                   }
                 },
-                series: data,
-                /* series: [{
-                  name: 'San Diego',
-                  id: 'sd',
-                  color: '#f4b042'
-                }, {
-                  name: 'New York',
-                  id: 'ny',
-                  color: '#41aff4'
-                }] */
+                series: data
               });
         }
     </script>
@@ -283,6 +286,7 @@
     
                 <div class="logger-content-body">
                     <div class="pure-g">
+                        <div class="pure-u-1 clients" style="padding-bottom: 10px;"></div>
                         <div id="editor" class="pure-u-1-2"></div>
                         <div id="chart" class="pure-u-1-2"></div>
                     </div>

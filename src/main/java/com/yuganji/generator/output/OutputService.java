@@ -33,16 +33,17 @@ public class OutputService {
     
     @Getter
     private Map<Integer, OutputInfoVO> cache;
-    
-    @Autowired
+
     private HistoryMapper histMapper;
-    
-    @Autowired
+
     private LoggerManager loggerMgr;
-    
-    @PostConstruct
-    public void init() {
+
+    @Autowired
+    public OutputService (
+            LoggerManager loggerMgr, HistoryMapper histMapper) {
         this.cache = new ConcurrentHashMap<>();
+        this.loggerMgr = loggerMgr;
+        this.histMapper = histMapper;
     }
     
     public OutputInfoVO get(int id) {
@@ -69,12 +70,23 @@ public class OutputService {
         if (cache.containsKey(port)) {
             cache.get(port).getServer().stopServer();
             cache.remove(port);
-//            queueService.removeQueue(port);
-            String message = "Sucessfully closed " + port + " port.";
+            String message = "Successfully closed " + port + " port.";
             histMapper.insertHistory(port, ip, TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }
         String message = "Could not close " + port + " port.";
+        histMapper.insertHistory(port,ip, TYPE, new Date().getTime(), message, null, null);
+        return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
+    }
+
+    public SingleObjectResponse closeClient(int port, String clientId, String ip) {
+        if (cache.containsKey(port)) {
+            cache.get(port).getServer().stopClient(clientId);
+            String message = "Successfully closed [" + clientId + "] on " + port + " port.";
+            histMapper.insertHistory(port, ip, TYPE, new Date().getTime(), message, null, null);
+            return new SingleObjectResponse(HttpStatus.OK.value(), message);
+        }
+        String message = "Could not close [" + clientId + "] on " + port + " port.";
         histMapper.insertHistory(port,ip, TYPE, new Date().getTime(), message, null, null);
         return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
     }

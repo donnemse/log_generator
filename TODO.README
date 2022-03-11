@@ -1,7 +1,7 @@
 TODO LIST
 
 -------- 1. deny modify logger when status is running
-2. Memory usage of Queue
+-------- 2. Memory usage of Queue
 3. force stop client by client id
 4. stop gracefully
 -------- 5. if etc is not null showing diff on history
@@ -13,7 +13,7 @@ TODO LIST
 -------- 11. stopped logger cache remove
 -------- 12. deleted queue
 13. export and import db tables automaticully
-14. eps chart
+--- 14. eps chart
 -------- 15. IP2Location
 16. Payload
 -------- 17. sparrow id gen

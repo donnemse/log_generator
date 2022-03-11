@@ -10,10 +10,13 @@ import com.yuganji.generator.output.OutputService;
 
 @Service
 public class LogGeneratorStarter {
-    
-    @Autowired
+
     private OutputService socketService;
-    
+
+    @Autowired
+    public LogGeneratorStarter(OutputService socketService) {
+        this.socketService = socketService;
+    }
     @PostConstruct
     private void init() {
         OutputInfoVO vo =new OutputInfoVO(3305, 100000);

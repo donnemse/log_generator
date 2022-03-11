@@ -22,9 +22,13 @@ import lombok.extern.log4j.Log4j2;
 @RestController
 @RequestMapping(value = "/api/output")
 public class OutputRestController {
-    
-    @Autowired
+
     private OutputService socketService;
+
+    @Autowired
+    public OutputRestController(OutputService socketService) {
+        this.socketService = socketService;
+    }
     
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
@@ -44,6 +48,14 @@ public class OutputRestController {
             @PathVariable(value = "port") int port,
             HttpServletRequest request) {
         return socketService.close(port, NetUtil.getClientIP(request));
+    }
+
+    @RequestMapping(value = "/close/client/{port}/{clientId}", method = RequestMethod.POST)
+    public @ResponseBody SingleObjectResponse closeClient(
+            @PathVariable(value = "port") int port,
+            @PathVariable(value = "clientId") String clientId,
+            HttpServletRequest request) {
+        return socketService.closeClient(port, clientId, NetUtil.getClientIP(request));
     }
     
     @RequestMapping(value = "/get/{port}", method = RequestMethod.GET)

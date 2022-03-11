@@ -40,4 +40,16 @@ public final class Constants {
             this.value = val;
         }
     }
+    
+    public enum Output {
+        SPARROW("sparrow"),
+        KAFKA("kafka"),
+        FILE("file");
+        
+        @Getter
+        private final String value;
+        Output(String val) {
+            this.value = val;
+        }
+    }
 }

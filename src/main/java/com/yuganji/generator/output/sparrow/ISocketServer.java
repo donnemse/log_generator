@@ -1,11 +1,13 @@
-package com.yuganji.generator.output;
+package com.yuganji.generator.output.sparrow;
 
 import java.util.Map;
+
+import com.yuganji.generator.model.OutputHandleException;
 
 import io.netty.channel.ChannelHandlerContext;
 
 public interface ISocketServer {
-    void startServer();
+    boolean startServer() throws OutputHandleException;
     boolean stopServer();
     boolean isActive();
     Map<String, ChannelHandlerContext> getClients();

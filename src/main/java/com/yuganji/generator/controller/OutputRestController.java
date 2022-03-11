@@ -2,7 +2,6 @@ package com.yuganji.generator.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.yuganji.generator.util.NetUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,9 +11,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.yuganji.generator.model.OutputInfoVO;
+import com.yuganji.generator.model.OutputVO;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.OutputService;
+import com.yuganji.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -23,31 +23,31 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping(value = "/api/output")
 public class OutputRestController {
 
-    private OutputService socketService;
+    private OutputService outputService;
 
     @Autowired
     public OutputRestController(OutputService socketService) {
-        this.socketService = socketService;
+        this.outputService = socketService;
     }
     
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", socketService.list());
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", outputService.list());
     }
     
     @RequestMapping(value = "/open", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse open(
-            @RequestBody OutputInfoVO vo,
+            @RequestBody OutputVO vo,
             HttpServletRequest request) {
-        vo.setOpenedIp(NetUtil.getClientIP(request));
-        return socketService.open(vo);
+        vo.setIp(NetUtil.getClientIP(request));
+        return outputService.startOutput(vo);
     }
     
     @RequestMapping(value = "/close/{port}", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse close(
             @PathVariable(value = "port") int port,
             HttpServletRequest request) {
-        return socketService.close(port, NetUtil.getClientIP(request));
+        return outputService.stopOutput(port, NetUtil.getClientIP(request));
     }
 
     @RequestMapping(value = "/close/client/{port}/{clientId}", method = RequestMethod.POST)
@@ -55,19 +55,20 @@ public class OutputRestController {
             @PathVariable(value = "port") int port,
             @PathVariable(value = "clientId") String clientId,
             HttpServletRequest request) {
-        return socketService.closeClient(port, clientId, NetUtil.getClientIP(request));
+        return outputService.closeClient(port, clientId, NetUtil.getClientIP(request));
     }
     
     @RequestMapping(value = "/get/{port}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse get(@PathVariable(value = "port") int port) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", socketService.get(port));
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", outputService.get(port));
     }
     
     @RequestMapping(value = "/stop_client/{port}/{clientId}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse stopClient(
             @PathVariable(value = "port") int port,
-            @PathVariable(value = "clientId") String clientId) {
-        return socketService.stopClient(port, clientId);
+            @PathVariable(value = "clientId") String clientId,
+            HttpServletRequest request) {
+        return outputService.closeClient(port, clientId, NetUtil.getClientIP(request));
     }
     
     @RequestMapping(value = {
@@ -81,9 +82,9 @@ public class OutputRestController {
         
         if (loggerId == null) {
             return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
-                    socketService.listProducerEpsHistory(port));
+                    outputService.listProducerEpsHistory(port));
         }
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
-                socketService.listProducerEpsHistory(port, loggerId));
+                outputService.listProducerEpsHistory(port, loggerId));
     }
 }

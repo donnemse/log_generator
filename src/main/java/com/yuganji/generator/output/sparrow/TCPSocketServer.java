@@ -1,6 +1,9 @@
-package com.yuganji.generator.output;
+package com.yuganji.generator.output.sparrow;
 
 import java.util.Map;
+
+import com.yuganji.generator.model.OutputHandleException;
+import com.yuganji.generator.output.OutputService;
 
 import io.netty.channel.ChannelHandlerContext;
 
@@ -9,11 +12,9 @@ public class TCPSocketServer implements ISocketServer {
     private Thread t;
     private TCPSocketServerInstance ssi;
     private int port;
-    private OutputService outputService;
     
-    public TCPSocketServer(int port, OutputService outputService) {
+    public TCPSocketServer(int port) {
         this.port = port;
-        this.outputService = outputService;
     }
     
     public TCPSocketServer(OutputService outputService) {
@@ -21,10 +22,13 @@ public class TCPSocketServer implements ISocketServer {
     }
 
     @Override
-    public void startServer() {
-        this.ssi = new TCPSocketServerInstance(this.port, this.outputService);
+    public boolean startServer() throws OutputHandleException {
+        
+        // TODO check already open port
+        this.ssi = new TCPSocketServerInstance(this.port);
         this.t = new Thread(() -> ssi.start());
         this.t.start();
+        return true;
     }
 
     @Override

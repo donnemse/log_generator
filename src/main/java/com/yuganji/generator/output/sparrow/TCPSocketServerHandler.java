@@ -1,4 +1,4 @@
-package com.yuganji.generator.output;
+package com.yuganji.generator.output.sparrow;
 
 import java.util.Map;
 

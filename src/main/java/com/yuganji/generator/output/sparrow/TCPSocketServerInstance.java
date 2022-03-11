@@ -1,8 +1,11 @@
-package com.yuganji.generator.output;
+package com.yuganji.generator.output.sparrow;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.yuganji.generator.ApplicationContextProvider;
+import com.yuganji.generator.output.OutputService;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -38,11 +41,11 @@ public class TCPSocketServerInstance {
     
     private TCPSocketServerHandler handler;
     
-    public TCPSocketServerInstance(int port, OutputService outputService) {
+    public TCPSocketServerInstance(int port) {
         this.port = port;
-        this.outputService = outputService;
         this.clients = new ConcurrentHashMap<>();
         this.startSender();
+        this.outputService = ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
     }
 
     public void startSender() {
@@ -98,7 +101,7 @@ public class TCPSocketServerInstance {
             // 서버 소켓이 닫힐때까지 대기합니다.
             this.cf.channel().closeFuture().sync();
         }catch(Exception e){
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         finally{
             parentGroup.shutdownGracefully();

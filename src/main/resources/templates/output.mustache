@@ -22,7 +22,7 @@
                         let $div = $(
                             "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
                             "   <div class=\"pure-u-7-8\">" +
-                            "       <h5 class=\"logger-name\">TCP: " + v.port + "</h5>" + 
+                            "       <h5 class=\"logger-name\">TCP: " + v.id + "</h5>" + 
                             "       <h6 class=\"logger-subject\">" +
                             "           Max Queue: " + v.max_queue_size + "<br />Current Queue: " + v.current_queue_size +
                             "       </h6>" +
@@ -31,7 +31,7 @@
                             "      <button type=\"button\" class=\"btn-close\" aria-label=\"Close\"></button>" +
                             "   </div>" +
                             "</div>");
-                        $div.data("output_port", v.port);
+                        $div.data("output_id", v.id);
                         $(".list").append($div);
                     });
                 }).catch(function (error) {
@@ -140,7 +140,7 @@
             
             $(document).on("click", ".output-close-button", function (e) {
                 axios({
-                    url: '/api/output/close/' + $(e.target).parents(".logger-item").data("output_port"),
+                    url: '/api/output/close/' + $(e.target).parents(".logger-item").data("output_id"),
                     method: "post"
                 }).then(function (response) {
                     console.log(response);
@@ -168,7 +168,7 @@
                 $(".logger-item").removeClass("logger-item-selected logger-item-unread");
                 $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
                 
-                axios.get('/api/output/get/' + $(e.currentTarget).data("output_port"))
+                axios.get('/api/output/get/' + $(e.currentTarget).data("output_id"))
                 .then(function (response) {
                     let data = response.data.data;
                     data.clients = ["client1", "client2"];
@@ -210,7 +210,7 @@
                     // always executed
                 });
                 
-                axios.get('/api/output/producer/eps/' + $(e.currentTarget).data("output_port"))
+                axios.get('/api/output/producer/eps/' + $(e.currentTarget).data("output_id"))
                 .then(function (response) {
                 	makeChart(response.data.data)
                 })

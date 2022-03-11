@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.igloosec.generator.model.HistoryResponseVO;
 import com.igloosec.generator.model.HistoryVO;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface HistoryMapper {
@@ -15,6 +16,13 @@ public interface HistoryMapper {
     
     List<HistoryVO> list(HistoryResponseVO vo);
     
-    int insertHistory(int fid, String ip, String type, long lastModified, String msg, String detail, String error);
+    int insertHistory(
+            @Param("fid") int fid,
+            @Param("ip") String ip,
+            @Param("type") String type,
+            @Param("lastModified") long lastModified,
+            @Param("msg") String msg,
+            @Param("detail") String detail,
+            @Param("error") String error);
 //    int insertHistory(HistoryVO vo);
 }

@@ -10,23 +10,6 @@
     
     <select id="list" parameterType="com.igloosec.generator.model.HistoryResponseVO" 
     resultType="com.igloosec.generator.model.HistoryVO">
-        <!-- <choose>
-            <when test="type eq 'logger'">
-                select b.name, a.* from 
-				    (select 
-				        *
-				    from 
-				        logger_hist
-				    order by last_modified desc limit #{limit} offset #{offset}
-				    ) a 
-				left join 
-				    logger b 
-				on a.fid = b.id
-            </when>
-            <otherwise>
-                select * from ${type}_hist order by last_modified desc limit #{limit} offset #{offset}
-            </otherwise>
-        </choose> -->
         <![CDATA[
 	       select 
 			    *, 
@@ -41,6 +24,7 @@
 			from history  a  order by last_modified desc limit #{limit} offset #{offset}
 		 ]]>
     </select>
+
     <insert id="insertHistory" parameterType="map" useGeneratedKeys="true">
         insert into history (
           fid, ip, type, last_modified, msg, detail, error

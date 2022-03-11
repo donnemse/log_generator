@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.igloosec.generator.model.LoggerVO;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface LoggerMapper {
@@ -14,7 +15,10 @@ public interface LoggerMapper {
 
     int updateLogger(LoggerVO info);
 
-    int updateLoggerStatus(int id, int status);
+    int updateLoggerStatus(
+            @Param("id") int id,
+            @Param("status") int status);
 
-    void removeLogger(int id);
+    void removeLogger(
+            @Param("id") int id);
 }

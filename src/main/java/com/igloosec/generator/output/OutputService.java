@@ -59,7 +59,7 @@ public class OutputService {
             vo.setServer(new TCPSocketServer(vo.getPort(), this));
             vo.getServer().startServer();
             this.cache.put(vo.getPort(), vo);
-            String message = "Sucessfully opened " + vo.getPort() + " port.";
+            String message = "Successfully opened " + vo.getPort() + " port.";
             histMapper.insertHistory(vo.getPort(), vo.getOpenedIp(), TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(HttpStatus.OK.value(), message);
         }

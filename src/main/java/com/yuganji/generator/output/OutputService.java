@@ -11,38 +11,64 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.yuganji.generator.exception.OutputHandleException;
 import com.yuganji.generator.logger.LoggerManager;
 import com.yuganji.generator.model.EpsHistoryVO;
 import com.yuganji.generator.model.EpsVO;
-import com.yuganji.generator.model.OutputHandleException;
 import com.yuganji.generator.model.OutputVO;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.model.SparrowOutput;
 import com.yuganji.generator.mybatis.mapper.HistoryMapper;
+import com.yuganji.generator.mybatis.mapper.OutputMapper;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 @Service
+@Log4j2
 public class OutputService {
     private static final String TYPE = "output";
     
     @Getter
     private Map<Integer, OutputVO> cache;
 
+    private OutputMapper outputMapper;
+    
     private HistoryMapper histMapper;
 
     private LoggerManager loggerMgr;
 
     @Autowired
     public OutputService (
-            LoggerManager loggerMgr, HistoryMapper histMapper) {
+            LoggerManager loggerMgr, HistoryMapper histMapper,
+            OutputMapper outputMapper) {
         this.cache = new ConcurrentHashMap<>();
         this.loggerMgr = loggerMgr;
         this.histMapper = histMapper;
+        this.outputMapper = outputMapper;
+    }
+    
+    @Scheduled(initialDelay = 3000, fixedDelay = 60 * 60 * 1000)
+    public void schedule() {
+        this.outputMapper.listOutput().stream().forEach(x -> {
+            if (x.getStatus() == 1) {
+                try {
+                    x.getHandler().startOutput();
+                    x.setStatus(1);
+                } catch (OutputHandleException e) {
+                    x.setStatus(0);
+                    log.error(e.getMessage(), e);
+                }
+            }
+            this.cache.put(x.getId(), x);
+        });;
     }
     
     public OutputVO get(int id) {
@@ -64,19 +90,6 @@ public class OutputService {
             histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), e.getMessage(), null, null);
             return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
         }
-        
-//        if (cache.containsKey(vo.getPort())) {
-//            String message = "Already opened " + vo.getPort() + " port.";
-//            histMapper.insertHistory(vo.getPort(), vo.getIp(), TYPE, new Date().getTime(), message, null, null);
-//            return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
-//        } else {
-//            vo.setServer(new TCPSocketServer(vo.getPort(), this));
-//            vo.getServer().startServer();
-//            this.cache.put(vo.getPort(), vo);
-//            String message = "Successfully opened " + vo.getPort() + " port.";
-//            histMapper.insertHistory(vo.getPort(), vo.getIp(), TYPE, new Date().getTime(), message, null, null);
-//            return new SingleObjectResponse(HttpStatus.OK.value(), message);
-//        }
     }
 
     public SingleObjectResponse stopOutput(int id, String ip) {

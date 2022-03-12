@@ -1,5 +1,6 @@
 package com.yuganji.generator.model;
 
+import com.yuganji.generator.exception.OutputHandleException;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.output.sparrow.TCPSocketServer;
 

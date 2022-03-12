@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.util.Constants;
 import com.yuganji.generator.util.NetUtil;
@@ -14,6 +17,8 @@ import lombok.Data;
 
 @Data
 public class OutputVO {
+    
+    transient private static final ObjectMapper om = new ObjectMapper(); 
     
     transient private static final int MAX_QUEUE_SIZE = 10_000;
     private int id;
@@ -32,23 +37,32 @@ public class OutputVO {
     private transient LinkedBlockingQueue<Map<String, Object>> queue;
     
     transient private AbstractOutputHandler handler;
+    private Map<String, Object> info;
     
     private String type;
-    
+    private int status;
     
     public OutputVO() {
         this.initailize(MAX_QUEUE_SIZE);
     }
     
-//    public OutputVO(int port) {
-//        this.port = port;
-//        this.initailize(MAX_QUEUE_SIZE);
-//    }
+    public void setInfo(String info) {
+        try {
+            this.info = om.readValue(info, new TypeReference<Map<String, Object>>() {});
+        } catch (JsonProcessingException e) {
+            this.info = null;
+        }
+
+    }
     
-//    public OutputVO(int port, int maxQueueSize) {
-//        this.port = port;
-//        this.initailize(maxQueueSize);
-//    }
+    public AbstractOutputHandler getHandler() {
+        if (this.handler == null) {
+            if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
+                return new SparrowOutput((int)this.info.get("port"));
+            }
+        }
+        return this.handler;
+    }
     
     private void initailize(int maxQueueSize) {
         this.startedTime = System.currentTimeMillis();

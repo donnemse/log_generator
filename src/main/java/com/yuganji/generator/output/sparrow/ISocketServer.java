@@ -2,7 +2,7 @@ package com.yuganji.generator.output.sparrow;
 
 import java.util.Map;
 
-import com.yuganji.generator.model.OutputHandleException;
+import com.yuganji.generator.exception.OutputHandleException;
 
 import io.netty.channel.ChannelHandlerContext;
 

@@ -9,4 +9,8 @@
           #{outputId}, #{type}, #{ip}, #{lastModified}, #{msg}, #{etc}
         )
     </insert>
+    
+    <select id="listOutput" resultType="com.yuganji.generator.model.OutputVO">
+        select * from output
+    </select>
 </mapper>

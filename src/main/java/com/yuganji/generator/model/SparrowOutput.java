@@ -29,8 +29,7 @@ public class SparrowOutput extends AbstractOutputHandler {
     }
     @Override
     public boolean isRunning() throws OutputHandleException {
-        // TODO Auto-generated method stub
-        return false;
+        return this.isRunning();
     }
     
     public boolean closeClient(String clientId) {

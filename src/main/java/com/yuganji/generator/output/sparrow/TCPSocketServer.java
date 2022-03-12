@@ -16,10 +16,6 @@ public class TCPSocketServer implements ISocketServer {
     public TCPSocketServer(int port) {
         this.port = port;
     }
-    
-    public TCPSocketServer(OutputService outputService) {
-        // TODO Auto-generated constructor stub
-    }
 
     @Override
     public boolean startServer() throws OutputHandleException {

@@ -1,4 +1,4 @@
-package com.yuganji.generator.model;
+package com.yuganji.generator.exception;
 
 public class OutputHandleException extends Exception {
 

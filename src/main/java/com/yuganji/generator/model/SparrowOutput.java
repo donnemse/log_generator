@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class SparrowOutput extends AbstractOutputHandler {
     private int port;
-    private ISocketServer server;
+    private transient ISocketServer server;
     
     public SparrowOutput(int port) {
         this.port = port;

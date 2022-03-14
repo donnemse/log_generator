@@ -1,4 +1,4 @@
-package com.yuganji.generator.model;
+package com.yuganji.generator.output.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yuganji.generator.model.AbstractOutputHandler;
+import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.util.Constants;
 import com.yuganji.generator.util.NetUtil;
@@ -16,7 +18,7 @@ import com.yuganji.generator.util.NetUtil;
 import lombok.Data;
 
 @Data
-public class OutputVO {
+public class Output {
     
     transient private static final ObjectMapper om = new ObjectMapper(); 
     
@@ -36,35 +38,33 @@ public class OutputVO {
     private long lastModified;
     private transient LinkedBlockingQueue<Map<String, Object>> queue;
     
-    transient private AbstractOutputHandler handler;
-    private Map<String, Object> info;
+//    transient private AbstractOutputHandler handler;
+    private AbstractOutputHandler info;
     
     private String type;
     private int status;
     
-    public OutputVO() {
-        this.initailize(MAX_QUEUE_SIZE);
+    public Output() {
+        this.initialize(MAX_QUEUE_SIZE);
     }
-    
+
     public void setInfo(String info) {
         try {
-            this.info = om.readValue(info, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> map = om.readValue(info, new TypeReference<Map<String, Object>>() {
+            });
+            if (this.info == null) {
+                if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
+                    this.info = new SparrowOutput(this.id, map);
+                } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
+                    this.info = new FileOutput(this.id, map);
+                }
+            }
         } catch (JsonProcessingException e) {
             this.info = null;
         }
-
     }
     
-    public AbstractOutputHandler getHandler() {
-        if (this.handler == null) {
-            if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
-                return new SparrowOutput((int)this.info.get("port"));
-            }
-        }
-        return this.handler;
-    }
-    
-    private void initailize(int maxQueueSize) {
+    private void initialize(int maxQueueSize) {
         this.startedTime = System.currentTimeMillis();
         this.ip = NetUtil.getLocalHostIp();
         this.maxQueueSize = maxQueueSize;
@@ -81,7 +81,7 @@ public class OutputVO {
         if (!this.type.equals(Constants.Output.SPARROW.getValue())) {
             return null;
         }
-        ISocketServer server = ((SparrowOutput) this.handler).getServer();
+        ISocketServer server = ((SparrowOutput) this.info).getServer();
         
         if (server == null) {
             this.clients = new ArrayList<>();

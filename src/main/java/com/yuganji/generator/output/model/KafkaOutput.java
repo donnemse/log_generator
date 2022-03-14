@@ -1,6 +1,7 @@
-package com.yuganji.generator.model;
+package com.yuganji.generator.output.model;
 
 import com.yuganji.generator.exception.OutputHandleException;
+import com.yuganji.generator.model.AbstractOutputHandler;
 
 public class KafkaOutput extends AbstractOutputHandler {
 

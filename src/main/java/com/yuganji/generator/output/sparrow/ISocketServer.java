@@ -9,7 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
 public interface ISocketServer {
     boolean startServer() throws OutputHandleException;
     boolean stopServer();
-    boolean isActive();
+    boolean isRunning();
     Map<String, ChannelHandlerContext> getClients();
     boolean stopClient(String id);
 }

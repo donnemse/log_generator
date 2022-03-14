@@ -28,6 +28,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class TCPSocketServerInstance {
     private int port;
+    private int id;
     private ChannelFuture cf;
     
     private EventLoopGroup parentGroup;
@@ -41,7 +42,8 @@ public class TCPSocketServerInstance {
     
     private TCPSocketServerHandler handler;
     
-    public TCPSocketServerInstance(int port) {
+    public TCPSocketServerInstance(int id, int port) {
+        this.id = id;
         this.port = port;
         this.clients = new ConcurrentHashMap<>();
         this.startSender();
@@ -58,7 +60,7 @@ public class TCPSocketServerInstance {
                             Thread.sleep(1_000);
                             continue;
                         }
-                        List<Map<String, Object>> list = outputService.poll(port, maxBuffer);
+                        List<Map<String, Object>> list = outputService.poll(id, maxBuffer);
                         if (list.size() == 0) {
                             Thread.sleep(1_000);
                             continue;
@@ -135,7 +137,7 @@ public class TCPSocketServerInstance {
         return true;
     }
 
-    public boolean isActive() {
+    public boolean isRunning() {
         if (this.cf == null) {
             return false;
         }

@@ -2,12 +2,7 @@ package com.yuganji.generator;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.yuganji.generator.model.OutputVO;
-import com.yuganji.generator.model.SparrowOutput;
-import com.yuganji.generator.output.OutputService;
 
 import lombok.extern.log4j.Log4j2;
 

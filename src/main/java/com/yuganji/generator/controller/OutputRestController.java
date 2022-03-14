@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.yuganji.generator.model.OutputVO;
+import com.yuganji.generator.output.model.Output;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.util.NetUtil;
@@ -37,7 +37,7 @@ public class OutputRestController {
     
     @RequestMapping(value = "/open", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse open(
-            @RequestBody OutputVO vo,
+            @RequestBody Output vo,
             HttpServletRequest request) {
         vo.setIp(NetUtil.getClientIP(request));
         return outputService.startOutput(vo);

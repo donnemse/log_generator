@@ -10,7 +10,7 @@
         )
     </insert>
     
-    <select id="listOutput" resultType="com.yuganji.generator.model.OutputVO">
+    <select id="listOutput" resultType="com.yuganji.generator.output.model.Output">
         select * from output
     </select>
 </mapper>

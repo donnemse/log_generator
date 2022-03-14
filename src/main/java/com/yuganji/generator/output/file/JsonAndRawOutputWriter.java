@@ -1,15 +1,14 @@
 package com.yuganji.generator.output.file;
 
-import com.yuganji.generator.output.file.OutputFileWriter;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental.SuperBuilder;
 
 @Data
 @Builder
 @EqualsAndHashCode(callSuper=false)
-public class JsonOutputWriter extends OutputFileWriter {
+public class JsonAndRawOutputWriter extends OutputFileWriter {
+    private String type;
     private int outputId;
     private String path;
     private String outputType;

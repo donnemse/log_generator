@@ -17,9 +17,11 @@ import lombok.extern.log4j.Log4j2;
 @Data
 @Log4j2
 @EqualsAndHashCode(callSuper=false)
-public class CsvOutputWriter extends OutputFileWriter {
+public class RawOutputWriter extends OutputFileWriter {
+    
     private String type;
     private String path;
+    private String outputType;
     private int fileRotationMin;
     private String fileFormat;
     private String fileName;
@@ -70,16 +72,18 @@ public class CsvOutputWriter extends OutputFileWriter {
                     Thread.sleep(1_000);
                     continue;
                 }
+
                 for (Map<String, Object> row: list) {
                     File file = new File(this.getPath(), row.get(this.fileName).toString() + "_" + date + "." + type);
-                    
-                    super.writeCsv(row.get(this.fileName).toString(), file, row);
+                    super.write(row.get(this.fileName).toString(), file, row);
                 }
-                
+
+
                 Thread.sleep(0, 10);
             }  catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
             }
+
         }
 
 

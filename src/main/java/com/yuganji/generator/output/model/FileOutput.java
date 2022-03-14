@@ -4,8 +4,10 @@ import com.yuganji.generator.exception.OutputHandleException;
 
 import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.output.file.CsvOutputWriter;
-import com.yuganji.generator.output.file.JsonOutputWriter;
+import com.yuganji.generator.output.file.JsonAndRawOutputWriter;
 import com.yuganji.generator.output.file.OutputFileWriter;
+import com.yuganji.generator.output.file.RawOutputWriter;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,7 +17,6 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = false)
 public class FileOutput extends AbstractOutputHandler {
     private transient final String KEY_PATH = "path";
-    private transient final String KEY_OUTPUT_TYPE = "output_type";
     private transient final String KEY_FILE_ROTATION_MIN = "file_rotation_min";
     private transient final String KEY_FILE_FORMAT = "file_format";
     private transient final String KEY_FILE_NAME = "file_name";
@@ -35,7 +36,6 @@ public class FileOutput extends AbstractOutputHandler {
     public FileOutput(int id, Map<String, Object> conf) {
         this.id = id;
         this.path = conf.get(KEY_PATH).toString();
-        this.outputType = conf.get(KEY_OUTPUT_TYPE).toString();
         this.fileRotationMin = (int) conf.get(KEY_FILE_ROTATION_MIN);
         this.fileFormat = conf.get(KEY_FILE_FORMAT).toString();
         this.fileName = conf.get(KEY_FILE_NAME).toString();
@@ -49,19 +49,20 @@ public class FileOutput extends AbstractOutputHandler {
             if (fileFormat.equalsIgnoreCase("csv")) {
                 this.writer = CsvOutputWriter.builder()
                         .outputId(this.id)
+                        .type(this.fileFormat)
                         .path(this.path)
-                        .outputType(this.outputType)
                         .fileRotationMin(this.fileRotationMin)
                         .fileFormat(this.fileFormat)
                         .fileName(this.fileName)
                         .maxSize(this.maxSize)
                         .batchSize(this.batchSize)
                         .build();
-            } else if (fileFormat.equalsIgnoreCase("json")) {
-                this.writer = JsonOutputWriter.builder()
+            } else if (fileFormat.equalsIgnoreCase("json") ||
+                    fileFormat.equalsIgnoreCase("raw")) {
+                this.writer = RawOutputWriter.builder()
                         .outputId(this.id)
+                        .type(this.fileFormat)
                         .path(this.path)
-                        .outputType(this.outputType)
                         .fileRotationMin(this.fileRotationMin)
                         .fileFormat(this.fileFormat)
                         .fileName(this.fileName)

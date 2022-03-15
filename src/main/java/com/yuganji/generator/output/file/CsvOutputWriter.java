@@ -1,16 +1,17 @@
 package com.yuganji.generator.output.file;
 
-import com.yuganji.generator.ApplicationContextProvider;
-import com.yuganji.generator.output.OutputService;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.extern.log4j.Log4j2;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
+
+import com.yuganji.generator.ApplicationContextProvider;
+import com.yuganji.generator.output.OutputService;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.extern.log4j.Log4j2;
 
 @Deprecated
 @Builder
@@ -54,8 +55,9 @@ public class CsvOutputWriter extends OutputFileWriter {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-
-        while (this.state) {
+        
+        boolean state = true;
+        while (state) {
             this.fileRotationMin = 10;
             long time = System.currentTimeMillis();
             time = time / (60 * 1_000 * this.fileRotationMin) * (60 * 1_000 * this.fileRotationMin);
@@ -82,5 +84,11 @@ public class CsvOutputWriter extends OutputFileWriter {
 
 
 
+    }
+
+    @Override
+    public boolean isReadyForRunning() {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

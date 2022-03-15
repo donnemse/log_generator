@@ -145,8 +145,13 @@ public class OutputService {
         output.setIp(ip);
         try {
             if (output.getStatus() == 0 || !output.getHandler().isRunning()) {
+                if (!output.getHandler().isReadyForRunning()) {
+                    output.resetHandler();
+                }
+                
                 if (output.getHandler().startOutput()) {
                     output.setStatus(1);
+                    res.setMsg(msg);
                     this.outputMapper.updateOutputStatus(id, 1);
                     this.addHistory(output, msg, null, null);
                 } else {
@@ -157,6 +162,7 @@ public class OutputService {
             }
         } catch (OutputHandleException e) {
             log.error(e.getMessage(), e);
+            res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             this.addHistory(output, e.getMessage(), null, e.getMessage());
         }

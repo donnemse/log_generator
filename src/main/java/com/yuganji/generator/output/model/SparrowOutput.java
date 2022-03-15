@@ -50,5 +50,11 @@ public class SparrowOutput extends AbstractOutputHandler {
     public boolean closeClient(String clientId) {
         return this.server.stopClient(clientId);
     }
+
+    @Override
+    public boolean isReadyForRunning() throws OutputHandleException {
+        // TODO Checking already opened port 
+        return false;
+    }
     
 }

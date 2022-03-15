@@ -23,4 +23,10 @@ public class KafkaOutput extends AbstractOutputHandler {
         return false;
     }
 
+    @Override
+    public boolean isReadyForRunning() throws OutputHandleException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

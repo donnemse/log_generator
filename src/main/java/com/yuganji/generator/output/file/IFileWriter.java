@@ -4,4 +4,5 @@ public interface IFileWriter {
     boolean startOutput();
     boolean stopOutput();
     boolean isRunning();
+    boolean isReadyForRunning();
 }

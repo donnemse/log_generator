@@ -113,4 +113,16 @@ public class FileWriterObject {
         }
         return f;
     }
+
+    public void close() {
+        try {
+            if (this.fileWriter != null) {
+                this.fileWriter.flush();
+                IOUtils.closeQuietly(this.fileWriter);
+                log.debug("[" + prefix + "] file writer was successfully closed.");
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
 }

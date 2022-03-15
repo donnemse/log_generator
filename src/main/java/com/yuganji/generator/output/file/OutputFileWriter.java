@@ -19,20 +19,22 @@ public abstract class OutputFileWriter extends Thread implements IFileWriter {
 
     protected FileOutputConfig config;
     protected int outputId;
-    protected boolean state = true;
 
     @Override
     public boolean startOutput() {
+        System.out.println(super.getState().name());
         super.setName("thread_output_" + outputId);
         super.start();
-        return false;
+        return true;
     }
 
     @Override
     public boolean stopOutput() {
         super.interrupt();
-        this.state = false;
-        return false;
+        this.writers.entrySet().stream().forEach(entry -> {
+            entry.getValue().close();
+        });
+        return true;
     }
 
     @Override

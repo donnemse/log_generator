@@ -99,14 +99,14 @@ data:         # required - this is field list
 `
         function addItemList(v) {
             let $div = $(
-                "<div logger-id=\"" + v.id + "\" class=\"logger-item pure-g " + ($(".logger-item").length == 0? "logger-item-selected logger-item-unread": "") + "\">" +
+                "<div logger-id=\"" + v.id + "\" class=\"menu-item pure-g " + ($(".menu-item").length == 0? "menu-item-selected menu-item-unread": "") + "\">" +
                   "   <div class=\"pure-u-1\">" +
-                  "       <h5 class=\"logger-name\">" + v.name + "</h5>" + 
-                  "       <h4 class=\"logger-subject\">" + v.logger.log + "</h4>" +
-                  "       <h6 class=\"logger-subject\">" +
+                  "       <h5 class=\"menu-name\">" + v.name + "</h5>" + 
+                  "       <h4 class=\"menu-subject\">" + v.logger.log + "</h4>" +
+                  "       <h6 class=\"menu-subject\">" +
                   "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
                   "       </h6>" +
-                  "       <p class=\"logger-desc\">" + v.logger.raw + "</p>" +
+                  "       <p class=\"menu-desc\">" + v.logger.raw + "</p>" +
                   "   </div>" +
                   "   <div class=\"pure-u-1-8 change-state\">" +
                   "       <div class=\"form-check form-switch\">" +
@@ -134,7 +134,7 @@ data:         # required - this is field list
                 console.log(error);
             })
             .then(function () {
-                $(".logger-item").eq(0).trigger("click");
+                $(".menu-item").eq(0).trigger("click");
             });
         }
         
@@ -148,12 +148,12 @@ data:         # required - this is field list
             
             loadList();
             
-            $(document).on("click", ".logger-item", function (e) {
+            $(document).on("click", ".menu-item", function (e) {
                 if ($(e.target).hasClass("button-change-state")) {
                     return;
                 }
-                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
-                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
+                $(".menu-item").removeClass("menu-item-selected menu-item-unread");
+                $(e.currentTarget).addClass("menu-item-selected menu-item-unread");
 
                 axios({
                     url: '/api/loggers/' + $(e.currentTarget).data("logger_id"),
@@ -207,7 +207,7 @@ data:         # required - this is field list
                         if (response.data.data != null){
                             if (id < 0) {
                                 addItemList(response.data.data)
-                                $(".logger-item:last").trigger("click");
+                                $(".menu-item:last").trigger("click");
                                 $(".remove-button").removeClass("d-none");
                             } else {
                                 
@@ -269,7 +269,7 @@ data:         # required - this is field list
             
             $(document).on('click',".change-state .checkbox-change-state",function (e) {
                 $checkbox = $(this);
-                let id = $(e.target).parents(".logger-item").data("logger_id");
+                let id = $(e.target).parents(".menu-item").data("logger_id");
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
                 axios({
@@ -300,7 +300,7 @@ data:         # required - this is field list
             
             $(document).on('click',".remove-button",function (e) {
                 let id = $("#selected_id").val();
-                let flag = $(".logger-item[logger-id=" + id + "]").find(".checkbox-change-state").is(":checked");
+                let flag = $(".menu-item[logger-id=" + id + "]").find(".checkbox-change-state").is(":checked");
                 if (flag) {
                 	$.notify({message: "Stop it first"},{type: 'danger'});
                 	return;

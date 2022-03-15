@@ -17,33 +17,35 @@
     <script type="text/javascript">
         function refreshList(){
             $(".list").empty();
-            axios.get('/api/output/list')
-                .then(function (response) {
-                    let i = 0;
-                    $.each(response.data.data, function(k, v) {
-                        let $div = $(
-                            "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                            "   <div class=\"pure-u-1\">" +
-                            "       <h5 class=\"logger-name\">" + v.type + ": " + v.name + "</h5>" +
-                            "       <h6 class=\"logger-subject\">" +
-                            "           Max Queue: " + v.max_queue_size + "<br />Current Queue: " + v.current_queue_size +
-                            "       </h6>" +
-                            "   </div>" +
-                            "   <div class=\"pure-u-1-8 change-state\">" +
-                            "       <div class=\"form-check form-switch\">" +
-                            "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
-                            "       </div>" +
-                            "   </div>" +
-                            "</div>");
-                        $div.data("output_id", v.id);
-                        $(".list").append($div);
-                    });
-                }).catch(function (error) {
-                    console.log(error);
-                })
-                .then(function () {
-                    $(".logger-item").eq(0).trigger("click");
+            axios({
+                url: '/api/outputs',
+                method: 'get'
+            }).then(function (response) {
+                let i = 0;
+                $.each(response.data.data, function(k, v) {
+                    let $div = $(
+                        "<div class=\"menu-item pure-g " + (i++ == 0? "menu-item-selected menu-item-unread": "") + "\">" +
+                        "   <div class=\"pure-u-1\">" +
+                        "       <h5 class=\"menu-name\">" + v.type + ": " + v.name + "</h5>" +
+                        "       <h6 class=\"menu-subject\">" +
+                        "           Max Queue: " + v.max_queue_size + "<br />Current Queue: " + v.current_queue_size +
+                        "       </h6>" +
+                        "   </div>" +
+                        "   <div class=\"pure-u-1-8 change-state\">" +
+                        "       <div class=\"form-check form-switch\">" +
+                        "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
+                        "       </div>" +
+                        "   </div>" +
+                        "</div>");
+                    $div.data("output-id", v.id);
+                    $(".list").append($div);
                 });
+            }).catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+                $(".menu-item").eq(0).trigger("click");
+            });
         };
         
         function cleanOutputJson(obj) {
@@ -143,12 +145,12 @@
 
             $(document).on('click',".change-state .checkbox-change-state",function (e) {
                 $checkbox = $(this);
-                let id = $(e.target).parents(".output-item").data("output-id");
+                let id = $(e.target).parents(".menu-item").data("output-id");
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
                 axios({
-                    url: "/api/output/" + (flag? "start": "stop") + "/" + id,
-                    method: "get"
+                    url: "/api/outputs/" + (flag? "start": "stop") + "/" + id,
+                    method: "patch"
                 }).then(function (response) {
                     console.log(response)
                     if (response.data.data) {
@@ -163,9 +165,9 @@
                 });
             });
             
-            $(document).on("click", ".output-close-button", function (e) {
+            /* $(document).on("click", ".output-close-button", function (e) {
                 axios({
-                    url: '/api/output/close/' + $(e.target).parents(".logger-item").data("output_id"),
+                    url: '/api/output/sclose/' + $(e.target).parents(".menu-item").data("output_id"),
                     method: "post"
                 }).then(function (response) {
                     if (response.data.status == 200) {
@@ -182,17 +184,17 @@
                 .then(function () {
                     // always executed
                 });
-            });
+            }); */
             
             
-            $(document).on("click", ".logger-item", function (e) {
+            $(document).on("click", ".menu-item", function (e) {
                 if ($(e.target).hasClass("button-change-state")) {
                     return;
                 }
-                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
-                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
+                $(".menu-item").removeClass("menu-item-selected menu-item-unread");
+                $(e.currentTarget).addClass("menu-item-selected menu-item-unread");
                 
-                axios.get('/api/output/get/' + $(e.currentTarget).data("output_id"))
+                axios.get('/api/outputs/' + $(e.currentTarget).data("output-id"))
                 .then(function (response) {
                     let data = response.data.data;
                     // data.clients = ["client1", "client2"];
@@ -238,7 +240,7 @@
                     // always executed
                 });
                 
-                axios.get('/api/output/producer/eps/' + $(e.currentTarget).data("output_id"))
+                axios.get('/api/outputs/eps/producer/' + $(e.currentTarget).data("output-id"))
                 .then(function (response) {
                 	makeChart(response.data.data)
                 })

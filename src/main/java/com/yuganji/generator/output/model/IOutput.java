@@ -6,4 +6,5 @@ public interface IOutput {
     boolean startOutput() throws OutputHandleException;
     boolean stopOutput() throws OutputHandleException;
     boolean isRunning() throws OutputHandleException;
+    boolean isReadyForRunning() throws OutputHandleException;
 }

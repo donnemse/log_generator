@@ -16,8 +16,10 @@ import com.yuganji.generator.util.Constants;
 import com.yuganji.generator.util.NetUtil;
 
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 
 @Data
+@Log4j2
 public class Output {
     
     transient private static final ObjectMapper om = new ObjectMapper(); 
@@ -48,9 +50,6 @@ public class Output {
         this.initialize(MAX_QUEUE_SIZE);
     }
 
-    public void setInfo(Map<String, Object> info) {
-        this.info = info;
-    }
     public void setInfo(String info) {
         try {
             Map<String, Object> map = om.readValue(info, new TypeReference<Map<String, Object>>() {
@@ -64,7 +63,16 @@ public class Output {
             }
             this.info = map;
         } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
             this.info = null;
+        }
+    }
+    
+    public void resetHandler() {
+        if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
+            this.handler = new SparrowOutput(this.id, this.info);
+        } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
+            this.handler = new FileOutput(this.id, this.info);
         }
     }
     

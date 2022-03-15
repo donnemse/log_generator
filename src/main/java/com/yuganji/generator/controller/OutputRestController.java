@@ -11,14 +11,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.yuganji.generator.output.model.Output;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.OutputService;
+import com.yuganji.generator.output.model.Output;
 import com.yuganji.generator.util.NetUtil;
 
-import lombok.extern.log4j.Log4j2;
-
-@Log4j2
 @RestController
 @RequestMapping(value = "/api")
 public class OutputRestController {
@@ -93,7 +90,6 @@ public class OutputRestController {
     public @ResponseBody SingleObjectResponse producerEps(
             @PathVariable(value = "id") int id,
             @PathVariable(value = "loggerId", required = false) Integer loggerId) {
-        log.debug(id + " " + loggerId);
         if (loggerId == null) {
             return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
                     outputService.listProducerEpsHistory(id));

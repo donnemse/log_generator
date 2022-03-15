@@ -31,8 +31,7 @@ public class RawOutputWriter extends OutputFileWriter {
 
     @Override
     public boolean startOutput() {
-        super.startOutput();
-        return false;
+        return super.startOutput();
     }
 
     @Override
@@ -44,12 +43,18 @@ public class RawOutputWriter extends OutputFileWriter {
     public boolean isRunning() {
         return super.isAlive();
     }
+    
+    @Override
+    public boolean isReadyForRunning() {
+        return super.getState().equals(Thread.State.NEW);
+    }
 
     @Override
     public void run() {
         Gson gson = new Gson();
+        boolean state = true;
         this.outputService = ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
-        while (this.state) {
+        while (state) {
             try {
                 List<Map<String, Object>> list = outputService.poll(this.getOutputId(), super.config.getBatchSize());
                 if (list.size() == 0) {
@@ -76,6 +81,8 @@ public class RawOutputWriter extends OutputFileWriter {
                 Thread.sleep(0, 10);
             }  catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
+                state = false;
+                break;
             }
         }
     }

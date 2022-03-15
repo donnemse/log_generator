@@ -38,8 +38,8 @@ public class Output {
     private long lastModified;
     private transient LinkedBlockingQueue<Map<String, Object>> queue;
     
-//    transient private AbstractOutputHandler handler;
-    private AbstractOutputHandler info;
+    transient private AbstractOutputHandler handler;
+    private Map<String, Object> info;
     
     private String type;
     private int status;
@@ -48,17 +48,21 @@ public class Output {
         this.initialize(MAX_QUEUE_SIZE);
     }
 
+    public void setInfo(Map<String, Object> info) {
+        this.info = info;
+    }
     public void setInfo(String info) {
         try {
             Map<String, Object> map = om.readValue(info, new TypeReference<Map<String, Object>>() {
             });
             if (this.info == null) {
                 if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
-                    this.info = new SparrowOutput(this.id, map);
+                    this.handler = new SparrowOutput(this.id, map);
                 } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
-                    this.info = new FileOutput(this.id, map);
+                    this.handler = new FileOutput(this.id, map);
                 }
             }
+            this.info = map;
         } catch (JsonProcessingException e) {
             this.info = null;
         }

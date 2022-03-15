@@ -10,6 +10,9 @@
 
 
     <style rel="stylesheet">
+        .change-state {
+            height: 70px !important;
+        }
     </style>
     <script type="text/javascript">
         function refreshList(){
@@ -17,18 +20,19 @@
             axios.get('/api/output/list')
                 .then(function (response) {
                     let i = 0;
-                    console.log(response);
                     $.each(response.data.data, function(k, v) {
                         let $div = $(
                             "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                            "   <div class=\"pure-u-7-8\">" +
-                            "       <h5 class=\"logger-name\">TCP: " + v.id + "</h5>" + 
+                            "   <div class=\"pure-u-1\">" +
+                            "       <h5 class=\"logger-name\">" + v.type + ": " + v.name + "</h5>" +
                             "       <h6 class=\"logger-subject\">" +
                             "           Max Queue: " + v.max_queue_size + "<br />Current Queue: " + v.current_queue_size +
                             "       </h6>" +
                             "   </div>" +
-                            "   <div class=\"pure-u-1-8 output-close-button\">" +
-                            "      <button type=\"button\" class=\"btn-close\" aria-label=\"Close\"></button>" +
+                            "   <div class=\"pure-u-1-8 change-state\">" +
+                            "       <div class=\"form-check form-switch\">" +
+                            "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
+                            "       </div>" +
                             "   </div>" +
                             "</div>");
                         $div.data("output_id", v.id);
@@ -67,7 +71,6 @@
         
         function getRunningTimeStr(time) {
             let result = "";
-            console.log(time);
             let map = {
                 "일": 24,
                 "시간": 60,
@@ -103,6 +106,7 @@
             editor.session.setMode("ace/mode/yaml");
             editor.setTheme("ace/theme/tomorrow");
             editor.setReadOnly(false);
+            editor.setFontSize(15);
             refreshList();
             
             $(document).on('click',".open-port-button",function (e) {
@@ -122,11 +126,32 @@
                         max_queue_size: max_queue
                     }
                 }).then(function (response) {
-                    console.log(response);
                     if (response.data.status == 200) {
                         $("#new_output_modal").find("form")[0].reset()
                         $("#new_output_modal").modal("hide");
                         refreshList();
+                        $.notify({message: response.data.msg},{type: 'success'});
+                    } else {
+                        $.notify({message: response.data.msg},{type: 'danger'});
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                }).then(function () {
+                    // always executed
+                });
+            });
+
+            $(document).on('click',".change-state .checkbox-change-state",function (e) {
+                $checkbox = $(this);
+                let id = $(e.target).parents(".output-item").data("output-id");
+                let flag = $checkbox.is(":checked");
+                console.log(flag)
+                axios({
+                    url: "/api/output/" + (flag? "start": "stop") + "/" + id,
+                    method: "get"
+                }).then(function (response) {
+                    console.log(response)
+                    if (response.data.data) {
                         $.notify({message: response.data.msg},{type: 'success'});
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});
@@ -143,7 +168,6 @@
                     url: '/api/output/close/' + $(e.target).parents(".logger-item").data("output_id"),
                     method: "post"
                 }).then(function (response) {
-                    console.log(response);
                     if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                         refreshList();
@@ -171,24 +195,28 @@
                 axios.get('/api/output/get/' + $(e.currentTarget).data("output_id"))
                 .then(function (response) {
                     let data = response.data.data;
-                    data.clients = ["client1", "client2"];
+                    // data.clients = ["client1", "client2"];
                     cleanOutputJson(data);
-                    console.log(data)
                     editor.setValue(JSON.stringify(data, null, '\t'), -1)
-                    
+                    let title = "";
+                    if (data.type == "sparrow") {
+                        title = "Port: " + data.info.port;
+                    } else if (data.type == "file") {
+                        title = "File: " + data.info.output_type;
+                    }
                     let $div = $(
                         "<h2 class=\"logger-content-title\">" +
-                        "   <label>Port: " + data.port + "</label>" +
+                        "   <label>" + title + "</label>" +
                         "</h2>" +
                         "<p class=\"logger-content-subtitle\">" +
-                            "Opened by <a>" + data.opened_ip + "</a> at <span>" + moment(data.started_time).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
+                            "Opened by <a>" + data.ip + "</a> at <span>" + moment(data.started_time).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
                         "</p>" +
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
                     );
                     $(".logger-info").html($div);
 
-                    if (data.clients.length > 0) {
+                    if (data.clients != null && data.clients.length > 0) {
 
                         $(".clients").empty();
                         $.each(data.clients, function(i, c) {
@@ -227,41 +255,40 @@
         });
         
         function makeChart(data) {
-        	console.log(data)
+        	// console.log(data)
         	var chart = Highcharts.chart('chart', {
                 chart: {
-                  type: 'spline',
-                  height: 350
+                    type: 'spline',
+                    height: 350
                 },
                 height: "350px",
                 title: {
-                  text: ''
+                    text: ''
                 },
                 yAxis: {
-                  title: {
-                    text: 'Producer EPS'
-                  }
+                    title: {
+                        text: 'Producer EPS'
+                    },
+                    tickInterval: 1
                 },
                 xAxis: {
-                  type: 'datetime',
+                    type: 'datetime',
                 },
                 tooltip: {
-                  split: true,
-                  valueDecimals: 0,
-                  valueSuffix: ''
+                    split: true,
+                    valueDecimals: 0,
+                    valueSuffix: ''
                 },
                 plotOptions: {
-                  series: {
-                    marker: {
-                      enabled: false
-                    },
-                    cursor: 'pointer',
-                    point: {
-                      events: {
-                        
-                      }
+                    series: {
+                        marker: {
+                            enabled: false
+                        },
+                        cursor: 'pointer',
+                        point: {
+                            events: {}
+                        }
                     }
-                  }
                 },
                 series: data
               });

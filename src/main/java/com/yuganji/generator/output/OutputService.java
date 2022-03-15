@@ -1,36 +1,26 @@
 package com.yuganji.generator.output;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
-
-import com.yuganji.generator.output.model.Output;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import com.yuganji.generator.exception.OutputHandleException;
 import com.yuganji.generator.logger.LoggerManager;
 import com.yuganji.generator.model.EpsHistoryVO;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.model.SingleObjectResponse;
-import com.yuganji.generator.output.model.SparrowOutput;
 import com.yuganji.generator.mybatis.mapper.HistoryMapper;
 import com.yuganji.generator.mybatis.mapper.OutputMapper;
-
+import com.yuganji.generator.output.model.Output;
+import com.yuganji.generator.output.model.SparrowOutput;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -67,8 +57,8 @@ public class OutputService {
     public void schedule() {
         this.cache.values().stream().forEach(x -> {
             try {
-                if (x.getStatus() == 1 && !x.getInfo().isRunning()) {
-                    x.getInfo().startOutput();
+                if (x.getStatus() == 1 && !x.getHandler().isRunning()) {
+                    x.getHandler().startOutput();
             }
             } catch (OutputHandleException e) {
                 x.setStatus(0);
@@ -82,38 +72,119 @@ public class OutputService {
     public Output get(int id) {
         return this.cache.get(id);
     }
-    
-    public SingleObjectResponse startOutput(Output vo) {
-        
-        String name = this.cache.get(vo.getId()).getName();
+
+    public SingleObjectResponse createOutput(Output output) {
+        String msg = "Successfully saved" + output.getName();
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
+
         try {
-            if (vo.getInfo().startOutput()) {
-                String message = "Successfully started " + name;
-              histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), message, null, null);
-              return new SingleObjectResponse(HttpStatus.OK.value(), message);
+            outputMapper.insertOutput(output);
+            this.cache.put(output.getId(), output);
+            res.setMsg(msg);
+            res.setData(output);
+            this.addHistory(output, msg, output.toString(), null);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            res.setMsg(e.getMessage());
+            this.addHistory(output, e.getMessage(), null, e.getMessage());
+        }
+        return res;
+    }
+
+    public SingleObjectResponse modifyOutput(Output output) {
+        String msg = "output was modified. " + output.getName();
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value(), msg);
+        if (!this.cache.containsKey(output.getId())) {
+            res.setMsg("can not found output. " + output.getName());
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return res;
+        } else if (this.cache.get(output.getId()).getStatus() == 1) {
+            res.setMsg(output.getName() + " is running now. stop it first.");
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return res;
+        }
+        try {
+            this.cache.remove(output.getId());
+            outputMapper.updateOutput(output);
+            this.addHistory(output, msg, output.toString(), null);
+            this.cache.put(output.getId(), output);
+            res.setMsg(msg);
+            res.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            this.addHistory(output, "could not modified utput. " + output.getName(), null, e.getMessage());
+            res.setMsg(e.getMessage());
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return res;
+    }
+
+    public SingleObjectResponse removeLogger(Output output) {
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
+        try {
+            Output info = this.cache.get(output.getId());
+            String msg = "logger was removed. " + info.getName();
+            res.setMsg(msg);
+
+            this.outputMapper.removeOutput(output.getId());
+            this.addHistory(output, msg, output.toString(), null);
+            this.cache.remove(output.getId());
+        } catch (Exception e) {
+            this.addHistory(output, "could not remove logger. " + output.getName(), null, e.getMessage());
+            res.setMsg(e.getMessage());
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return res;
+    }
+    
+    public SingleObjectResponse startOutput(int id, String ip) {
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
+        Output output = this.cache.get(id);
+        String msg = "Successfully started " + output.getName();
+        output.setIp(ip);
+        try {
+            if (output.getStatus() == 0 || !output.getHandler().isRunning()) {
+                if (output.getHandler().startOutput()) {
+                    output.setStatus(1);
+                    this.outputMapper.updateOutputStatus(id, 1);
+                    this.addHistory(output, msg, null, null);
+                } else {
+                    throw new OutputHandleException("Could not start output [" + output.getName() + "]");
+                }
             } else {
-                throw new OutputHandleException("Could not start output [" + name + "]");
+                throw new OutputHandleException("Already running output: " + output.getName());
             }
         } catch (OutputHandleException e) {
-            histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), e.getMessage(), null, null);
-            return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+            log.error(e.getMessage(), e);
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            this.addHistory(output, e.getMessage(), null, e.getMessage());
         }
+        return res;
     }
 
     public SingleObjectResponse stopOutput(int id, String ip) {
-        Output vo = this.cache.get(id);
+        SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
+        String msg = "Output was stopped: " + this.cache.get(id).getName();
         try {
-            if (vo.getInfo().stopOutput()) {
-                String message = "Successfully stopped " + vo.getName();
-                histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), message, null, null);
-                return new SingleObjectResponse(HttpStatus.OK.value(), message);
+            if (this.cache.containsKey(id) && this.cache.get(id).getStatus() == 1) {
+                this.cache.get(id).getHandler().stopOutput();
+                this.cache.get(id).setStatus(0);
+                this.outputMapper.updateOutputStatus(id, 0);
+                res.setMsg(msg);
+                this.addHistory(this.cache.get(id), msg, null, null);
             } else {
-                throw new OutputHandleException("Could not stop output [" + vo.getName() + "]");
+                msg = "Output was not running status: " + this.cache.get(id).getName();
+                res.setMsg(msg);
+                res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                this.addHistory(this.cache.get(id), msg, null, msg);
             }
-        } catch (OutputHandleException e) {
-            histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), e.getMessage(), null, null);
-            return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        } catch (Exception e) {
+            res.setMsg(e.getMessage());
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            this.addHistory(this.cache.get(id), e.getMessage(), null, e.getMessage());
         }
+        return res;
     }
 
     public SingleObjectResponse closeClient(int id, String clientId, String ip) {
@@ -198,5 +269,10 @@ public class OutputService {
     
     public LinkedBlockingQueue<EpsHistoryVO> listProducerEpsHistory(int port, int loggerId){
         return this.cache.get(port).getProducerEps().get(loggerId).getEpsHistory();
+    }
+
+    public boolean addHistory(Output output, String msg, String detail, String error) {
+        histMapper.insertHistory(output.getId(), output.getIp(), TYPE, new Date().getTime(), msg, detail, null);
+        return true;
     }
 }

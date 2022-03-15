@@ -110,13 +110,7 @@ public class LoggerManager {
         }
         return res;
     }
-    
-    public boolean addHistory(LoggerRequestVO vo, String msg, String detail, String error) {
-        histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), msg, detail, null);
-        return true;
-    }
-    
-    
+
     /**
      * @param name
      * @param yaml
@@ -181,34 +175,6 @@ public class LoggerManager {
         return res;
     }
     
-//    @Async
-//    public void run() throws IOException, InterruptedException {
-//        log.debug("Start Log Property manager");
-//        WatchService watchService = FileSystems.getDefault().newWatchService();
-//        Path path = Paths.get("./config");
-//        path.register(watchService,
-//                StandardWatchEventKinds.ENTRY_CREATE,
-//                StandardWatchEventKinds.ENTRY_DELETE,
-//                StandardWatchEventKinds.ENTRY_MODIFY);
-//
-//        WatchKey key;
-//        while ((key = watchService.take()) != null) {
-//            for (WatchEvent<?> event : key.pollEvents()) {
-//                log.debug("Event kind:" + event.kind() + ". File affected: " + event.context() + ".");
-//                if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
-//                    
-//                } else if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-//                    
-//                } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-//                    this.cache.remove(event.context());
-//                }
-//                
-//            }
-//            log.debug(this.cache);
-//            key.reset();
-//        }
-//    }
-    
     public List<Map<String, Object>> sample(LoggerRequestVO vo) {
         List<Map<String, Object>> list = new ArrayList<>();
         try {
@@ -219,9 +185,6 @@ public class LoggerManager {
             for (int i = 0; i < SAMEPLE_CNT; i++) {
                 list.add(lp.generateLog());
             }
-//            IntStream.range(0, SAMEPLE_CNT).forEach(x ->{
-//                list.add(lp.generateLog());
-//            });
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
@@ -230,5 +193,10 @@ public class LoggerManager {
             list.add(map);
         }
         return list;
+    }
+
+    public boolean addHistory(LoggerRequestVO vo, String msg, String detail, String error) {
+        histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), msg, detail, null);
+        return true;
     }
 }

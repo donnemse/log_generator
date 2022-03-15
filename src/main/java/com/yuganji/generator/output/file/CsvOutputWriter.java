@@ -1,18 +1,18 @@
 package com.yuganji.generator.output.file;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-
 import com.yuganji.generator.ApplicationContextProvider;
 import com.yuganji.generator.output.OutputService;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
+
+@Deprecated
 @Builder
 @Data
 @Log4j2
@@ -28,15 +28,12 @@ public class CsvOutputWriter extends OutputFileWriter {
     private int outputId;
 
     @Builder.Default
-    private boolean state = true;
-
-    @Builder.Default
     private transient OutputService outputService =
             ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
 
     @Override
     public boolean startOutput() {
-        this.setState(true);
+        this.outputId = outputId;
         super.startOutput();
         return false;
     }
@@ -72,8 +69,7 @@ public class CsvOutputWriter extends OutputFileWriter {
                 }
                 for (Map<String, Object> row: list) {
                     File file = new File(this.getPath(), row.get(this.fileName).toString() + "_" + date + "." + type);
-                    
-                    super.writeCsv(row.get(this.fileName).toString(), file, row);
+                    super.write(row.get(this.fileName).toString(), row);
                 }
                 
                 Thread.sleep(0, 10);

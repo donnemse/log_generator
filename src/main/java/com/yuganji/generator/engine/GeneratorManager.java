@@ -104,7 +104,7 @@ public class GeneratorManager {
             this.cache.remove(id);
             this.outputService.removeProducerEps(id);
         } else {
-            String message = "Genrator was not runnig status: " + loggerPropMng.getLogger(id).getName();
+            String message = "Genrator was not running status: " + loggerPropMng.getLogger(id).getName();
             histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 

@@ -1,44 +1,36 @@
 package com.yuganji.generator.output.file;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.google.gson.Gson;
 import com.yuganji.generator.ApplicationContextProvider;
 import com.yuganji.generator.output.OutputService;
-
-import lombok.Builder;
-import lombok.Data;
+import com.yuganji.generator.output.model.FileOutputConfig;
 import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j2;
 
-@Builder
-@Data
+import java.util.List;
+import java.util.Map;
+
 @Log4j2
 @EqualsAndHashCode(callSuper=false)
 public class RawOutputWriter extends OutputFileWriter {
-    
-    private String type;
-    private String path;
-    private String outputType;
-    private int fileRotationMin;
-    private String fileFormat;
-    private String fileName;
-    private int maxSize;
-    private int batchSize;
-    private int outputId;
+    private transient OutputService outputService;
 
-    @Builder.Default
-    private boolean state = true;
+    public RawOutputWriter(int id, Map<String, Object> map) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setPropertyNamingStrategy(
+                new PropertyNamingStrategies.SnakeCaseStrategy());
 
-    @Builder.Default
-    private transient OutputService outputService =
-            ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
+        FileOutputConfig conf = mapper.convertValue(map, FileOutputConfig.class);
+        super.setConfig(conf);
+        super.outputId = id;
+    }
 
     @Override
     public boolean startOutput() {
-        this.setState(true);
         super.startOutput();
         return false;
     }
@@ -55,40 +47,36 @@ public class RawOutputWriter extends OutputFileWriter {
 
     @Override
     public void run() {
-        File dir = new File(this.path);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
+        Gson gson = new Gson();
+        this.outputService = ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
         while (this.state) {
-            this.fileRotationMin = 10;
-            long time = System.currentTimeMillis();
-            time = time / (60 * 1_000 * this.fileRotationMin) * (60 * 1_000 * this.fileRotationMin);
-            String date = new SimpleDateFormat("yyyyMMddHHmm").format(time);
-
             try {
-                List<Map<String, Object>> list = outputService.poll(this.getOutputId(), batchSize);
+                List<Map<String, Object>> list = outputService.poll(this.getOutputId(), super.config.getBatchSize());
                 if (list.size() == 0) {
                     Thread.sleep(1_000);
                     continue;
                 }
-
+                // TODO Avoid each event writes.
                 for (Map<String, Object> row: list) {
-                    File file = new File(this.getPath(), row.get(this.fileName).toString() + "_" + date + "." + type);
-                    super.write(row.get(this.fileName).toString(), file, row);
+                    String filenameBase = row.get(this.config.getFilePrefix()).toString();
+                    switch (this.config.getOutputType()){
+                        case "csv":
+                            super.write(filenameBase, row);
+                            break;
+                        case "json":
+                            super.write(filenameBase, gson.toJson(row));
+                            break;
+                        case "raw":
+                            super.write(filenameBase, row.get("RAW").toString());
+                            break;
+                        default:
+                            continue;
+                    }
                 }
-
-
                 Thread.sleep(0, 10);
             }  catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
             }
-
         }
-
-
-
-
-
     }
 }

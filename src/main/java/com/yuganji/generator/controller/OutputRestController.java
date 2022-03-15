@@ -20,7 +20,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @RestController
-@RequestMapping(value = "/api/output")
+@RequestMapping(value = "/api")
 public class OutputRestController {
 
     private OutputService outputService;
@@ -30,61 +30,75 @@ public class OutputRestController {
         this.outputService = socketService;
     }
     
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/outputs", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", outputService.list());
     }
-    
-    @RequestMapping(value = "/open", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse open(
+
+    @RequestMapping(value = "/outputs/{id}", method = RequestMethod.GET)
+    public @ResponseBody SingleObjectResponse get(@PathVariable(value = "id") int id) {
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", outputService.get(id));
+    }
+
+    @RequestMapping(value = "/outputs", method = RequestMethod.PUT)
+    public @ResponseBody SingleObjectResponse create(
             @RequestBody Output vo,
             HttpServletRequest request) {
         vo.setIp(NetUtil.getClientIP(request));
-        return outputService.startOutput(vo);
-    }
-    
-    @RequestMapping(value = "/close/{port}", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse close(
-            @PathVariable(value = "port") int port,
-            HttpServletRequest request) {
-        return outputService.stopOutput(port, NetUtil.getClientIP(request));
+        return outputService.createOutput(vo);
     }
 
-    @RequestMapping(value = "/close/client/{port}/{clientId}", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse closeClient(
-            @PathVariable(value = "port") int port,
-            @PathVariable(value = "clientId") String clientId,
+    @RequestMapping(value = "/outputs", method = RequestMethod.PATCH)
+    public @ResponseBody SingleObjectResponse modify(
+            @RequestBody Output vo,
             HttpServletRequest request) {
-        return outputService.closeClient(port, clientId, NetUtil.getClientIP(request));
+        vo.setIp(NetUtil.getClientIP(request));
+        return outputService.modifyOutput(vo);
+    }
+
+    @RequestMapping(value = "/outputs", method = RequestMethod.DELETE)
+    public @ResponseBody SingleObjectResponse delete(
+            @RequestBody Output vo,
+            HttpServletRequest request) {
+        vo.setIp(NetUtil.getClientIP(request));
+        return outputService.removeLogger(vo);
+    }
+
+    @RequestMapping(value = "/outputs/start/{id}", method = RequestMethod.PATCH)
+    public @ResponseBody SingleObjectResponse start(
+            @PathVariable(value = "id") int id,
+            HttpServletRequest request) {
+        return outputService.startOutput(id, NetUtil.getClientIP(request));
     }
     
-    @RequestMapping(value = "/get/{port}", method = RequestMethod.GET)
-    public @ResponseBody SingleObjectResponse get(@PathVariable(value = "port") int port) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", outputService.get(port));
+    @RequestMapping(value = "/outputs/stop/{id}", method = RequestMethod.PATCH)
+    public @ResponseBody SingleObjectResponse stop(
+            @PathVariable(value = "id") int id,
+            HttpServletRequest request) {
+        return outputService.stopOutput(id, NetUtil.getClientIP(request));
     }
-    
-    @RequestMapping(value = "/stop_client/{port}/{clientId}", method = RequestMethod.GET)
+
+    @RequestMapping(value = "/outputs/stop-client/{id}/{clientId}", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse stopClient(
-            @PathVariable(value = "port") int port,
+            @PathVariable(value = "id") int id,
             @PathVariable(value = "clientId") String clientId,
             HttpServletRequest request) {
-        return outputService.closeClient(port, clientId, NetUtil.getClientIP(request));
+        return outputService.closeClient(id, clientId, NetUtil.getClientIP(request));
     }
     
     @RequestMapping(value = {
-            "/producer/eps/{port}",
-            "/producer/eps/{port}/{loggerId}"
+            "/outputs/eps/producer/{id}",
+            "/outputs/eps/producer/{id}/{loggerId}"
         }, method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse producerEps(
-            @PathVariable(value = "port") int port,
+            @PathVariable(value = "id") int id,
             @PathVariable(value = "loggerId", required = false) Integer loggerId) {
-        log.debug(port + " " + loggerId);
-        
+        log.debug(id + " " + loggerId);
         if (loggerId == null) {
             return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
-                    outputService.listProducerEpsHistory(port));
+                    outputService.listProducerEpsHistory(id));
         }
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
-                outputService.listProducerEpsHistory(port, loggerId));
+                outputService.listProducerEpsHistory(id, loggerId));
     }
 }

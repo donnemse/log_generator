@@ -15,6 +15,76 @@
         }
     </style>
     <script type="text/javascript">
+    
+    let output_template = {
+        "name": {
+            "label": "Name",
+            "placeholder": "New Output",
+            "type": "text"
+        },
+        "max_queue_size": {
+        	"label": "Max Queue",
+            "placeholder": "100000",
+            "type": "text"
+        },
+        "type": {
+        	"label": "Type",
+        	"placeholder": "Type",
+        	"type": "select",
+        	"values": [
+        		"sparrow", "file", "kafka"
+        	]
+        }
+    }
+    
+    let config_type = {
+   		"sparrow": [
+   			{
+   				"label": "port",
+   				"type": "text",
+   				"placeholder": 3303
+   			}
+   		],
+   		"file": [
+            {
+                "label": "path",
+                "type": "text",
+                "placeholder": "./generate_log"
+            },
+            {
+                "label": "file_prefix",
+                "type": "text",
+                "placeholder": "logtype"
+            },
+            {
+                "label": "output_type",
+                "type": "select",
+                "values": ["csv", "json", "raw"]
+            },
+            {
+                "label": "file_rotation_min",
+                "type": "text",
+                "placeholder": "10 - Rotation file by minute"
+            },
+            {
+                "label": "max_size",
+                "type": "text",
+                "placeholder": "104857600 - Max size per file"
+            },
+            {
+                "label": "batch_size",
+                "type": "text",
+                "placeholder": "10"
+            }
+        ],
+        "kafka": [
+            {
+                "label": "port",
+                "type": "text",
+                "placeholder": 3303
+            }
+        ],
+    }
         function refreshList(){
             $(".list").empty();
             axios({
@@ -165,28 +235,6 @@
                 });
             });
             
-            /* $(document).on("click", ".output-close-button", function (e) {
-                axios({
-                    url: '/api/output/sclose/' + $(e.target).parents(".menu-item").data("output_id"),
-                    method: "post"
-                }).then(function (response) {
-                    if (response.data.status == 200) {
-                        $.notify({message: response.data.msg},{type: 'success'});
-                        refreshList();
-                    } else {
-                        $.notify({message: response.data.msg},{type: 'danger'});
-                    }
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error);
-                })
-                .then(function () {
-                    // always executed
-                });
-            }); */
-            
-            
             $(document).on("click", ".menu-item", function (e) {
                 if ($(e.target).hasClass("button-change-state")) {
                     return;
@@ -253,6 +301,60 @@
                 });
             });
             
+            $(".new-button").click(function(e) {
+            	$("#new_output_modal").modal("show");
+            	
+            	//config_type
+     
+            	$form = $("<form class=\"pure-form pure-form-aligned\"></form>")
+            	
+            	$.each(output_template, function(k, v) {
+            		if (v.type == "text") {
+            			$form.append(
+            					"<div class=\"pure-control-group\">"
+                                + "     <label for=\""+ k + "\">" + v.label + "</label>"
+                                + "     <input id=\""+ k + "\" type=\""+ v.type + "\" placeholder=\""+ v.placeholder + "\">"
+                                + "</div>");
+            		} else if (v.type == "select"){
+            			$select = $("<select id=\"" + k + "\"></select>");
+            			$.each(v.values, function(i, option) {
+            				$select.append("<option value=\"" + option + "\">" + option + "</option>");
+            			});
+            			$form.append("<div class=\"pure-control-group\">"
+            					+ "     <label for=\""+ k + "\">" + v.label + "</label>"
+            					+ $select[0].outerHTML + "</div>");
+            		}
+            	});
+            	$form.append("<fieldset class=\"detail_info\"></fieldset")
+            	$form.find("select").change(function(e) {
+            		let key = $(this).val();
+            		$form.find("fieldset").empty();
+            		$.each(config_type[key], function(i, v) {
+            			if (v.type == "text") {
+                            $form.find("fieldset").append(
+                                    "<div class=\"pure-control-group\">"
+                                    + "     <label for=\""+ v.label + "\">" + v.label + "</label>"
+                                    + "     <input id=\""+ v.label + "\" type=\""+ v.type + "\" placeholder=\""+ v.placeholder + "\">"
+                                    + "</div>");
+                        } else if (v.type == "select"){
+                            $select = $("<select id=\"" + v.label + "\"></select>");
+                            $.each(v.values, function(i, option) {
+                                $select.append("<option value=\"" + option + "\">" + option + "</option>");
+                            });
+                            $form.find("fieldset").append("<div class=\"pure-control-group\">"
+                                    + "     <label for=\""+ v.label + "\">" + v.label + "</label>"
+                                    + $select[0].outerHTML + "</div>");
+                        }
+            		});
+            	}).trigger("change");
+            	
+            	$("#new_output_modal").find(".modal-body").empty();
+            	$("#new_output_modal").find(".modal-body").html($form);
+            	
+                //
+            });
+            
+        
             
         });
         
@@ -328,25 +430,11 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">TCP 소켓 추가</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Output 추가</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form class="pure-form pure-form-stacked">
-                    <label for="new_port">Port</label>
-                    <input id="new_port" type="text" placeholder="3303">
-                    <label for="new_max_queue">최대큐사이즈</label>
-                    <input id="new_max_queue" type="text" placeholder="10000">
-                    <!-- <label for="state">State</label>
-                    <select id="state">
-                        <option>AL</option>
-                        <option>CA</option>
-                        <option>IL</option>
-                    </select>
-                    <label class="pure-checkbox">
-                    <input type="checkbox"> Remember me
-                    </label> -->
-                </form>
+                
             </div>
             <div class="modal-footer">
                 <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>

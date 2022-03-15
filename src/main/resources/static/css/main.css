@@ -376,8 +376,8 @@ textarea {
 }
 
 #new_output_modal .modal-dialog {
-    max-width: 20% !important;
-    min-width: 20% !important;
+    max-width: 35% !important;
+    min-width: 35% !important;
 }
 
 .field-key {

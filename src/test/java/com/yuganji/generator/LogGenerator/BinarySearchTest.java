@@ -1,21 +1,19 @@
 package com.yuganji.generator.LogGenerator;
 
-import java.io.File;
-import java.util.stream.IntStream;
-
-import com.yuganji.generator.util.NetUtil;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
-
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import com.yuganji.generator.model.IpLocationVO;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-
+import com.yuganji.generator.model.IpLocationVO;
+import com.yuganji.generator.util.NetUtil;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.io.File;
+import java.util.stream.IntStream;
 
 @Log4j2
 public class BinarySearchTest {
@@ -53,9 +51,7 @@ public class BinarySearchTest {
     public void test() {
         init();
         long time = System.currentTimeMillis();
-        IntStream.range(0, 30000).forEach(x -> {
-            this.getLocation("61.34.170.150").getCode();
-        });
+        IntStream.range(0, 30000).forEach(x -> this.getLocation("61.34.170.150").getCode());
         
         log.debug(this.getLocation(null));
         log.debug("time = " + (System.currentTimeMillis() - time));

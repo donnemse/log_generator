@@ -69,8 +69,8 @@ public class FileWriterObject {
     }
 
     public void write(String raw) throws IOException {
-        long time = System.currentTimeMillis() / (60 * 1_000 * this.config.getFileRotationMin())
-                * (60 * 1_000 * this.config.getFileRotationMin());
+        long time = System.currentTimeMillis() / (60L * 1_000 * this.config.getFileRotationMin())
+                * (60L * 1_000 * this.config.getFileRotationMin());
         if (time != this.lastTime) {
             this.updateWriter(time);
         }
@@ -92,7 +92,7 @@ public class FileWriterObject {
         if (cnt == 0) {
             CsvWriterSettings settings = new CsvWriterSettings();
             settings.setHeaderWritingEnabled(true);
-            settings.setHeaders(row.keySet().stream().toArray(String[]::new));
+            settings.setHeaders(row.keySet().toArray(new String[0]));
             this.csvWriter = new CsvWriter(settings);
             String h = this.csvWriter.writeHeadersToString();
             this.write(h);

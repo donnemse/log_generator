@@ -1,17 +1,16 @@
 package com.yuganji.generator.output.file;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-
 import com.yuganji.generator.ApplicationContextProvider;
 import com.yuganji.generator.output.OutputService;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j2;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
 
 @Deprecated
 @Builder
@@ -60,7 +59,7 @@ public class CsvOutputWriter extends OutputFileWriter {
         while (state) {
             this.fileRotationMin = 10;
             long time = System.currentTimeMillis();
-            time = time / (60 * 1_000 * this.fileRotationMin) * (60 * 1_000 * this.fileRotationMin);
+            time = time / (60L * 1_000 * this.fileRotationMin) * (60L * 1_000 * this.fileRotationMin);
             String date = new SimpleDateFormat("yyyyMMddHHmm").format(time);
 
             try {

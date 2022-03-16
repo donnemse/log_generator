@@ -1,19 +1,9 @@
 package com.yuganji.generator.output.sparrow;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.yuganji.generator.ApplicationContextProvider;
 import com.yuganji.generator.output.OutputService;
-
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -24,6 +14,10 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Log4j2
 public class TCPSocketServerInstance {
@@ -51,28 +45,25 @@ public class TCPSocketServerInstance {
     }
 
     public void startSender() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (state) {
-                    try {
-                        if (clients.keySet().size() == 0) {
-                            Thread.sleep(1_000);
-                            continue;
-                        }
-                        List<Map<String, Object>> list = outputService.poll(id, maxBuffer);
-                        if (list.size() == 0) {
-                            Thread.sleep(1_000);
-                            continue;
-                        }
-                        clients.entrySet().forEach(x -> {
-                            x.getValue().writeAndFlush(list);
-                        });
-
-                        Thread.sleep(0, 10);
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
+        new Thread(() -> {
+            while (state) {
+                try {
+                    if (clients.keySet().size() == 0) {
+                        Thread.sleep(1_000);
+                        continue;
                     }
+                    List<Map<String, Object>> list = outputService.poll(id, maxBuffer);
+                    if (list.size() == 0) {
+                        Thread.sleep(1_000);
+                        continue;
+                    }
+                    clients.entrySet().forEach(x -> {
+                        x.getValue().writeAndFlush(list);
+                    });
+
+                    Thread.sleep(0, 10);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                 }
             }
         }).start();

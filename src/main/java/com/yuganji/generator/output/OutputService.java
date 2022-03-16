@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,7 +54,7 @@ public class OutputService {
 
     @Scheduled(initialDelay = 3000, fixedDelay = 20 * 1000)
     public void schedule() {
-        this.cache.values().stream().forEach(x -> {
+        this.cache.values().forEach(x -> {
             try {
                 if (x.getStatus() == 1 && !x.getHandler().isRunning()) {
                     x.getHandler().startOutput();
@@ -257,14 +256,14 @@ public class OutputService {
     
     public List<Map<String, Object>> listProducerEpsHistory(int port){
         List<Map<String, Object>> res = new ArrayList<>();
-        this.cache.get(port).getProducerEps().entrySet().forEach(e -> {
+        this.cache.get(port).getProducerEps().forEach((key, value) -> {
             Map<String, Object> logger = new HashMap<>();
-            logger.put("name", loggerMgr.getLogger(e.getKey()).getName());
+            logger.put("name", loggerMgr.getLogger(key).getName());
             List<Map<String, Long>> list = new ArrayList<>();
-            e.getValue().getEpsHistory().stream().forEach(vo -> {
+            value.getEpsHistory().stream().forEach(vo -> {
                 Map<String, Long> tick = new HashMap<>();
                 tick.put("x", vo.getTime());
-                tick.put("y", (long)vo.getEps());
+                tick.put("y", (long) vo.getEps());
                 list.add(tick);
             });
             logger.put("data", list);

@@ -2,6 +2,7 @@ package com.yuganji.generator.output.model;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuganji.generator.exception.OutputHandleException;
 import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.output.file.OutputFileWriter;
@@ -13,9 +14,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class FileOutput extends AbstractOutputHandler {
-    
+    @JsonIgnore
     private transient int id;
 
+    @JsonIgnore
     private transient OutputFileWriter writer;
 
     public FileOutput(int id, Map<String, Object> conf) {

@@ -2,6 +2,7 @@ package com.yuganji.generator.model;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -36,16 +37,9 @@ public class LoggerVO {
     public void setMapCache(MapCache mapCache) {
         this.logger.setMapCache(mapCache);
     }
-    
+
+    @JsonIgnore
     public MapCache getMapCache() {
         return this.logger.getMapCache();
     }
-    
-//    public String getLastModifiedStr() {
-//        return sdf.format(this.lastModified);
-//    }
-//    
-//    public String getCreatedStr() {
-//        return sdf.format(this.created);
-//    }
 }

@@ -16,7 +16,6 @@ import java.util.Map;
 @Log4j2
 @EqualsAndHashCode(callSuper=false)
 public class RawOutputWriter extends OutputFileWriter {
-    private transient OutputService outputService;
 
     public RawOutputWriter(int id, Map<String, Object> map) {
         ObjectMapper mapper = new ObjectMapper();
@@ -53,7 +52,8 @@ public class RawOutputWriter extends OutputFileWriter {
     public void run() {
         Gson gson = new Gson();
         boolean state = true;
-        this.outputService = ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
+        OutputService outputService = ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
+
         while (state) {
             try {
                 List<Map<String, Object>> list = outputService.poll(this.getOutputId(), super.config.getBatchSize());
@@ -75,7 +75,6 @@ public class RawOutputWriter extends OutputFileWriter {
                             super.write(filenameBase, row.get("RAW").toString());
                             break;
                         default:
-                            continue;
                     }
                 }
                 Thread.sleep(0, 10);

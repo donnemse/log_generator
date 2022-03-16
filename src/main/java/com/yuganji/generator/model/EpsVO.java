@@ -1,8 +1,10 @@
 package com.yuganji.generator.model;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Data
 public class EpsVO {
@@ -10,14 +12,17 @@ public class EpsVO {
     private long lastCheckTime;
     private int cnt;
     private double eps;
+    @JsonIgnore
     private transient int del;
     private double delEps;
     private long startedTime;
     private long runningTime;
-    private transient LinkedBlockingQueue<EpsHistoryVO> epsHistory;
+    @JsonIgnore
+    private transient Queue<EpsHistoryVO> epsHistory;
     
     public EpsVO() {
         this.startedTime = System.currentTimeMillis();
+        this.lastCheckTime = startedTime;
         this.epsHistory = new LinkedBlockingQueue<>(200);
     }
     

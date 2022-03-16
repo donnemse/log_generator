@@ -1,34 +1,23 @@
 package com.yuganji.generator.logger;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.yuganji.generator.engine.Ip2LocationService;
+import com.yuganji.generator.model.*;
 import com.yuganji.generator.mybatis.mapper.HistoryMapper;
 import com.yuganji.generator.mybatis.mapper.LoggerMapper;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.yuganji.generator.engine.Ip2LocationService;
-import com.yuganji.generator.model.LoggerPropVO;
-import com.yuganji.generator.model.LoggerRequestVO;
-import com.yuganji.generator.model.LoggerVO;
-import com.yuganji.generator.model.MapCache;
-import com.yuganji.generator.model.SingleObjectResponse;
-
-import lombok.extern.log4j.Log4j2;
+import javax.annotation.PostConstruct;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -46,8 +35,11 @@ public class LoggerManager {
     
     @Autowired
     private Ip2LocationService ip2LocService;
+
     @PostConstruct
     private void init() {
+        om.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
         this.cache = new HashMap<>();
         List<LoggerVO> listInfo = this.loggerMapper.listLogger();
         this.cache = listInfo.stream()
@@ -59,8 +51,6 @@ public class LoggerManager {
                     MapCache mapCache = new MapCache();
                     mapCache.setIp2Locations(ip2LocService);
                     x.setMapCache(mapCache);
-                } catch (JsonMappingException e) {
-                    log.error(e.getMessage(), e);
                 } catch (JsonProcessingException e) {
                     log.error(e.getMessage(), e);
                 }
@@ -75,11 +65,7 @@ public class LoggerManager {
     public Map<Integer, LoggerVO> listLogger() {
         return this.cache;
     }
-    /**
-     * @param name
-     * @param yaml
-     * @return
-     */
+
     public SingleObjectResponse createLogger(LoggerRequestVO vo) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
@@ -111,11 +97,6 @@ public class LoggerManager {
         return res;
     }
 
-    /**
-     * @param name
-     * @param yaml
-     * @return
-     */
     public SingleObjectResponse modifyLogger(LoggerRequestVO vo) {
         String msg = "logger was modified. " + vo.getName();
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value(), msg);

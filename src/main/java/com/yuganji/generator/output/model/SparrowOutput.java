@@ -1,10 +1,10 @@
 package com.yuganji.generator.output.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuganji.generator.exception.OutputHandleException;
 import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.output.sparrow.TCPSocketServer;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,14 +13,17 @@ import java.util.Map;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class SparrowOutput extends AbstractOutputHandler {
+    @JsonIgnore
     private transient final String KEY_PORT = "port";
     private int port;
+    @JsonIgnore
     private transient int id;
+    @JsonIgnore
     private transient ISocketServer server;
     
     public SparrowOutput(int id, Map<String, Object> conf) {
         this.id = id;
-        this.port = (int) conf.get(this.KEY_PORT);
+        this.port = Integer.parseInt(conf.get(this.KEY_PORT) + "");
     }
 
     public SparrowOutput(int port) {

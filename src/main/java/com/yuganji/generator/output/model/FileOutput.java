@@ -1,15 +1,14 @@
 package com.yuganji.generator.output.model;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuganji.generator.exception.OutputHandleException;
 import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.output.file.OutputFileWriter;
 import com.yuganji.generator.output.file.RawOutputWriter;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.Map;
 
 @Data
 @EqualsAndHashCode(callSuper = false)

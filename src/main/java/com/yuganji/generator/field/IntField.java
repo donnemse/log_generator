@@ -1,18 +1,12 @@
 package com.yuganji.generator.field;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
 import com.yuganji.generator.model.FieldInfoVO;
 import com.yuganji.generator.model.FieldVO;
 import com.yuganji.generator.util.Constants;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 public class IntField extends FieldInfoVO implements IFieldGenerator {
     
@@ -61,7 +55,7 @@ public class IntField extends FieldInfoVO implements IFieldGenerator {
             return intRandom.ints(min, max + 1).findFirst().orElse(0);
         }
         int[] val = null;
-        if (Pattern.matches("\\d{1,}(\\~|\\-)\\d{1,}", str.trim())) {
+        if (Pattern.matches("\\d+(\\~|\\-)\\d+", str.trim())) {
             StringTokenizer token = new StringTokenizer(str, "~|-");
             List<Integer> list = new ArrayList<>();
             while (token.hasMoreTokens()) {

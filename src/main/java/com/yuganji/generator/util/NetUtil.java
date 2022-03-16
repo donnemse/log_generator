@@ -47,12 +47,12 @@ public final class NetUtil {
         return result;
     }
 
-    public static final String IP_REGEXP = "(\\d{1,}\\.){3}\\d{1,}";
+    public static final String IP_REGEXP = "(\\d+\\.){3}\\d+";
 
     public static long[] getIpRanges(String str) {
-        if (Pattern.matches(NetUtil.IP_REGEXP + "\\/\\d{1,}", str.trim())) {
+        if (Pattern.matches(NetUtil.IP_REGEXP + "\\/\\d+", str.trim())) {
             return NetUtil.getSubnet(str);
-        } else if (Pattern.matches(NetUtil.IP_REGEXP + "(\\s{1,}|)\\~(\\s{1,}|)" + NetUtil.IP_REGEXP, str.trim())) {
+        } else if (Pattern.matches(NetUtil.IP_REGEXP + "(\\s+|)\\~(\\s+|)" + NetUtil.IP_REGEXP, str.trim())) {
             StringTokenizer token = new StringTokenizer(str, "~");
             List<Long> list = new ArrayList<>();
             while (token.hasMoreTokens()) {

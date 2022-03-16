@@ -248,9 +248,7 @@ public class OutputService {
     public void removeProducerEps(int loggerId) {
         Set<Integer> set = new TreeSet<>(this.cache.keySet());
         for (int queueId: set) {
-            if (this.cache.get(queueId).getProducerEps().containsKey(loggerId)) {
-                this.cache.get(queueId).getProducerEps().remove(loggerId);
-            }
+            this.cache.get(queueId).getProducerEps().remove(loggerId);
         }
     }
     
@@ -260,7 +258,7 @@ public class OutputService {
             Map<String, Object> logger = new HashMap<>();
             logger.put("name", loggerMgr.getLogger(key).getName());
             List<Map<String, Long>> list = new ArrayList<>();
-            value.getEpsHistory().stream().forEach(vo -> {
+            value.getEpsHistory().forEach(vo -> {
                 Map<String, Long> tick = new HashMap<>();
                 tick.put("x", vo.getTime());
                 tick.put("y", (long) vo.getEps());

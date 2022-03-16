@@ -57,9 +57,7 @@ public class TCPSocketServerInstance {
                         Thread.sleep(1_000);
                         continue;
                     }
-                    clients.entrySet().forEach(x -> {
-                        x.getValue().writeAndFlush(list);
-                    });
+                    clients.entrySet().forEach(x -> x.getValue().writeAndFlush(list));
 
                     Thread.sleep(0, 10);
                 } catch (Exception e) {

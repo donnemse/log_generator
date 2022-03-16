@@ -31,7 +31,7 @@ public abstract class OutputFileWriter extends Thread implements IFileWriter {
     @Override
     public boolean stopOutput() {
         super.interrupt();
-        this.writers.entrySet().forEach(entry -> entry.getValue().close());
+        this.writers.forEach((key, value) -> value.close());
         return true;
     }
 

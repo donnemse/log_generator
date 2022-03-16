@@ -226,7 +226,6 @@ data:         # required - this is field list
             $(document).on("click", ".sample-button", function (e) {
                 $tbody = $(".modal .modal-body .pure-table tbody")
                 $tbody.empty();
-                let re = /(\{|,\s)(?<key>[a-zA-Z0-9\-\_]{1,})(=)(?<val>.+?)(\,\s|\})/gm
                 axios({
                     url: "/api/loggers/sample",
                     method: "post",

@@ -6,9 +6,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.sparrow.ISocketServer;
@@ -20,6 +23,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Data
 @Log4j2
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Output {
     
     transient private static final ObjectMapper om = new ObjectMapper(); 
@@ -39,7 +43,8 @@ public class Output {
     private long created;
     private long lastModified;
     private transient LinkedBlockingQueue<Map<String, Object>> queue;
-    
+
+    @JsonIgnore
     transient private AbstractOutputHandler handler;
     private Map<String, Object> info;
     
@@ -88,7 +93,8 @@ public class Output {
         this.runningTime = System.currentTimeMillis() - this.startedTime;
         return runningTime;
     }
-    
+
+    @JsonIgnore
     public List<String> getClients(){
         if (!this.type.equals(Constants.Output.SPARROW.getValue())) {
             return null;

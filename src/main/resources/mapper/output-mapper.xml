@@ -43,7 +43,7 @@
             id = #{id}
     </update>
 
-    <update id="removeLogger" parameterType="int">
+    <update id="removeOutput" parameterType="int">
         delete from output
         where
             id = #{id}

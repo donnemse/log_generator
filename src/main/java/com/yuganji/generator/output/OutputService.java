@@ -273,7 +273,7 @@ public class OutputService {
         return res;
     }
     
-    public LinkedBlockingQueue<EpsHistoryVO> listProducerEpsHistory(int port, int loggerId){
+    public Queue<EpsHistoryVO> listProducerEpsHistory(int port, int loggerId){
         return this.cache.get(port).getProducerEps().get(loggerId).getEpsHistory();
     }
 

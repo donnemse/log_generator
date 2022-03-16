@@ -1,6 +1,9 @@
 package com.yuganji.generator.util;
 
+import com.yuganji.generator.controller.OutputTemplate;
 import lombok.Getter;
+
+import java.util.*;
 
 /**
  * @author yuganji
@@ -49,6 +52,61 @@ public final class Constants {
         @Getter
         private final String value;
         Output(String val) {
+            this.value = val;
+        }
+    }
+
+    public enum InputForm {
+        TEXT("text"),
+        SELECT("select"),
+        CHECK("check");
+
+        @Getter
+        private final String value;
+        InputForm(String val) {
+            this.value = val;
+        }
+    }
+
+    public enum FileOutputType {
+        CSV("csv"),
+        JSON("json"),
+        RAW("raw");
+
+        @Getter
+        private final String value;
+        FileOutputType(String val) {
+            this.value = val;
+        }
+    }
+
+    public enum OutputType {
+        SPARROW(new HashMap<String, List<OutputTemplate>>(){{
+            put("sparrow", Arrays.asList(
+                new OutputTemplate("port", "3303", InputForm.TEXT.getValue(), null)));
+        }}),
+        KAFKA(new HashMap<String, List<OutputTemplate>>(){{
+            put("kafka", Arrays.asList(
+                    new OutputTemplate("port", "3303", InputForm.TEXT.getValue(), null)));
+        }}),
+        FILE(new HashMap<String, List<OutputTemplate>>(){{
+            put("file", Arrays.asList(
+                new OutputTemplate("path", "./generate_log", InputForm.TEXT.getValue(), null),
+                new OutputTemplate("file_prefix", "logtype", InputForm.TEXT.getValue(), null),
+                new OutputTemplate("output_type", "output_type", InputForm.SELECT.getValue(),
+                        new HashMap<String, List<OutputTemplate>>(){{
+                            put(FileOutputType.CSV.getValue(), new ArrayList<>());
+                            put(FileOutputType.JSON.getValue(), new ArrayList<>());
+                            put(FileOutputType.RAW.getValue(), new ArrayList<>());
+                }}),
+                new OutputTemplate("file_rotation_min", "10 - Rotation file by minute", InputForm.TEXT.getValue(), null),
+                new OutputTemplate("max_size", "104857600 - Max size per file", InputForm.TEXT.getValue(), null),
+                new OutputTemplate("batch_size", "10", InputForm.TEXT.getValue(), null)));
+        }});
+
+        @Getter
+        private final Map<String, List<OutputTemplate>> value;
+        OutputType(Map<String, List<OutputTemplate>> val) {
             this.value = val;
         }
     }

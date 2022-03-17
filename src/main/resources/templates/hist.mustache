@@ -130,16 +130,22 @@
     function diffInit(origin, yaml) {
         
         if(!isNaN(parseInt(origin))){
-            axios.get('/api/logger/get/' + origin)
+            axios.get('/api/loggers/' + origin)
             .then(function (response) {
                 let data = response.data.data;
-                origin = data.yaml_str;
+                if (data != undefined) {
+                	origin = data.yaml_str;
+                } else {
+                	origin = '';
+                }
+                
             })
             .catch(function (error) {
                 console.log(error);
             })
             .then(function () {
                 diffModal(origin, yaml);
+                return;
             });
         }
         diffModal(origin, yaml);

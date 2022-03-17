@@ -5,6 +5,8 @@ import lombok.*;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Formula;
+
 @Data
 @Entity
 @Table(name = "history")
@@ -29,7 +31,10 @@ public class History {
     @Builder.Default
     @Column(name = "last_modified", nullable = false)
     private long lastModified = System.currentTimeMillis();
-
+    
+    @Transient
+    private String name;
+    
     private String msg;
 
     private String detail;

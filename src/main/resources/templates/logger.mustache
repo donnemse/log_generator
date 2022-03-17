@@ -190,8 +190,6 @@ data:         # required - this is field list
                 let id = $("#selected_id").val();
                 let yaml = editor.getValue();
 
-
-
                 axios({
                     url: "/api/loggers",
                     method: (id < 0? "post": "patch"),
@@ -217,6 +215,7 @@ data:         # required - this is field list
                         $.notify({message: response.data.msg},{type: 'danger'});
                     }
                 }).catch(function (error) {
+                    console.error(error);
                     $.notify({message: error},{type: 'danger'});
                 }).then(function () {
                     // always executed
@@ -230,7 +229,8 @@ data:         # required - this is field list
                     url: "/api/loggers/sample",
                     method: "post",
                     data: {
-                        yaml: editor.getValue()
+                        id: -1,
+                        yaml_str: editor.getValue()
                     }
                 }).then(function (response) {
                     $.each(response.data.data, function(idx, val) {
@@ -272,8 +272,11 @@ data:         # required - this is field list
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
                 axios({
-                    url: "/api/loggers/" + (flag? "start": "stop") + "/" + id,
-                    method: "patch"
+                    url: "/api/loggers/" + (flag? "start": "stop"),
+                    method: "patch",
+                    data: {
+                        id: id
+                    }
                 }).then(function (response) {
                     console.log(response)
                     if (response.data.status == 200) {

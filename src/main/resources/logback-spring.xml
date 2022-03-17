@@ -45,9 +45,11 @@
 
     <logger name="springfox" level="WARN" />
     <logger name="org.springframework" level="WARN" />
-    <logger name="org.apache.kafka" level="WARN" />
     <logger name="org.springframework.security" level="WARN" />
-    <logger name="com.igloosec.generator.mybatis" level="DEBUG" />
+    <logger name="org.apache.kafka" level="WARN" />
+
+    <logger name="org.hibernate.hql.internal.ast" level="WARN" />
+    <logger name="org.hibernate.internal.util" level="WARN" />
     <logger name="org.springframework.web" level="DEBUG" />
     <logger name="httpclient.wire" level="WARN" />
     <logger name="com.zaxxer.hikari.pool" level="WARN" />

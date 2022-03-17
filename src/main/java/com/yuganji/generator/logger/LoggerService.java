@@ -6,7 +6,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yuganji.generator.db.Logger;
 import com.yuganji.generator.db.LoggerRepository;
 import com.yuganji.generator.engine.Ip2LocationService;
-import com.yuganji.generator.model.*;
+import com.yuganji.generator.model.LoggerDto;
+import com.yuganji.generator.model.LoggerRequestVO;
+import com.yuganji.generator.model.SingleObjectResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -62,7 +64,6 @@ public class LoggerService {
             log.error(e.getMessage(), e);
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             res.setMsg(e.getMessage());
-//            this.addHistory(entity, "Failed save logger " + entity.getName(), null, e.getMessage());
         }
         return res;
     }
@@ -81,16 +82,15 @@ public class LoggerService {
         }
         try {
             loggerRepository.save(logger);
-//            this.addHistory(logger, msg, logger.getYaml(), null);
             this.cache.put(logger.getId(), logger.toDto());
             res.setMsg(msg);
             res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-//            this.addHistory(logger, "could not modified logger. " + logger.getName(), null, e.getMessage());
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
+        res.setData(logger);
         return res;
     }
 
@@ -98,30 +98,27 @@ public class LoggerService {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
             LoggerDto info = this.cache.get(logger.getId());
+            res.setData(info.toEntity());
             String msg = "logger was removed. " + info.getName();
             res.setMsg(msg);
             loggerRepository.deleteById(logger.getId());
-//            this.addHistory(logger, msg, info.getYamlStr(), null);
             this.cache.remove(logger.getId());
         } catch (Exception e) {
-//            this.addHistory(logger, "could not remove logger. " + logger.getName(), null, e.getMessage());
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return res;
     }
     
-    public List<Map<String, Object>> sample(LoggerRequestVO vo) {
+    public List<Map<String, Object>> sample(Logger logger) {
         List<Map<String, Object>> list = new ArrayList<>();
         try {
-            LoggerDetailDto lp = om.readValue(vo.getYaml(), LoggerDetailDto.class);
-            MapCache mapCache = new MapCache();
-            mapCache.setIp2Locations(ip2LocService);
-            lp.setMapCache(mapCache);
+            LoggerDto dto =  logger.toDto();
             for (int i = 0; i < SAMEPLE_CNT; i++) {
-                list.add(lp.generateLog());
+                list.add(dto.getDetail().generateLog());
             }
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             Map<String, Object> map = new HashMap<>();

@@ -102,11 +102,11 @@ data:         # required - this is field list
                 "<div logger-id=\"" + v.id + "\" class=\"menu-item pure-g " + ($(".menu-item").length == 0? "menu-item-selected menu-item-unread": "") + "\">" +
                   "   <div class=\"pure-u-1\">" +
                   "       <h5 class=\"menu-name\">" + v.name + "</h5>" + 
-                  "       <h4 class=\"menu-subject\">" + v.logger.log + "</h4>" +
+                  "       <h4 class=\"menu-subject\">" + v.detail.log + "</h4>" +
                   "       <h6 class=\"menu-subject\">" +
-                  "           EPS: " + v.logger.eps + "\nlogtype: " + v.logger.logtype +
+                  "           EPS: " + v.detail.eps + "\nlogtype: " + v.detail.logtype +
                   "       </h6>" +
-                  "       <p class=\"menu-desc\">" + v.logger.raw + "</p>" +
+                  "       <p class=\"menu-desc\">" + v.detail.raw + "</p>" +
                   "   </div>" +
                   "   <div class=\"pure-u-1-8 change-state\">" +
                   "       <div class=\"form-check form-switch\">" +
@@ -198,7 +198,7 @@ data:         # required - this is field list
                     data: {
                         name: name,
                         id: id,
-                        yaml: yaml
+                        yaml_str: yaml
                     }
                 }).then(function (response) {
                     console.log(response.data)
@@ -276,7 +276,7 @@ data:         # required - this is field list
                     method: "patch"
                 }).then(function (response) {
                     console.log(response)
-                    if (response.data.data) {
+                    if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});
@@ -320,7 +320,7 @@ data:         # required - this is field list
                     }
                 }).then(function (response) {
                     console.log(response)
-                    if (response.data.data) {
+                    if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                         $("#selected_id").val("-1");
                         $("#selected_name").val("");

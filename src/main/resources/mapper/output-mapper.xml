@@ -3,12 +3,12 @@
 
 <mapper namespace="com.yuganji.generator.mybatis.mapper.OutputMapper">
 
-    <select id="listOutput" resultType="com.yuganji.generator.output.model.Output">
-        select * from output
+    <select id="listOutput" resultType="com.yuganji.generator.outputDto.model.OutputDto">
+        select * from outputDto
     </select>
 
-    <insert id="insertOutput" parameterType="com.yuganji.generator.output.model.Output" useGeneratedKeys="true">
-        insert into output (
+    <insert id="insertOutput" parameterType="com.yuganji.generator.outputDto.model.OutputDto" useGeneratedKeys="true">
+        insert into outputDto (
             name, ip, type, created, status, last_modified, info, max_queue_size
         )values (
                  #{name},
@@ -22,8 +22,8 @@
                 )
     </insert>
 
-    <update id="updateOutput" parameterType="com.yuganji.generator.output.model.Output">
-        update output
+    <update id="updateOutput" parameterType="com.yuganji.generator.outputDto.model.OutputDto">
+        update outputDto
         set
             name = #{name},
             ip = #{ip},
@@ -36,7 +36,7 @@
     </update>
 
     <update id="updateOutputStatus" parameterType="map">
-        update output
+        update outputDto
         set
             status = #{status}
         where
@@ -44,7 +44,7 @@
     </update>
 
     <update id="removeOutput" parameterType="int">
-        delete from output
+        delete from outputDto
         where
             id = #{id}
     </update>

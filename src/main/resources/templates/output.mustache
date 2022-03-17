@@ -229,7 +229,7 @@
                     method: "patch"
                 }).then(function (response) {
                     console.log(response)
-                    if (response.data.data) {
+                    if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});
@@ -336,7 +336,7 @@
                     }
                 }).then(function (response) {
                     console.log(response)
-                    if (response.data.data) {
+                    if (response.data.status == 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                         $("#selected_id").val("-1");
                         $("#selected_name").val("");

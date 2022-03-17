@@ -1,20 +1,14 @@
 package com.yuganji.generator.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.yuganji.generator.db.Output;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.OutputService;
-import com.yuganji.generator.output.model.Output;
 import com.yuganji.generator.util.NetUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(value = "/api")
@@ -39,10 +33,10 @@ public class OutputRestController {
 
     @RequestMapping(value = "/outputs", method = RequestMethod.PUT)
     public @ResponseBody SingleObjectResponse create(
-            @RequestBody Output vo,
+            @RequestBody Output output,
             HttpServletRequest request) {
-        vo.setIp(NetUtil.getClientIP(request));
-        return outputService.createOutput(vo);
+        output.setIp(NetUtil.getClientIP(request));
+        return outputService.createOutput(output);
     }
 
     @RequestMapping(value = "/outputs", method = RequestMethod.PATCH)

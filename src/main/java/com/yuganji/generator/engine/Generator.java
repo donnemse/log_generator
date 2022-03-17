@@ -1,26 +1,25 @@
 package com.yuganji.generator.engine;
 
-import java.util.Map;
-
-import com.yuganji.generator.model.LoggerVO;
+import com.yuganji.generator.model.LoggerDto;
 import com.yuganji.generator.output.OutputService;
-
 import lombok.extern.log4j.Log4j2;
+
+import java.util.Map;
 
 @Log4j2
 public class Generator extends AGenerator {
     
     private OutputService outputService;
-    private LoggerVO logger;
+    private LoggerDto logger;
     
     private volatile boolean state = true;
     
     private long eps;
     
-    public Generator(OutputService outputService, LoggerVO logger) {
+    public Generator(OutputService outputService, LoggerDto logger) {
         this.outputService = outputService;
         this.logger = logger;
-        this.eps = this.logger.getLogger().getEps();
+        this.eps = this.logger.getDetail().getEps();
     }
 
     @Override
@@ -28,9 +27,9 @@ public class Generator extends AGenerator {
         int cnt = 0;
         long time = System.currentTimeMillis();
         while(this.state) {
-          
+
           try {
-              Map<String, Object> map = logger.getLogger().generateLog();
+              Map<String, Object> map = logger.getDetail().generateLog();
               outputService.push(map, logger.getId());
               cnt++;
               if (eps < 1000) {

@@ -1,5 +1,11 @@
 package com.yuganji.generator.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.yuganji.generator.util.Constants;
+import lombok.Data;
+import org.apache.commons.text.StringSubstitutor;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,16 +13,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.yuganji.generator.util.Constants;
-import org.apache.commons.text.StringSubstitutor;
-
-import lombok.Data;
-
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LoggerPropVO {
+public class LoggerDetailDto {
     private String log;
     private long eps;
     private String logtype;

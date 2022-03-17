@@ -9,7 +9,7 @@
     </select>
     
     <select id="list" parameterType="com.yuganji.generator.model.HistoryResponseVO"
-    resultType="com.yuganji.generator.model.HistoryVO">
+    resultType="com.yuganji.generator.model.HistoryDto">
         <![CDATA[
 	       select 
 			    *, 

@@ -3,11 +3,11 @@
 
 <mapper namespace="com.yuganji.generator.mybatis.mapper.LoggerMapper">
 
-    <select id="listLogger" parameterType="int" resultType="com.yuganji.generator.model.LoggerVO">
+    <select id="listLogger" parameterType="int" resultType="com.yuganji.generator.model.LoggerDto">
         SELECT * from logger
     </select>
     
-    <insert id="insertLogger" parameterType="com.yuganji.generator.model.LoggerVO"
+    <insert id="insertLogger" parameterType="com.yuganji.generator.model.LoggerDto"
         useGeneratedKeys="true" keyProperty="id">
         insert into logger (
             name, created, last_modified, ip, yaml_str
@@ -16,7 +16,7 @@
         )
     </insert>
     
-    <update id="updateLogger" parameterType="com.yuganji.generator.model.LoggerVO">
+    <update id="updateLogger" parameterType="com.yuganji.generator.model.LoggerDto">
         update logger 
         set
             name = #{name},

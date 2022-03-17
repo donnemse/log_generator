@@ -3,7 +3,7 @@ package com.yuganji.generator.model;
 import lombok.Data;
 
 @Data
-public class HistoryVO {
+public class HistoryDto {
     private int id;
     private String ip;
     private String name;

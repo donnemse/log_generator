@@ -1,29 +1,23 @@
 package com.yuganji.generator.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
-import com.yuganji.generator.util.NetUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.gson.Gson;
+import com.yuganji.generator.db.Logger;
 import com.yuganji.generator.engine.GeneratorManager;
 import com.yuganji.generator.logger.LoggerManager;
 import com.yuganji.generator.model.LoggerRequestVO;
 import com.yuganji.generator.model.SingleObjectResponse;
-
+import com.yuganji.generator.util.NetUtil;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(value = "/api")
 @Log4j2
-public class LoggerManageRestController {
+public class LoggerRestController {
     @Autowired
     private GeneratorManager genMgr;
     @Autowired
@@ -42,26 +36,26 @@ public class LoggerManageRestController {
     
     @RequestMapping(value = "/loggers", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse create(
-            @RequestBody LoggerRequestVO vo,
+            @RequestBody Logger logger,
             HttpServletRequest request) {
-        vo.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.createLogger(vo);
+        logger.setIp(NetUtil.getClientIP(request));
+        return loggerPropMng.createLogger(logger);
     }
     
     @RequestMapping(value = "/loggers", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse modify(
-            @RequestBody LoggerRequestVO vo,
+            @RequestBody Logger logger,
             HttpServletRequest request) {
-        vo.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.modifyLogger(vo);
+        logger.setIp(NetUtil.getClientIP(request));
+        return loggerPropMng.modifyLogger(logger);
     }
     
     @RequestMapping(value = "/loggers", method = RequestMethod.DELETE)
     public @ResponseBody SingleObjectResponse delete(
-            @RequestBody LoggerRequestVO vo,
+            @RequestBody Logger logger,
             HttpServletRequest request) {
-        vo.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.removeLogger(vo);
+        logger.setIp(NetUtil.getClientIP(request));
+        return loggerPropMng.removeLogger(logger);
     }
     
     @RequestMapping(value = "/loggers/sample", method = RequestMethod.POST)

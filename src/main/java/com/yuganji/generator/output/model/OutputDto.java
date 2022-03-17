@@ -5,12 +5,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.yuganji.generator.db.Output;
 import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.util.Constants;
-import com.yuganji.generator.util.NetUtil;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -21,11 +25,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Data
-@Log4j2
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Output {
+@Log4j2
+public class OutputDto {
     @JsonIgnore
-    transient private static final ObjectMapper om = new ObjectMapper();
+    transient private static final ObjectMapper om = new ObjectMapper()
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
     @JsonIgnore
     transient private static final int MAX_QUEUE_SIZE = 10_000;
@@ -33,7 +41,9 @@ public class Output {
     private String name;
     private String ip;
     private List<String> clients;
-    private Map<Integer, EpsVO> producerEps;
+
+    @Builder.Default
+    private Map<Integer, EpsVO> producerEps = new ConcurrentHashMap<>();;
     private EpsVO consumerEps;
 
     private int maxQueueSize;
@@ -44,20 +54,17 @@ public class Output {
     private long created;
     private long lastModified;
 
+    @Builder.Default
     @JsonIgnore
-    private transient LinkedBlockingQueue<Map<String, Object>> queue;
+    private transient LinkedBlockingQueue<Map<String, Object>> queue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
 
     @JsonIgnore
     transient private AbstractOutputHandler handler;
 
     private Map<String, Object> info;
 
-    private String type = "sparrow";
+    private String type;
     private int status;
-    
-    public Output() {
-        this.initialize(MAX_QUEUE_SIZE);
-    }
 
     public void setInfo(Object info) {
         try {
@@ -91,11 +98,7 @@ public class Output {
     }
     
     private void initialize(int maxQueueSize) {
-        this.startedTime = System.currentTimeMillis();
-        this.ip = NetUtil.getLocalHostIp();
-        this.maxQueueSize = maxQueueSize;
-        this.queue = new LinkedBlockingQueue<>(this.maxQueueSize);
-        this.producerEps = new ConcurrentHashMap<>();
+
     }
     
     public long getRunningTime() {
@@ -119,5 +122,43 @@ public class Output {
             this.clients = new ArrayList<>(server.getClients().keySet());
         }
         return this.clients;
+    }
+
+    public Output toEntity() {
+        return Output.builder(this).build();
+    }
+
+    public static class OutputDtoBuilder {
+
+        public OutputDtoBuilder maxQueueSize(int maxQueueSize) {
+            this.maxQueueSize = maxQueueSize;
+            this.queue(new LinkedBlockingQueue<>(maxQueueSize));
+            return this;
+        }
+
+        public OutputDtoBuilder info(Object info) {
+            try {
+                Map<String, Object> map = null;
+                if (info == null) {
+                    map = new HashMap<>();
+                } else if (info instanceof String) {
+                    map = om.readValue(info.toString(), new TypeReference<Map<String, Object>>() {
+                    });
+                } else if (info instanceof Map<?, ?>) {
+                    map = (Map<String, Object>) info;
+                }
+
+                if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
+                    this.handler = new SparrowOutput(this.id, map);
+                } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
+                    this.handler = new FileOutput(this.id, map);
+                }
+                this.info = map;
+            } catch (JsonProcessingException e) {
+                log.error(e.getMessage(), e);
+                this.info = null;
+            }
+            return this;
+        }
     }
 }

@@ -1,15 +1,14 @@
 package com.yuganji.generator.monitor;
 
-import java.util.Map.Entry;
-
+import com.yuganji.generator.model.EpsVO;
+import com.yuganji.generator.output.OutputService;
+import com.yuganji.generator.output.model.OutputDto;
 import com.yuganji.generator.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.yuganji.generator.model.EpsVO;
-import com.yuganji.generator.output.model.Output;
-import com.yuganji.generator.output.OutputService;
+import java.util.Map.Entry;
 
 @Service
 public class EpsMonitorService {
@@ -20,7 +19,7 @@ public class EpsMonitorService {
     @Scheduled(initialDelay = 3000, fixedDelay = 3000)
     public void monitorEps() {
         long time = System.currentTimeMillis();
-        for (Entry<Integer, Output> entryInfo: outputService.getCache().entrySet()){
+        for (Entry<Integer, OutputDto> entryInfo: outputService.getCache().entrySet()){
             for (Entry<Integer, EpsVO> entryEps: entryInfo.getValue().getProducerEps().entrySet()){
                 entryEps.getValue().setEps(time);
             }

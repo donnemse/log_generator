@@ -1,13 +1,13 @@
 package com.yuganji.generator.output;
 
+import com.yuganji.generator.db.Output;
+import com.yuganji.generator.db.OutputRepository;
 import com.yuganji.generator.exception.OutputHandleException;
 import com.yuganji.generator.logger.LoggerManager;
 import com.yuganji.generator.model.EpsHistoryVO;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.model.SingleObjectResponse;
-import com.yuganji.generator.mybatis.mapper.HistoryMapper;
-import com.yuganji.generator.mybatis.mapper.OutputMapper;
-import com.yuganji.generator.output.model.Output;
+import com.yuganji.generator.output.model.OutputDto;
 import com.yuganji.generator.output.model.SparrowOutput;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -27,28 +27,30 @@ public class OutputService {
     private static final String TYPE = "output";
     
     @Getter
-    private Map<Integer, Output> cache;
+    private Map<Integer, OutputDto> cache;
 
-    private OutputMapper outputMapper;
-    
-    private HistoryMapper histMapper;
+//    private OutputMapper outputMapper;
+//
+//    private HistoryMapper histMapper;
+    @Autowired
+    private OutputRepository outputRepository;
 
     private LoggerManager loggerMgr;
 
     @Autowired
-    public OutputService (
-            LoggerManager loggerMgr, HistoryMapper histMapper,
-            OutputMapper outputMapper) {
+    public OutputService (LoggerManager loggerMgr) {
         this.cache = new ConcurrentHashMap<>();
         this.loggerMgr = loggerMgr;
-        this.histMapper = histMapper;
-        this.outputMapper = outputMapper;
+//        this.histMapper = histMapper;
+//        this.outputMapper = outputMapper;
     }
 
     @PostConstruct
     public void init(){
-        this.cache = this.outputMapper.listOutput().stream().collect(
-                Collectors.toMap(Output::getId, x -> x));
+        log.debug(outputRepository.findAll());
+        this.cache = outputRepository.findAll().stream().collect(Collectors.toMap(Output::getId, x -> x.toDto()));
+//        this.cache = this.outputMapper.listOutput().stream().collect(
+//                Collectors.toMap(Output::getId, x -> x));
         this.cache = new ConcurrentHashMap<>(this.cache);
     }
 
@@ -68,7 +70,7 @@ public class OutputService {
         });
     }
     
-    public Output get(int id) {
+    public OutputDto get(int id) {
         return this.cache.get(id);
     }
 
@@ -77,16 +79,16 @@ public class OutputService {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
 
         try {
-            outputMapper.insertOutput(output);
-            this.cache.put(output.getId(), output);
+            output = outputRepository.save(output);
+            this.cache.put(output.getId(), output.toDto());
             res.setMsg(msg);
             res.setData(output);
-            this.addHistory(output, msg, output.toString(), null);
+//            this.addHistory(output, msg, output.toString(), null);
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             res.setMsg(e.getMessage());
-            this.addHistory(output, e.getMessage(), null, e.getMessage());
+//            this.addHistory(output, e.getMessage(), null, e.getMessage());
         }
         return res;
     }
@@ -105,14 +107,15 @@ public class OutputService {
         }
         try {
             this.cache.remove(output.getId());
-            outputMapper.updateOutput(output);
-            this.addHistory(output, msg, output.toString(), null);
-            this.cache.put(output.getId(), output);
+            output = outputRepository.save(output);
+//            outputMapper.updateOutput(output);
+//            this.addHistory(output, msg, output.toString(), null);
+            this.cache.put(output.getId(), output.toDto());
             res.setMsg(msg);
             res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            this.addHistory(output, "could not modified utput. " + output.getName(), null, e.getMessage());
+//            this.addHistory(output, "could not modified utput. " + output.getName(), null, e.getMessage());
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
@@ -122,15 +125,18 @@ public class OutputService {
     public SingleObjectResponse removeLogger(Output output) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
-            Output info = this.cache.get(output.getId());
+            OutputDto info = this.cache.get(output.getId());
+            if (info.getHandler().isRunning())  {
+                throw new OutputHandleException("Stop it first");
+            }
             String msg = "logger was removed. " + info.getName();
             res.setMsg(msg);
 
-            this.outputMapper.removeOutput(output.getId());
-            this.addHistory(output, msg, output.toString(), null);
+            outputRepository.deleteById(output.getId());
+//            this.addHistory(output, msg, output.toString(), null);
             this.cache.remove(output.getId());
         } catch (Exception e) {
-            this.addHistory(output, "could not remove logger. " + output.getName(), null, e.getMessage());
+//            this.addHistory(output, "could not remove logger. " + output.getName(), null, e.getMessage());
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
@@ -139,31 +145,31 @@ public class OutputService {
     
     public SingleObjectResponse startOutput(int id, String ip) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
-        Output output = this.cache.get(id);
-        String msg = "Successfully started " + output.getName();
-        output.setIp(ip);
+        OutputDto outputDto = this.cache.get(id);
+        String msg = "Successfully started " + outputDto.getName();
+        outputDto.setIp(ip);
         try {
-            if (output.getStatus() == 0 || !output.getHandler().isRunning()) {
-                if (!output.getHandler().isReadyForRunning()) {
-                    output.resetHandler();
+            if (outputDto.getStatus() == 0 || !outputDto.getHandler().isRunning()) {
+                if (!outputDto.getHandler().isReadyForRunning()) {
+                    outputDto.resetHandler();
                 }
                 
-                if (output.getHandler().startOutput()) {
-                    output.setStatus(1);
+                if (outputDto.getHandler().startOutput()) {
+                    outputDto.setStatus(1);
                     res.setMsg(msg);
-                    this.outputMapper.updateOutputStatus(id, 1);
-                    this.addHistory(output, msg, null, null);
+                    outputRepository.setStatus(id, 1, ip);
+//                    this.addHistory(outputDto, msg, null, null);
                 } else {
-                    throw new OutputHandleException("Could not start output [" + output.getName() + "]");
+                    throw new OutputHandleException("Could not start output [" + outputDto.getName() + "]");
                 }
             } else {
-                throw new OutputHandleException("Already running output: " + output.getName());
+                throw new OutputHandleException("Already running output: " + outputDto.getName());
             }
         } catch (OutputHandleException e) {
             log.error(e.getMessage(), e);
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            this.addHistory(output, e.getMessage(), null, e.getMessage());
+//            this.addHistory(outputDto, e.getMessage(), null, e.getMessage());
         }
         return res;
     }
@@ -175,19 +181,19 @@ public class OutputService {
             if (this.cache.containsKey(id) && this.cache.get(id).getStatus() == 1) {
                 this.cache.get(id).getHandler().stopOutput();
                 this.cache.get(id).setStatus(0);
-                this.outputMapper.updateOutputStatus(id, 0);
+                outputRepository.setStatus(id, 0, ip);
                 res.setMsg(msg);
                 this.addHistory(this.cache.get(id), msg, null, null);
             } else {
                 msg = "Output was not running status: " + this.cache.get(id).getName();
                 res.setMsg(msg);
                 res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                this.addHistory(this.cache.get(id), msg, null, msg);
+//                this.addHistory(this.cache.get(id), msg, null, msg);
             }
         } catch (Exception e) {
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            this.addHistory(this.cache.get(id), e.getMessage(), null, e.getMessage());
+//            this.addHistory(this.cache.get(id), e.getMessage(), null, e.getMessage());
         }
         return res;
     }
@@ -197,18 +203,18 @@ public class OutputService {
         try {
             if (((SparrowOutput) this.cache.get(id).getInfo()).closeClient(clientId)) {
                 String message = "Successfully stopped client [" + clientId + "]";
-                histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
+//                histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
                 return new SingleObjectResponse(HttpStatus.OK.value(), message);
             } else {
                 throw new OutputHandleException("Could not stop client [" + clientId + "]");
             }
         } catch (OutputHandleException e) {
-            histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), e.getMessage(), null, null);
+//            histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), e.getMessage(), null, null);
             return new SingleObjectResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
         }
     }
 
-    public Collection<Output> list() {
+    public Collection<OutputDto> list() {
         return this.cache.values();
     }
 
@@ -274,8 +280,8 @@ public class OutputService {
         return this.cache.get(port).getProducerEps().get(loggerId).getEpsHistory();
     }
 
-    public boolean addHistory(Output output, String msg, String detail, String error) {
-        histMapper.insertHistory(output.getId(), output.getIp(), TYPE, new Date().getTime(), msg, detail, null);
+    public boolean addHistory(OutputDto outputDto, String msg, String detail, String error) {
+//        histMapper.insertHistory(output.getId(), output.getIp(), TYPE, new Date().getTime(), msg, detail, null);
         return true;
     }
 }

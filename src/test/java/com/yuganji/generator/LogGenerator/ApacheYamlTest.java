@@ -1,15 +1,5 @@
 package com.yuganji.generator.LogGenerator;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Random;
-import java.util.stream.IntStream;
-
-import com.yuganji.generator.util.NetUtil;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,9 +8,17 @@ import com.yuganji.generator.engine.Ip2LocationService;
 import com.yuganji.generator.field.IDField;
 import com.yuganji.generator.finnegan.Finnegan;
 import com.yuganji.generator.model.FieldInfoVO;
-import com.yuganji.generator.model.LoggerPropVO;
-
+import com.yuganji.generator.model.LoggerDetailDto;
+import com.yuganji.generator.util.NetUtil;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 @SpringBootTest
 @Log4j2
@@ -72,7 +70,7 @@ public class ApacheYamlTest {
     public void test() throws StreamReadException, DatabindException, IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         
-        LoggerPropVO a = mapper.readValue(new File("config/apache.yaml"), LoggerPropVO.class);
+        LoggerDetailDto a = mapper.readValue(new File("config/apache.yaml"), LoggerDetailDto.class);
         
         IntStream.range(1, 100).forEach(x -> {
 //            a.generateLog()

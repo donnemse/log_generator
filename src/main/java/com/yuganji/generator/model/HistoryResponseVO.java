@@ -13,7 +13,7 @@ public class HistoryResponseVO {
     private int totalCnt;
     private int offset;
     private int limit;
-    private List<HistoryVO> list;
+    private List<HistoryDto> list;
     
     public HistoryResponseVO(int currPage) {
         this.currPage = currPage;

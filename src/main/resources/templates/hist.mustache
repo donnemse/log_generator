@@ -91,12 +91,12 @@
                 enabled: true,
                 limit: 10,
                 server: {
-                    url: (prev, page, limit) => `${prev}/${page+1}`
+                    url: (prev, page, limit) => `${prev}/${page}`
                 }
             },
             server: {
-                url: '/api/history/list',
-                then: data => data.data.list.map(hist => [
+                url: '/api/history',
+                then: data => data.data.content.map(hist => [
                     hist.id,
                     hist.fid,
                     hist.name,
@@ -107,7 +107,7 @@
                     hist.error,
                     hist.last,
                 ]),
-                total: data => data.data.total_cnt
+                total: data => data.data.total_elements -1
                 } 
             }).render(document.getElementById('table'));
     });

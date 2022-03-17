@@ -1,5 +1,6 @@
 package com.yuganji.generator.db;
 
+import com.yuganji.generator.model.HistoryDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -34,4 +35,18 @@ public class History {
     private String detail;
 
     private String error;
+
+    public HistoryDto toDto(){
+        return HistoryDto.builder()
+                .id(this.id)
+                .fid(this.fid)
+                .name(null)
+                .type(this.type)
+                .ip(this.ip)
+                .lastModified(this.lastModified)
+                .msg(this.msg)
+                .detail(this.detail)
+                .error(this.error)
+                .build();
+    }
 }

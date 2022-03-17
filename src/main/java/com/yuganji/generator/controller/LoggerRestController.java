@@ -1,21 +1,24 @@
 package com.yuganji.generator.controller;
 
-import com.google.gson.Gson;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.yuganji.generator.db.Logger;
 import com.yuganji.generator.engine.GeneratorManager;
 import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.util.NetUtil;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(value = "/api")
-@Log4j2
 public class LoggerRestController {
     @Autowired
     private GeneratorManager genMgr;
@@ -29,11 +32,10 @@ public class LoggerRestController {
     
     @RequestMapping(value = "/loggers", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
-        Gson gson = new Gson();
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.list());
     }
     
-    @RequestMapping(value = "/loggers", method = RequestMethod.POST)
+    @RequestMapping(value = "/loggers", method = RequestMethod.PUT)
     public @ResponseBody SingleObjectResponse add(
             @RequestBody Logger logger,
             HttpServletRequest request) {

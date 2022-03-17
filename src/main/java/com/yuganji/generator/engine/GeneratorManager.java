@@ -21,9 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @Log4j2
 public class GeneratorManager {
-    private static final String TYPE = "logger";
-//    @Autowired
-//    private QueueService queueService;
+    
     @Autowired
     private OutputService outputService;
     
@@ -44,7 +42,6 @@ public class GeneratorManager {
                     logger.setIp("System");
                     this.start(logger);
                     log.debug("started generator by scheduler: " + entry.getKey());
-//                }
             }
         }
     }
@@ -66,15 +63,12 @@ public class GeneratorManager {
         this.outputService.removeProducerEps(id);
         loggerService.get(id).setStatus(0);
         this.updateLoggerStatus(id, 0, ip);
-//        histMapper.insertHistory(id, ip, TYPE, new Date().getTime(),
-//                "Stopped logger by error. plz check yaml", null, null);
     }
 
     public SingleObjectResponse start(Logger logger) {
         logger = loggerService.get(logger.getId()).toEntity();
         if (this.isRunning(logger.getId())) {
             String message = "Already running: " + logger.getName();
-//            histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
@@ -118,8 +112,5 @@ public class GeneratorManager {
 
     private void updateLoggerStatus(int id, int status, String ip) {
         loggerRepository.setStatus(id, status, ip);
-//        loggerMapper.updateLoggerStatus(id, status);
-        String message = "Successfully " + (status == 1? "started. ": "stopped. ") + loggerService.get(id).getName();
-//        histMapper.insertHistory(id, ip, TYPE, new Date().getTime(), message, null, null);
     }
 }

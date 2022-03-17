@@ -1,5 +1,23 @@
 package com.yuganji.generator.output;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
 import com.yuganji.generator.db.Output;
 import com.yuganji.generator.db.OutputRepository;
 import com.yuganji.generator.exception.OutputHandleException;
@@ -9,22 +27,13 @@ import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.model.OutputDto;
 import com.yuganji.generator.output.model.SparrowOutput;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
 public class OutputService {
-    private static final String TYPE = "output";
     
     @Getter
     private Map<Integer, OutputDto> cache;
@@ -67,7 +76,7 @@ public class OutputService {
         return this.cache.get(id);
     }
 
-    public SingleObjectResponse createOutput(Output output) {
+    public SingleObjectResponse add(Output output) {
         String msg = "Successfully saved" + output.getName();
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
 
@@ -86,7 +95,7 @@ public class OutputService {
         return res;
     }
 
-    public SingleObjectResponse modifyOutput(Output output) {
+    public SingleObjectResponse modify(Output output) {
         String msg = "output was modified. " + output.getName();
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value(), msg);
         if (!this.cache.containsKey(output.getId())) {
@@ -115,7 +124,7 @@ public class OutputService {
         return res;
     }
 
-    public SingleObjectResponse removeLogger(Output output) {
+    public SingleObjectResponse remove(Output output) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
             OutputDto info = this.cache.get(output.getId());
@@ -136,11 +145,11 @@ public class OutputService {
         return res;
     }
     
-    public SingleObjectResponse startOutput(int id, String ip) {
+    public SingleObjectResponse start(Output output) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
-        OutputDto outputDto = this.cache.get(id);
+        OutputDto outputDto = this.cache.get(output.getId());
         String msg = "Successfully started " + outputDto.getName();
-        outputDto.setIp(ip);
+        outputDto.setIp(output.getIp());
         try {
             if (outputDto.getStatus() == 0 || !outputDto.getHandler().isRunning()) {
                 if (!outputDto.getHandler().isReadyForRunning()) {
@@ -150,8 +159,7 @@ public class OutputService {
                 if (outputDto.getHandler().startOutput()) {
                     outputDto.setStatus(1);
                     res.setMsg(msg);
-                    outputRepository.setStatus(id, 1, ip);
-//                    this.addHistory(outputDto, msg, null, null);
+                    outputRepository.setStatus(output.getId(), 1, output.getIp());
                 } else {
                     throw new OutputHandleException("Could not start output [" + outputDto.getName() + "]");
                 }
@@ -162,31 +170,30 @@ public class OutputService {
             log.error(e.getMessage(), e);
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//            this.addHistory(outputDto, e.getMessage(), null, e.getMessage());
         }
         return res;
     }
 
-    public SingleObjectResponse stopOutput(int id, String ip) {
+    public SingleObjectResponse stop(Output output) {
+        int id = output.getId();
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         String msg = "Output was stopped: " + this.cache.get(id).getName();
         try {
             if (this.cache.containsKey(id) && this.cache.get(id).getStatus() == 1) {
                 this.cache.get(id).getHandler().stopOutput();
                 this.cache.get(id).setStatus(0);
-                outputRepository.setStatus(id, 0, ip);
+                outputRepository.setStatus(id, 0, output.getIp());
                 res.setMsg(msg);
                 this.addHistory(this.cache.get(id), msg, null, null);
             } else {
                 msg = "Output was not running status: " + this.cache.get(id).getName();
                 res.setMsg(msg);
                 res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//                this.addHistory(this.cache.get(id), msg, null, msg);
             }
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//            this.addHistory(this.cache.get(id), e.getMessage(), null, e.getMessage());
         }
         return res;
     }

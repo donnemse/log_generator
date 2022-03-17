@@ -1,20 +1,5 @@
 package com.yuganji.generator.logger;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.yuganji.generator.db.Logger;
-import com.yuganji.generator.db.LoggerRepository;
-import com.yuganji.generator.engine.Ip2LocationService;
-import com.yuganji.generator.model.LoggerDto;
-import com.yuganji.generator.model.LoggerRequestVO;
-import com.yuganji.generator.model.SingleObjectResponse;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -23,20 +8,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.yuganji.generator.db.Logger;
+import com.yuganji.generator.db.LoggerRepository;
+import com.yuganji.generator.model.LoggerDto;
+import com.yuganji.generator.model.LoggerRequestVO;
+import com.yuganji.generator.model.SingleObjectResponse;
+
+import lombok.extern.log4j.Log4j2;
+
 @Service
 @Log4j2
 public class LoggerService {
-    private static final String TYPE = "logger";
     private final int SAMEPLE_CNT = 100; 
     private Map<Integer, LoggerDto> cache;
-    private ObjectMapper om = new ObjectMapper(new YAMLFactory())
-            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
     @Autowired
     private LoggerRepository loggerRepository;
-
-    @Autowired
-    private Ip2LocationService ip2LocService;
 
     @PostConstruct
     private void init() {

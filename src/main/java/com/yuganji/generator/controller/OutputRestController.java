@@ -1,14 +1,20 @@
 package com.yuganji.generator.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.yuganji.generator.db.Output;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.util.NetUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(value = "/api")
@@ -32,41 +38,43 @@ public class OutputRestController {
     }
 
     @RequestMapping(value = "/outputs", method = RequestMethod.PUT)
-    public @ResponseBody SingleObjectResponse create(
+    public @ResponseBody SingleObjectResponse add(
             @RequestBody Output output,
             HttpServletRequest request) {
         output.setIp(NetUtil.getClientIP(request));
-        return outputService.createOutput(output);
+        return outputService.add(output);
     }
 
     @RequestMapping(value = "/outputs", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse modify(
-            @RequestBody Output vo,
+            @RequestBody Output output,
             HttpServletRequest request) {
-        vo.setIp(NetUtil.getClientIP(request));
-        return outputService.modifyOutput(vo);
+        output.setIp(NetUtil.getClientIP(request));
+        return outputService.modify(output);
     }
 
     @RequestMapping(value = "/outputs", method = RequestMethod.DELETE)
-    public @ResponseBody SingleObjectResponse delete(
-            @RequestBody Output vo,
+    public @ResponseBody SingleObjectResponse remove(
+            @RequestBody Output output,
             HttpServletRequest request) {
-        vo.setIp(NetUtil.getClientIP(request));
-        return outputService.removeLogger(vo);
+        output.setIp(NetUtil.getClientIP(request));
+        return outputService.remove(output);
     }
 
-    @RequestMapping(value = "/outputs/start/{id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/outputs/start", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse start(
-            @PathVariable(value = "id") int id,
+            @RequestBody Output output,
             HttpServletRequest request) {
-        return outputService.startOutput(id, NetUtil.getClientIP(request));
+        output.setIp(NetUtil.getClientIP(request));
+        return outputService.start(output);
     }
     
-    @RequestMapping(value = "/outputs/stop/{id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/outputs/stop", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse stop(
-            @PathVariable(value = "id") int id,
+            @RequestBody Output output,
             HttpServletRequest request) {
-        return outputService.stopOutput(id, NetUtil.getClientIP(request));
+        output.setIp(NetUtil.getClientIP(request));
+        return outputService.stop(output);
     }
 
     @RequestMapping(value = "/outputs/stop-client/{id}/{clientId}", method = RequestMethod.PATCH)

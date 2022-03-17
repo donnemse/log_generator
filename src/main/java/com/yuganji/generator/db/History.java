@@ -1,12 +1,15 @@
 package com.yuganji.generator.db;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Data
 @Entity
 @Table(name = "history")
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class History {
 
     @Id
@@ -22,8 +25,9 @@ public class History {
     @Column(nullable = false)
     private String ip;
 
+    @Builder.Default
     @Column(name = "last_modified", nullable = false)
-    private long lastModified;
+    private long lastModified = System.currentTimeMillis();
 
     private String msg;
 

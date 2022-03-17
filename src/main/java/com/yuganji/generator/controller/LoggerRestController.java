@@ -3,7 +3,7 @@ package com.yuganji.generator.controller;
 import com.google.gson.Gson;
 import com.yuganji.generator.db.Logger;
 import com.yuganji.generator.engine.GeneratorManager;
-import com.yuganji.generator.logger.LoggerManager;
+import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.LoggerRequestVO;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.util.NetUtil;
@@ -21,17 +21,17 @@ public class LoggerRestController {
     @Autowired
     private GeneratorManager genMgr;
     @Autowired
-    private LoggerManager loggerPropMng;
+    private LoggerService loggerPropMng;
     
     @RequestMapping(value = "/loggers/{id}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse get(@PathVariable(value = "id") int id) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.getLogger(id));
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.get(id));
     }
     
     @RequestMapping(value = "/loggers", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
         Gson gson = new Gson();
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.listLogger());
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.list());
     }
     
     @RequestMapping(value = "/loggers", method = RequestMethod.POST)
@@ -39,7 +39,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.createLogger(logger);
+        return loggerPropMng.add(logger);
     }
     
     @RequestMapping(value = "/loggers", method = RequestMethod.PATCH)
@@ -47,7 +47,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.modifyLogger(logger);
+        return loggerPropMng.modify(logger);
     }
     
     @RequestMapping(value = "/loggers", method = RequestMethod.DELETE)
@@ -55,7 +55,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.removeLogger(logger);
+        return loggerPropMng.remove(logger);
     }
     
     @RequestMapping(value = "/loggers/sample", method = RequestMethod.POST)

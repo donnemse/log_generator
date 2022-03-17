@@ -23,17 +23,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Log4j2
-public class LoggerManager {
+public class LoggerService {
     private static final String TYPE = "logger";
     private final int SAMEPLE_CNT = 100; 
     private Map<Integer, LoggerDto> cache;
-    private ObjectMapper om = new ObjectMapper(new YAMLFactory());
-    
-//    @Autowired
-//    private LoggerMapper loggerMapper;
-//
-//    @Autowired
-//    private HistoryMapper histMapper;
+    private ObjectMapper om = new ObjectMapper(new YAMLFactory())
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
     @Autowired
     private LoggerRepository loggerRepository;
@@ -43,47 +38,26 @@ public class LoggerManager {
 
     @PostConstruct
     private void init() {
-        om.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        this.cache = new HashMap<>();
-
-        this.cache = loggerRepository.findAll().stream().collect(Collectors.toMap(Logger::getId, x -> x.toDto()));
-//                .map(x -> x.toDto());
-
-//        List<LoggerVO> listInfo = this.loggerMapper.listLogger();
-//        this.cache = listInfo.stream()
-//            .collect(Collectors.toMap(LoggerVO::getId, x -> {
-//                try {
-//
-//
-//                    MapCache mapCache = new MapCache();
-//                    mapCache.setIp2Locations(ip2LocService);
-//                    x.setMapCache(mapCache);
-//                } catch (JsonProcessingException e) {
-//                    log.error(e.getMessage(), e);
-//                }
-//                return x;
-//            }));
+        this.cache = loggerRepository.findAll().stream().collect(
+                Collectors.toMap(Logger::getId, x -> x.toDto()));
     }
 
-    public LoggerDto getLogger(int id) {
+    public LoggerDto get(int id) {
         return this.cache.get(id);
     }
     
-    public Map<Integer, LoggerDto> listLogger() {
+    public Map<Integer, LoggerDto> list() {
         return this.cache;
     }
 
-    public SingleObjectResponse createLogger(Logger entity) {
+    public SingleObjectResponse add(Logger logger) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
-            entity = loggerRepository.save(entity);
-            LoggerDto loggerDto = entity.toDto();
-            this.cache.put(entity.getId(), loggerDto);
-            res.setMsg("Successfully saved " + entity.getName());
+            logger = loggerRepository.save(logger);
+            LoggerDto loggerDto = logger.toDto();
+            this.cache.put(logger.getId(), loggerDto);
+            res.setMsg("Successfully saved " + logger.getName());
             res.setData(loggerDto);
-//            vo.setId(info.getId());
-//            this.addHistory(loggerVo, "Successfully saved " + entity.getName(), entity.getYamlStr(), null);
-//            
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -93,7 +67,7 @@ public class LoggerManager {
         return res;
     }
 
-    public SingleObjectResponse modifyLogger(Logger logger) {
+    public SingleObjectResponse modify(Logger logger) {
         String msg = "logger was modified. " + logger.getName();
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value(), msg);
         if (!this.cache.containsKey(logger.getId())) {
@@ -120,7 +94,7 @@ public class LoggerManager {
         return res;
     }
 
-    public SingleObjectResponse removeLogger(Logger logger) {
+    public SingleObjectResponse remove(Logger logger) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
             LoggerDto info = this.cache.get(logger.getId());

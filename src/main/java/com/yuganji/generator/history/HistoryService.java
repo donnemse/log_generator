@@ -1,6 +1,6 @@
 package com.yuganji.generator.history;
 
-import com.yuganji.generator.logger.LoggerManager;
+import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.HistoryDto;
 import com.yuganji.generator.model.HistoryResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class HistoryService {
+
     @Autowired
-    private LoggerManager loggerPropMng;
+    private LoggerService loggerPropMng;
     
     public HistoryResponseVO list(int page) {
         HistoryResponseVO res = new HistoryResponseVO(page);
@@ -18,8 +19,8 @@ public class HistoryService {
         
         for (HistoryDto vo: res.getList()) {
             if (vo.getType().equals("logger")) {
-                if (loggerPropMng.getLogger(vo.getFid()) != null) {
-                    vo.setName(loggerPropMng.getLogger(vo.getFid()).getName());
+                if (loggerPropMng.get(vo.getFid()) != null) {
+                    vo.setName(loggerPropMng.get(vo.getFid()).getName());
                 }
             }
         }

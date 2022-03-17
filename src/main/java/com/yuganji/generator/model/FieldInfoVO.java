@@ -1,37 +1,30 @@
 package com.yuganji.generator.model;
 
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yuganji.generator.field.IDField;
-import com.yuganji.generator.field.IFieldGenerator;
-import com.yuganji.generator.field.IPField;
-import com.yuganji.generator.field.IntField;
-import com.yuganji.generator.field.Ip2LocField;
-import com.yuganji.generator.field.PayloadField;
-import com.yuganji.generator.field.StrField;
-import com.yuganji.generator.field.TimeField;
-import com.yuganji.generator.field.UrlField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.yuganji.generator.field.*;
 import com.yuganji.generator.util.Constants;
-
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FieldInfoVO implements Comparable<Integer> {
     private String type;
     private Map<String, Double> values;
-    @JsonProperty("raw_format")
     private String rawFormat;
-    @JsonProperty("parse_format")
     private String parseFormat;
     private String based;
-    @JsonProperty("parser_name")
     private String parserName;
-    
+
+    @JsonIgnore
     private transient int order;
-    
+
+    @JsonIgnore
     private transient IFieldGenerator ins;
-    
+
+    @JsonIgnore
     public IFieldGenerator getInstance() {
         if (type.equalsIgnoreCase(Constants.DataType.IP.getValue())) {
             return new IPField(values);
@@ -59,7 +52,7 @@ public class FieldInfoVO implements Comparable<Integer> {
             this.ins = this.getInstance();
         }
         if (this.ins == null) {
-            throw new Exception("### ERROR ###\n" + this.toString());
+            throw new Exception("### ERROR ###\n" + this);
         }
         return this.ins.get();
     }

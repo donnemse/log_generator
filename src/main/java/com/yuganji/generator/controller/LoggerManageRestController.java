@@ -21,7 +21,7 @@ import com.yuganji.generator.model.SingleObjectResponse;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
-@RequestMapping(value = "/api/logger")
+@RequestMapping(value = "/api")
 @Log4j2
 public class LoggerManageRestController {
     @Autowired
@@ -29,18 +29,18 @@ public class LoggerManageRestController {
     @Autowired
     private LoggerManager loggerPropMng;
     
-    @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/loggers/{id}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse get(@PathVariable(value = "id") int id) {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.getLogger(id));
     }
     
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/loggers", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
         Gson gson = new Gson();
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.listLogger());
     }
     
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @RequestMapping(value = "/loggers", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse create(
             @RequestBody LoggerRequestVO vo,
             HttpServletRequest request) {
@@ -48,7 +48,7 @@ public class LoggerManageRestController {
         return loggerPropMng.createLogger(vo);
     }
     
-    @RequestMapping(value = "/modify", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/loggers", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse modify(
             @RequestBody LoggerRequestVO vo,
             HttpServletRequest request) {
@@ -56,7 +56,7 @@ public class LoggerManageRestController {
         return loggerPropMng.modifyLogger(vo);
     }
     
-    @RequestMapping(value = "/remove", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/loggers", method = RequestMethod.DELETE)
     public @ResponseBody SingleObjectResponse delete(
             @RequestBody LoggerRequestVO vo,
             HttpServletRequest request) {
@@ -64,19 +64,19 @@ public class LoggerManageRestController {
         return loggerPropMng.removeLogger(vo);
     }
     
-    @RequestMapping(value = "/sample", method = RequestMethod.POST)
+    @RequestMapping(value = "/loggers/sample", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse sample(@RequestBody LoggerRequestVO vo) {
         return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.sample(vo));
     }
     
-    @RequestMapping(value = "/start/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/loggers/start/{id}", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse start(
             @PathVariable(value = "id") int id,
             HttpServletRequest request) {
         return genMgr.start(id, NetUtil.getClientIP(request));
     }
     
-    @RequestMapping(value = "/stop/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/loggers/stop/{id}", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse stop(
             @PathVariable(value = "id") int id,
             HttpServletRequest request) {

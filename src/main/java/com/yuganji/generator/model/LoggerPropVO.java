@@ -7,17 +7,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.yuganji.generator.util.Constants;
 import org.apache.commons.text.StringSubstitutor;
 
 import lombok.Data;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoggerPropVO {
     private String log;
     private long eps;
     private String logtype;
     private String raw;
+
+    @JsonIgnore
     private transient MapCache mapCache;
     
     private Map<String, FieldInfoVO> data;

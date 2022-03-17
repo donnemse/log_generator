@@ -1,10 +1,13 @@
 package com.yuganji.generator.model;
 
-import java.util.Date;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoggerVO {
     private int id;
     private String name;
@@ -32,16 +35,9 @@ public class LoggerVO {
     public void setMapCache(MapCache mapCache) {
         this.logger.setMapCache(mapCache);
     }
-    
+
+    @JsonIgnore
     public MapCache getMapCache() {
         return this.logger.getMapCache();
     }
-    
-//    public String getLastModifiedStr() {
-//        return sdf.format(this.lastModified);
-//    }
-//    
-//    public String getCreatedStr() {
-//        return sdf.format(this.created);
-//    }
 }

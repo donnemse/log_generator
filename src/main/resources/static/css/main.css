@@ -107,58 +107,58 @@ a {
  * -- logger STYLES --
  * Styles relevant to the logger messages, labels, counts, and more.
  */
-.logger-count {
+.menu-count {
     color: rgb(75, 113, 151);
 }
 
-.logger-label-personal,
-.logger-label-work,
-.logger-label-travel {
+.menu-label-personal,
+.menu-label-work,
+.menu-label-travel {
     width: 15px;
     height: 15px;
     display: inline-block;
     margin-right: 0.5em;
     border-radius: 3px;
 }
-.logger-label-personal {
+.menu-label-personal {
     background: #ffc94c;
 }
-.logger-label-work {
+.menu-label-work {
     background: #41ccb4;
 }
-.logger-label-travel {
+.menu-label-travel {
     background: #40c365;
 }
 
 
 /* logger Item Styles */
-.logger-item {
+.menu-item {
     padding: 0.9em 1em;
     border-bottom: 1px solid #ddd;
     border-left: 6px solid transparent;
 }
-    .logger-avatar {
+    .menu-avatar {
         border-radius: 3px;
         margin-right: 0.5em;
     }
-    .logger-name,
-    .logger-subject {
+    .menu-name,
+    .menu-subject {
         margin: 0;
     }
-    .logger-name {
+    .menu-name {
         text-transform: uppercase;
         color: #999;
     }
-    .logger-desc {
+    .menu-desc {
         font-size: 80%;
         word-break: break-word;
         margin: 0.4em 0;
     }
 
-.logger-item-selected {
+.menu-item-selected {
     background: #eee;
 }
-.logger-item-unread {
+.menu-item-unread {
     border-left: 6px solid #1b98f8;
 }
 
@@ -376,8 +376,8 @@ textarea {
 }
 
 #new_output_modal .modal-dialog {
-    max-width: 20% !important;
-    min-width: 20% !important;
+    max-width: 35% !important;
+    min-width: 35% !important;
 }
 
 .field-key {

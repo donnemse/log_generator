@@ -1,11 +1,11 @@
 package com.yuganji.generator.field;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import com.yuganji.generator.model.FieldInfoVO;
 import com.yuganji.generator.model.FieldVO;
 import org.apache.commons.lang3.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class IDField extends FieldInfoVO implements IFieldGenerator {
     private String suffix;
@@ -35,7 +35,7 @@ public class IDField extends FieldInfoVO implements IFieldGenerator {
             this.count = 0L;
             this.currentTime = hour;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         
         sb.append(yyyyMMddHHmmssSSS.format(d));
         sb.append('_');

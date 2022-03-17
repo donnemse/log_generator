@@ -10,37 +10,63 @@
 
 
     <style rel="stylesheet">
+        .change-state {
+            height: 70px !important;
+        }
     </style>
     <script type="text/javascript">
-        function refreshList(){
-            $(".list").empty();
-            axios.get('/api/output/list')
-                .then(function (response) {
-                    let i = 0;
-                    console.log(response);
-                    $.each(response.data.data, function(k, v) {
-                        let $div = $(
-                            "<div class=\"logger-item pure-g " + (i++ == 0? "logger-item-selected logger-item-unread": "") + "\">" +
-                            "   <div class=\"pure-u-7-8\">" +
-                            "       <h5 class=\"logger-name\">TCP: " + v.id + "</h5>" + 
-                            "       <h6 class=\"logger-subject\">" +
-                            "           Max Queue: " + v.max_queue_size + "<br />Current Queue: " + v.current_queue_size +
-                            "       </h6>" +
-                            "   </div>" +
-                            "   <div class=\"pure-u-1-8 output-close-button\">" +
-                            "      <button type=\"button\" class=\"btn-close\" aria-label=\"Close\"></button>" +
-                            "   </div>" +
-                            "</div>");
-                        $div.data("output_id", v.id);
-                        $(".list").append($div);
-                    });
-                }).catch(function (error) {
-                    console.log(error);
-                })
-                .then(function () {
-                    $(".logger-item").eq(0).trigger("click");
-                });
+
+        let last_selected_object;
+        $.fn.serializeObject = function () {
+            'use strict';
+            var result = {};
+            var extend = function (i, element) {
+                var node = result[element.name];
+                if ('undefined' !== typeof node && node !== null) {
+                    if ($.isArray(node)) {
+                        node.push(element.value);
+                    } else {
+                        result[element.name] = [node, element.value];
+                    }
+                } else {
+                    result[element.name] = element.value;
+                }
+            };
+            $.each(this.serializeArray(), extend);
+            return result;
         };
+        function loadList(){
+            $(".list").empty();
+            axios({
+                url: '/api/outputs',
+                method: 'get'
+            }).then(function (response) {
+                let i = 0;
+                $.each(response.data.data, function(k, v) {
+                    let $div = $(
+                        "<div class=\"menu-item pure-g " + (i++ == 0? "menu-item-selected menu-item-unread": "") + "\">" +
+                        "   <div class=\"pure-u-1\">" +
+                        "       <h5 class=\"menu-name\">" + v.type + ": " + v.name + "</h5>" +
+                        "       <h6 class=\"menu-subject\">" +
+                        "           Max Queue: " + v.max_queue_size + "<br />Current Queue: " + v.current_queue_size +
+                        "       </h6>" +
+                        "   </div>" +
+                        "   <div class=\"pure-u-1-8 change-state\">" +
+                        "       <div class=\"form-check form-switch\">" +
+                        "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
+                        "       </div>" +
+                        "   </div>" +
+                        "</div>");
+                    $div.data("output-id", v.id);
+                    $(".list").append($div);
+                });
+            }).catch(function (error) {
+                console.log(error);
+            })
+            .then(function () {
+                $(".menu-item").eq(0).trigger("click");
+            });
+        }
         
         function cleanOutputJson(obj) {
             for(prop in obj) {
@@ -67,7 +93,6 @@
         
         function getRunningTimeStr(time) {
             let result = "";
-            console.log(time);
             let map = {
                 "일": 24,
                 "시간": 60,
@@ -97,36 +122,114 @@
                 return val;
             }
         }
-        
+
+        function updateSaveForm(callback) {
+            $form = $("<form class=\"pure-form pure-form-aligned default_info\"></form>")
+            $detail = $("<form class=\"pure-form pure-form-aligned detail_info\"></form>")
+            axios({
+                url: '/api/const/output/template',
+                method: "get"
+            }).then(function (response) {
+                console.log(response)
+                $.each(response.data.data, function(k, v) {
+                    if (v.type == "text") {
+                        $form.append(
+                                "<div class=\"pure-control-group\">"
+                                + "     <label for=\""+ k + "\">" + v.label + "</label>"
+                                + "     <input id=\""+ k + "\" name=\""+ k + "\" class=\"pure-input-1-2\" type=\""+ v.type + "\" placeholder=\""+ v.placeholder + "\">"
+                                + "</div>");
+                    } else if (v.type == "select"){
+                        $select = $("<select name=\""+ k + "\" id=\"" + k + "\" class=\"pure-input-1-3\"></select>");
+                        $.each(v.info, function(t, o) {
+                            $select.append("<option value=\"" + t + "\">" + t + "</option>");
+                        });
+                        $form.append("<div class=\"pure-control-group\">"
+                                + "     <label for=\""+ k + "\">" + v.label + "</label>"
+                                + " </div>");
+                        $form.find(".pure-control-group:last").append($select)
+
+                        $select.change(function(e) {
+                            let key = $(this).val();
+                            $detail.empty();
+                            $.each(v.info[key], function(t, o) {
+                                if (o.type == "text") {
+                                    $detail.append(
+                                            "<div class=\"pure-control-group\">"
+                                            + "     <label for=\""+ o.label + "\">" + o.label + "</label>"
+                                            + "     <input name=\""+ o.label + "\" id=\""+ o.label + "\" class=\"pure-input-1-2\" type=\""+ o.type + "\" placeholder=\""+ o.placeholder + "\">"
+                                            + "</div>");
+                                } else if (o.type == "select"){
+                                    $subselect = $("<select name=\""+ o.label + "\" id=\"" + o.label + "\" class=\"pure-input-1-3\"></select>");
+                                    $.each(o.info, function(i, option) {
+                                        $subselect.append("<option value=\"" + i + "\">" + i + "</option>");
+                                    });
+                                    $detail.append("<div class=\"pure-control-group\">"
+                                            + "     <label for=\""+ o.label + "\">" + o.label + "</label>"
+                                            + $subselect[0].outerHTML + "</div>");
+                                }
+                            });
+                        }).trigger("change");
+                    }
+                });
+            }).catch(function (error) {
+                $.notify({message: error},{type: 'danger'});
+            }).then(function () {
+                if (callback) {
+                    callback();
+                }
+            });
+
+            $("#new_output_modal").find(".modal-body").empty();
+            $("#new_output_modal").find(".modal-body").append($form);
+            $("#new_output_modal").find(".modal-body").append($detail);
+        }
+
         $(function() {
-            var editor = ace.edit("editor");
+            let editor = ace.edit("editor");
             editor.session.setMode("ace/mode/yaml");
             editor.setTheme("ace/theme/tomorrow");
             editor.setReadOnly(false);
-            refreshList();
+            editor.setFontSize(15);
+            loadList();
             
-            $(document).on('click',".open-port-button",function (e) {
-                let port = $(".pure-form").find("#new_port").val();
-                let max_queue = $(".pure-form").find("#new_max_queue").val();
-                if (port == '') {
-                    port = "3303";
-                }
-                if (max_queue == '') {
-                    max_queue = "10000";
+            $(document).on('click',".save-output-button",function (e) {
+                let data = $('.default_info').serializeObject();
+                data["info"] = $('.detail_info').serializeObject();
+                let method = "put";
+                if (data["id"] != undefined) {
+                    method = "patch";
                 }
                 axios({
-                    url: "/api/output/open",
-                    method: "post",
-                    data: {
-                        port: port,
-                        max_queue_size: max_queue
-                    }
+                    url: "/api/outputs",
+                    method: method,
+                    data: data
                 }).then(function (response) {
-                    console.log(response);
                     if (response.data.status == 200) {
                         $("#new_output_modal").find("form")[0].reset()
                         $("#new_output_modal").modal("hide");
-                        refreshList();
+                        loadList();
+                        $.notify({message: response.data.msg},{type: 'success'});
+                    } else {
+                        $.notify({message: response.data.msg},{type: 'danger'});
+                    }
+                }).catch(function (error) {
+                    $.notify({message: error},{type: 'danger'});
+                }).then(function () {
+                    // always executed
+                });
+            });
+
+            $(document).on('click',".change-state .checkbox-change-state",function (e) {
+                $checkbox = $(this);
+                let id = $(e.target).parents(".menu-item").data("output-id");
+                let flag = $checkbox.is(":checked");
+                console.log(flag)
+                axios({
+                    url: "/api/outputs/" + (flag? "start": "stop") + "/" + id,
+                    method: "patch"
+                }).then(function (response) {
+                    console.log(response)
+                    if (response.data.data) {
                         $.notify({message: response.data.msg},{type: 'success'});
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});
@@ -138,58 +241,42 @@
                 });
             });
             
-            $(document).on("click", ".output-close-button", function (e) {
-                axios({
-                    url: '/api/output/close/' + $(e.target).parents(".logger-item").data("output_id"),
-                    method: "post"
-                }).then(function (response) {
-                    console.log(response);
-                    if (response.data.status == 200) {
-                        $.notify({message: response.data.msg},{type: 'success'});
-                        refreshList();
-                    } else {
-                        $.notify({message: response.data.msg},{type: 'danger'});
-                    }
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error);
-                })
-                .then(function () {
-                    // always executed
-                });
-            });
-            
-            
-            $(document).on("click", ".logger-item", function (e) {
+            $(document).on("click", ".menu-item", function (e) {
                 if ($(e.target).hasClass("button-change-state")) {
                     return;
                 }
-                $(".logger-item").removeClass("logger-item-selected logger-item-unread");
-                $(e.currentTarget).addClass("logger-item-selected logger-item-unread");
-                
-                axios.get('/api/output/get/' + $(e.currentTarget).data("output_id"))
-                .then(function (response) {
+                $(".menu-item").removeClass("menu-item-selected menu-item-unread");
+                $(e.currentTarget).addClass("menu-item-selected menu-item-unread");
+
+                axios({
+                    url: "/api/outputs/" + $(e.currentTarget).data("output-id"),
+                    method: "get"
+                }).then(function (response) {
                     let data = response.data.data;
-                    data.clients = ["client1", "client2"];
+                    // data.clients = ["client1", "client2"];
                     cleanOutputJson(data);
-                    console.log(data)
                     editor.setValue(JSON.stringify(data, null, '\t'), -1)
-                    
+                    let title = "";
+                    if (data.type == "sparrow") {
+                        title = "Port: " + data.info.port;
+                    } else if (data.type == "file") {
+                        title = "File: " + data.info.output_type;
+                    }
+                    console.log(data.started_time)
                     let $div = $(
                         "<h2 class=\"logger-content-title\">" +
-                        "   <label>Port: " + data.port + "</label>" +
+                        "   <label>" + title + "</label>" +
                         "</h2>" +
                         "<p class=\"logger-content-subtitle\">" +
-                            "Opened by <a>" + data.opened_ip + "</a> at <span>" + moment(data.started_time).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
+                            "Opened by <a>" + data.ip + "</a> at <span>" + data.started_time + "</span>" +
                         "</p>" +
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
-                        "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
+                        "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />" +
+                        "<input type=\"hidden\" id=\"selected_name\" value=\"" + data.name + "\" />"
                     );
                     $(".logger-info").html($div);
 
-                    if (data.clients.length > 0) {
-
+                    if (data.clients != null && data.clients.length > 0) {
                         $(".clients").empty();
                         $.each(data.clients, function(i, c) {
                             $(".clients").append(
@@ -201,6 +288,7 @@
                                 + "</button>" );
                         });
                     }
+                    last_selected_object = data;
                 })
                 .catch(function (error) {
                     // handle error
@@ -209,10 +297,12 @@
                 .then(function () {
                     // always executed
                 });
-                
-                axios.get('/api/output/producer/eps/' + $(e.currentTarget).data("output_id"))
-                .then(function (response) {
-                	makeChart(response.data.data)
+
+                axios({
+                    url: '/api/outputs/eps/producer/' + $(e.currentTarget).data("output-id"),
+                    method: "get"
+                }).then(function (response) {
+                    makeChart(response.data.data)
                 })
                 .catch(function (error) {
                     // handle error
@@ -222,46 +312,113 @@
                     // always executed
                 });
             });
-            
-            
+
+            $(document).on('click',".remove-button",function (e) {
+                let id = $("#selected_id").val();
+                let flag = $(".menu-item[output-id=" + id + "]").find(".checkbox-change-state").is(":checked");
+                if (flag) {
+                    $.notify({message: "Stop it first"},{type: 'danger'});
+                    return;
+                }
+                $("#removeModal").modal("show")
+                $("#removeModal").find(".modal-body").html(
+                        "[ " + $("#selected_name").val() + " ] remove. " +
+                        "Are you sure?");
+            });
+
+            $(document).on('click',".remove-ok",function (e) {
+                let id = $("#selected_id").val();
+                axios({
+                    url: "/api/outputs",
+                    method: "delete",
+                    data: {
+                        id: id
+                    }
+                }).then(function (response) {
+                    console.log(response)
+                    if (response.data.data) {
+                        $.notify({message: response.data.msg},{type: 'success'});
+                        $("#selected_id").val("-1");
+                        $("#selected_name").val("");
+                        $("#selected_status").val("0");
+                        loadList();
+                    } else {
+                        $.notify({message: response.data.msg},{type: 'danger'});
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                }).then(function () {
+                    // always executed
+                });
+            });
+
+            $(document).on('click',".new-button",function (e) {
+                updateSaveForm();
+            });
+
+            $(document).on('click',".modify-button",function (e) {
+                if ($("#selected_status").val() == "1") {
+                    $.notify({message: "Please stop it first"},{type: 'danger'});
+                    return;
+                }
+                // $(".new-button").trigger("click");
+                $("#new_output_modal").modal("show");
+                updateSaveForm(function() {
+                    $.each($(".default_info").serializeArray().map(x => x.name), function(i, v) {
+                        $node = $(".default_info").find("#" + v);
+                        console.log($node)
+                        $node.val(last_selected_object[v]);
+                        if ($node.is("select")) {
+                            $node.trigger("change");
+                        }
+                    });
+                    $.each($(".detail_info").serializeArray().map(x => x.name), function(i, v) {
+                        $node = $(".detail_info").find("#" + v);
+                        $node.val(last_selected_object.info[v]);
+                        if ($node.is("select")) {
+                            $node.trigger("change");
+                        }
+                    });
+                    $(".default_info").append("<input type=\"hidden\" name=\"id\" value=\"" + $("#selected_id").val() + "\">");
+                });
+            });
         });
         
         function makeChart(data) {
-        	console.log(data)
-        	var chart = Highcharts.chart('chart', {
+            Highcharts.chart('chart', {
                 chart: {
-                  type: 'spline',
-                  height: 350
+                    type: 'spline',
+                    height: 350
                 },
                 height: "350px",
                 title: {
-                  text: ''
+                    text: ''
                 },
                 yAxis: {
-                  title: {
-                    text: 'Producer EPS'
-                  }
+                    title: {
+                        text: 'Producer EPS'
+                    },
+                    tickInterval: 1
                 },
                 xAxis: {
-                  type: 'datetime',
+                    type: 'datetime',
                 },
                 tooltip: {
-                  split: true,
-                  valueDecimals: 0,
-                  valueSuffix: ''
+                    split: true,
+                    valueDecimals: 0,
+                    valueSuffix: ''
                 },
                 plotOptions: {
-                  series: {
-                    marker: {
-                      enabled: false
-                    },
-                    cursor: 'pointer',
-                    point: {
-                      events: {
-                        
-                      }
+                    series: {
+                        animation: false,
+                        marker: {
+                            enabled: false
+                        },
+                        cursor: 'pointer',
+                        point: {
+                            events: {}
+                        }
                     }
-                  }
                 },
                 series: data
               });
@@ -281,6 +438,8 @@
                 <div class="logger-content-header pure-g">
                     <div class="logger-info pure-u-1-2"></div>
                     <div class="logger-content-controls pure-u-1-2">
+                        <button class="secondary-button pure-button modify-button">Modify</button>
+                        <button class="secondary-button pure-button remove-button">Remove</button>
                     </div>
                 </div>
     
@@ -299,29 +458,34 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">TCP 소켓 추가</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Save Output</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form class="pure-form pure-form-stacked">
-                    <label for="new_port">Port</label>
-                    <input id="new_port" type="text" placeholder="3303">
-                    <label for="new_max_queue">최대큐사이즈</label>
-                    <input id="new_max_queue" type="text" placeholder="10000">
-                    <!-- <label for="state">State</label>
-                    <select id="state">
-                        <option>AL</option>
-                        <option>CA</option>
-                        <option>IL</option>
-                    </select>
-                    <label class="pure-checkbox">
-                    <input type="checkbox"> Remember me
-                    </label> -->
-                </form>
+                
             </div>
             <div class="modal-footer">
                 <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="pure-button pure-button-primary open-port-button">Open</button>
+                <button type="button" class="pure-button pure-button-primary save-output-button">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Remove</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <input type="hidden" id="remove-id">
+            <div class="modal-body">
+                Are you sure?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="pure-button" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="pure-button pure-button-primary remove-ok" data-bs-dismiss="modal">Ok</button>
             </div>
         </div>
     </div>

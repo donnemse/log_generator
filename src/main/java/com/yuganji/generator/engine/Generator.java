@@ -20,7 +20,7 @@ public class Generator extends AGenerator {
     public Generator(OutputService outputService, LoggerVO logger) {
         this.outputService = outputService;
         this.logger = logger;
-        this.eps = logger.getLogger().getEps();
+        this.eps = this.logger.getLogger().getEps();
     }
 
     @Override

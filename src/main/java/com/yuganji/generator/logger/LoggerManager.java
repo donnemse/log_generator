@@ -1,34 +1,23 @@
 package com.yuganji.generator.logger;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.yuganji.generator.engine.Ip2LocationService;
+import com.yuganji.generator.model.*;
 import com.yuganji.generator.mybatis.mapper.HistoryMapper;
 import com.yuganji.generator.mybatis.mapper.LoggerMapper;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.yuganji.generator.engine.Ip2LocationService;
-import com.yuganji.generator.model.LoggerPropVO;
-import com.yuganji.generator.model.LoggerRequestVO;
-import com.yuganji.generator.model.LoggerVO;
-import com.yuganji.generator.model.MapCache;
-import com.yuganji.generator.model.SingleObjectResponse;
-
-import lombok.extern.log4j.Log4j2;
+import javax.annotation.PostConstruct;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -46,8 +35,11 @@ public class LoggerManager {
     
     @Autowired
     private Ip2LocationService ip2LocService;
+
     @PostConstruct
     private void init() {
+        om.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
         this.cache = new HashMap<>();
         List<LoggerVO> listInfo = this.loggerMapper.listLogger();
         this.cache = listInfo.stream()
@@ -59,8 +51,6 @@ public class LoggerManager {
                     MapCache mapCache = new MapCache();
                     mapCache.setIp2Locations(ip2LocService);
                     x.setMapCache(mapCache);
-                } catch (JsonMappingException e) {
-                    log.error(e.getMessage(), e);
                 } catch (JsonProcessingException e) {
                     log.error(e.getMessage(), e);
                 }
@@ -75,11 +65,7 @@ public class LoggerManager {
     public Map<Integer, LoggerVO> listLogger() {
         return this.cache;
     }
-    /**
-     * @param name
-     * @param yaml
-     * @return
-     */
+
     public SingleObjectResponse createLogger(LoggerRequestVO vo) {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         try {
@@ -110,18 +96,7 @@ public class LoggerManager {
         }
         return res;
     }
-    
-    public boolean addHistory(LoggerRequestVO vo, String msg, String detail, String error) {
-        histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), msg, detail, null);
-        return true;
-    }
-    
-    
-    /**
-     * @param name
-     * @param yaml
-     * @return
-     */
+
     public SingleObjectResponse modifyLogger(LoggerRequestVO vo) {
         String msg = "logger was modified. " + vo.getName();
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value(), msg);
@@ -181,34 +156,6 @@ public class LoggerManager {
         return res;
     }
     
-//    @Async
-//    public void run() throws IOException, InterruptedException {
-//        log.debug("Start Log Property manager");
-//        WatchService watchService = FileSystems.getDefault().newWatchService();
-//        Path path = Paths.get("./config");
-//        path.register(watchService,
-//                StandardWatchEventKinds.ENTRY_CREATE,
-//                StandardWatchEventKinds.ENTRY_DELETE,
-//                StandardWatchEventKinds.ENTRY_MODIFY);
-//
-//        WatchKey key;
-//        while ((key = watchService.take()) != null) {
-//            for (WatchEvent<?> event : key.pollEvents()) {
-//                log.debug("Event kind:" + event.kind() + ". File affected: " + event.context() + ".");
-//                if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
-//                    
-//                } else if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-//                    
-//                } else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-//                    this.cache.remove(event.context());
-//                }
-//                
-//            }
-//            log.debug(this.cache);
-//            key.reset();
-//        }
-//    }
-    
     public List<Map<String, Object>> sample(LoggerRequestVO vo) {
         List<Map<String, Object>> list = new ArrayList<>();
         try {
@@ -219,9 +166,6 @@ public class LoggerManager {
             for (int i = 0; i < SAMEPLE_CNT; i++) {
                 list.add(lp.generateLog());
             }
-//            IntStream.range(0, SAMEPLE_CNT).forEach(x ->{
-//                list.add(lp.generateLog());
-//            });
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
@@ -230,5 +174,10 @@ public class LoggerManager {
             list.add(map);
         }
         return list;
+    }
+
+    public boolean addHistory(LoggerRequestVO vo, String msg, String detail, String error) {
+        histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), msg, detail, null);
+        return true;
     }
 }

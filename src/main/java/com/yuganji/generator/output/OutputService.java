@@ -1,23 +1,5 @@
 package com.yuganji.generator.output;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import com.yuganji.generator.db.Output;
 import com.yuganji.generator.db.OutputRepository;
 import com.yuganji.generator.exception.OutputHandleException;
@@ -27,9 +9,17 @@ import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.model.OutputDto;
 import com.yuganji.generator.output.model.SparrowOutput;
-
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -166,6 +156,7 @@ public class OutputService {
             } else {
                 throw new OutputHandleException("Already running output: " + outputDto.getName());
             }
+            res.setData(outputDto);
         } catch (OutputHandleException e) {
             log.error(e.getMessage(), e);
             res.setMsg(e.getMessage());
@@ -179,6 +170,7 @@ public class OutputService {
         SingleObjectResponse res = new SingleObjectResponse(HttpStatus.OK.value());
         String msg = "Output was stopped: " + this.cache.get(id).getName();
         try {
+            res.setData(this.cache.get(id));
             if (this.cache.containsKey(id) && this.cache.get(id).getStatus() == 1) {
                 this.cache.get(id).getHandler().stopOutput();
                 this.cache.get(id).setStatus(0);

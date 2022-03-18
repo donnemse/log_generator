@@ -33,58 +33,57 @@
     <script type="text/javascript">
     let differ = undefined;
     $(function() {
-           let columns = [
-               'id',{
-                   name: "fid",
-                   hidden: true
-               }, {
-                   name: 'name',
-                   formatter: (cell, row) => {
-                       return row.cells[2].data != null? row.cells[2].data: row.cells[1].data;
-                   },
+        let columns = [
+           'id',{
+               name: "fid",
+               hidden: true
+           }, {
+               name: 'name',
+               formatter: (cell, row) => {
+                   return row.cells[2].data != null? row.cells[2].data: row.cells[1].data;
                },
-               'ip','time', 'message',
-               {
-                   name: 'detail',
-                   formatter: (cell, row) => {
-                       if (row.cells[6].data == null) {
-                        return "";
-                    }
-                       but = [
-                           gridjs.h('button', {
-                            className: 'btn btn-outline-success diff-button',
-                            onClick: () => diffInit(`${row.cells[1].data}`, `${row.cells[6].data}`)
-                          }, 'Diff(now)'),
-                       ];
-                       if (row.cells[8].data != null) {
-                           but.push(
-                          gridjs.h('button', {
-                              className: 'btn btn-outline-success diff-button',
-                              onClick: () => diffInit(`${row.cells[8].data}`, `${row.cells[6].data}`)
-                            }, 'Diff(last)')
-                       );
-                       }
-                       return but;
-                }
-               },
-               {
-                   name: 'error',
-                   formatter: (cell, row) => {
-                       if (row.cells[7].data == null) {
-                           return "";
-                       }
-                       return gridjs.h('button', {
-                        className: 'btn btn-outline-danger diff-button',
-                        onClick: () => errorModal(`${row.cells[7].data}`)
-                    }, 'Error');
+           },
+           'ip','time', 'message',
+           {
+               name: 'detail',
+               formatter: (cell, row) => {
+                   if (row.cells[6].data == null) {
+                    return "";
                    }
-               },
-               {
-                name: "last",
-                hidden: true
-            }
-           ];
-           new gridjs.Grid({
+                   but = [
+                       gridjs.h('button', {
+                        className: 'btn btn-outline-success diff-button',
+                        onClick: () => diffInit(`${row.cells[1].data}`, `${row.cells[6].data}`)
+                      }, 'Diff(now)'),
+                   ];
+                   if (row.cells[8].data != null) {
+                       but.push(
+                           gridjs.h('button', {
+                               className: 'btn btn-outline-success diff-button',
+                               onClick: () => diffInit(`${row.cells[8].data}`, `${row.cells[6].data}`)
+                           }, 'Diff(last)')
+                       );
+                   }
+                   return but;
+               }
+           },
+           {
+               name: 'error',
+               formatter: (cell, row) => {
+                   if (row.cells[7].data == null) {
+                       return "";
+                   }
+                   return gridjs.h('button', {
+                       className: 'btn btn-outline-danger diff-button',
+                       onClick: () => errorModal(`${row.cells[7].data}`)
+                   }, 'Error');
+               }
+           },
+           {
+            name: "last",
+            hidden: true
+        }];
+        new gridjs.Grid({
             columns: columns,
             maxHeight: "calc(100vh - 200px)",
             pagination: {
@@ -106,10 +105,9 @@
                     hist.detail,
                     hist.error,
                     hist.last,
-                ]),
-                total: data => data.data.total_elements -1
-                } 
-            }).render(document.getElementById('table'));
+                ]), total: data => data.data.total_elements -1
+            }
+        }).render(document.getElementById('table'));
     });
     
     function initModal(){
@@ -128,7 +126,6 @@
     }
     
     function diffInit(origin, yaml) {
-        
         if(!isNaN(parseInt(origin))){
             axios.get('/api/loggers/' + origin)
             .then(function (response) {
@@ -138,7 +135,6 @@
                 } else {
                 	origin = '';
                 }
-                
             })
             .catch(function (error) {
                 console.log(error);
@@ -172,11 +168,9 @@
                 editable: false,
                 copyLinkEnabled: true
             },
-       });
-        differ.editors.left.ace.setOption("showInvisibles", true)
-        differ.editors.right.ace.setOption("showInvisibles", true)
-        //differ.setOptions({"showInvisibles": true})
-        
+        });
+        differ.editors.left.ace.setOption("showInvisibles", true);
+        differ.editors.right.ace.setOption("showInvisibles", true);
         $(".modal").modal("show");
     }
     </script>

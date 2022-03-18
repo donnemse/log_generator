@@ -225,8 +225,11 @@
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
                 axios({
-                    url: "/api/outputs/" + (flag? "start": "stop") + "/" + id,
-                    method: "patch"
+                    url: "/api/outputs/" + (flag? "start": "stop"),
+                    method: "patch",
+                    data: {
+                        id: id
+                    }
                 }).then(function (response) {
                     console.log(response)
                     if (response.data.status == 200) {
@@ -235,6 +238,7 @@
                         $.notify({message: response.data.msg},{type: 'danger'});
                     }
                 }).catch(function (error) {
+                    $.notify({message: error},{type: 'danger'});
                     console.log(error);
                 }).then(function () {
                     // always executed

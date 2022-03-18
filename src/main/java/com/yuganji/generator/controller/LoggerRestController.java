@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.yuganji.generator.db.Logger;
-import com.yuganji.generator.engine.GeneratorManager;
+import com.yuganji.generator.engine.GeneratorSerivce;
 import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.util.NetUtil;
@@ -21,7 +21,7 @@ import com.yuganji.generator.util.NetUtil;
 @RequestMapping(value = "/api")
 public class LoggerRestController {
     @Autowired
-    private GeneratorManager genMgr;
+    private GeneratorSerivce generatorSerivce;
     @Autowired
     private LoggerService loggerPropMng;
     
@@ -72,7 +72,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return genMgr.start(logger);
+        return generatorSerivce.start(logger);
     }
     
     @RequestMapping(value = "/loggers/stop", method = RequestMethod.PATCH)
@@ -80,6 +80,6 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return genMgr.stop(logger);
+        return generatorSerivce.stop(logger);
     }
 }

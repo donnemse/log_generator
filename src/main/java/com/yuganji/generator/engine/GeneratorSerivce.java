@@ -3,6 +3,7 @@ package com.yuganji.generator.engine;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 
@@ -23,12 +24,12 @@ import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
-public class GeneratorManager {
+public class GeneratorSerivce {
     
     @Autowired
     private OutputService outputService;
     
-    private Map<Integer, AGenerator> cache;
+    private Map<Integer, Future<String>> cache;
     
     @Autowired
     private LoggerService loggerService;
@@ -36,6 +37,9 @@ public class GeneratorManager {
     @Autowired
     private LoggerRepository loggerRepository;
 
+    @Autowired
+    private GeneratorExecutor generator;
+    
     @PostConstruct
     private void init() {
         this.cache = new ConcurrentHashMap<>();
@@ -53,7 +57,8 @@ public class GeneratorManager {
     private void schedule() {
         
         for (Entry<Integer, LoggerDto> entry: loggerService.list().entrySet()){
-            if (entry.getValue().getStatus() == 1 && cache.get(entry.getKey()).checkStatus() == 0) {
+            if (entry.getValue().getStatus() == 1 && 
+                    (cache.get(entry.getKey()).isCancelled() || cache.get(entry.getKey()).isDone())) {
                 this.exceptStop(entry.getKey(), NetUtil.getLocalHostIp());
                 log.debug("Stopped generator by unknown error: " + entry.getKey());
             }
@@ -61,7 +66,7 @@ public class GeneratorManager {
     }
     
     private void exceptStop(int id, String ip) {
-        this.cache.get(id).stopGenerator();
+        this.cache.get(id).cancel(true);
         this.cache.remove(id);
         this.outputService.removeProducerEps(id);
         loggerService.get(id).setStatus(0);
@@ -69,48 +74,51 @@ public class GeneratorManager {
     }
 
     public SingleObjectResponse start(Logger logger) {
-        logger = loggerService.get(logger.getId()).toEntity();
+        logger =  loggerService.get(logger.getId(), logger.getIp()).toEntity();
+        
         if (this.isRunning(logger.getId())) {
             String message = "Already running: " + logger.getName();
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
         }
-
-        AGenerator gen = new Generator(outputService, loggerService.get(logger.getId()));
-        gen.startGenerator();
-        this.cache.put(logger.getId(), gen);
+        Future<String> future = generator.run(loggerService.get(logger.getId()));
+        
+        this.cache.put(logger.getId(), future);
         log.debug(logger.getName() + " was started.");
         loggerService.get(logger.getId()).setStatus(1);
         this.updateLoggerStatus(logger.getId(), 1, logger.getIp());
 
         return new SingleObjectResponse(
                 HttpStatus.OK.value(), 
-                "Successfully started: " + logger.getName(), true);
+                "Successfully started: " + logger.getName(), logger);
     }
     
     public SingleObjectResponse stop(Logger logger) {
-        int id = logger.getId();
-        String ip = logger.getIp();
-        if (this.cache.containsKey(id)) {
-            this.cache.get(id).stopGenerator();
-            this.cache.remove(id);
-            this.outputService.removeProducerEps(id);
+        logger =  loggerService.get(logger.getId(), logger.getIp()).toEntity();
+        
+        if (this.cache.containsKey(logger.getId())) {
+          this.cache.get(logger.getId()).cancel(true);
+          this.cache.remove(logger.getId());
+          this.outputService.removeProducerEps(logger.getId());
         } else {
-            String message = "Genrator was not running status: " + loggerService.get(id).getName();
+            String message = "Genrator was not running status: " + loggerService.get(logger.getId()).getName();
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(), 
                     message, false);
         }
-        loggerService.get(id).setStatus(0);
-        this.updateLoggerStatus(id, 0, ip);
+        
+        loggerService.get(logger.getId()).setStatus(0);
+        this.updateLoggerStatus(logger.getId(), 0, logger.getIp());
         return new SingleObjectResponse(
                 HttpStatus.OK.value(), 
-                "Successfully stopped: " + loggerService.get(id).getName(), true);
+                "Successfully stopped: " + loggerService.get(logger.getId()).getName(), logger);
     }
     
+    
+    
     public boolean isRunning(int id) {
-        return this.cache.containsKey(id);
+        return this.cache.containsKey(id) && !this.cache.get(id).isCancelled();
     }
 
     private void updateLoggerStatus(int id, int status, String ip) {

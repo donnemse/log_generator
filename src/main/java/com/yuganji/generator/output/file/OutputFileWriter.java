@@ -22,7 +22,6 @@ public abstract class OutputFileWriter extends Thread implements IFileWriter {
 
     @Override
     public boolean startOutput() {
-        System.out.println(super.getState().name());
         super.setName("thread_output_" + outputId);
         super.start();
         return true;

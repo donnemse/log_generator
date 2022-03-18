@@ -41,7 +41,6 @@ public class OutputService {
 
     @PostConstruct
     public void init(){
-        log.debug(outputRepository.findAll());
         this.cache = outputRepository.findAll().stream().collect(Collectors.toMap(Output::getId, x -> x.toDto()));
         this.cache = new ConcurrentHashMap<>(this.cache);
     }

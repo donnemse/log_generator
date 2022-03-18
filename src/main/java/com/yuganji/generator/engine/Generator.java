@@ -1,12 +1,12 @@
 package com.yuganji.generator.engine;
 
-import com.google.common.collect.Range;
+import java.util.Map;
+
+import com.yuganji.generator.model.IntBound;
 import com.yuganji.generator.model.LoggerDto;
 import com.yuganji.generator.output.OutputService;
-import lombok.extern.log4j.Log4j2;
 
-import java.util.Map;
-import java.util.Random;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class Generator extends AGenerator {
@@ -16,55 +16,43 @@ public class Generator extends AGenerator {
     
     private volatile boolean state = true;
     
-    private Range<Integer> eps;
+    private IntBound epsBounds;
     
     public Generator(OutputService outputService, LoggerDto logger) {
         this.outputService = outputService;
         this.logger = logger;
-        String[] arr = this.logger.getDetail().getEps().split("~|-");
-        String eps = this.logger.getDetail().getEps();
-        if (arr.length == 2){
-            this.eps = Range.closed(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]));
-        } else if (arr.length == 1){
-            this.eps = Range.closed(
-                    Integer.parseInt(eps),
-                    Integer.parseInt(eps));
-        } else {
-            throw new IllegalArgumentException("Invalid range: " + eps);
-        }
+        this.epsBounds = new IntBound(logger.getEps());
     }
 
     @Override
     public void run() {
         int cnt = 0;
         long time = System.currentTimeMillis();
-        Random r = new Random();
         while(this.state) {
-            int e = r.ints(eps.lowerEndpoint(), eps.upperEndpoint());
-          try {
-              Map<String, Object> map = logger.getDetail().generateLog();
-              outputService.push(map, logger.getId());
-              cnt++;
-              if (eps < 1000) {
-                  long t = System.currentTimeMillis() - time;
-                  if (t >= 1000) {
-                      time = System.currentTimeMillis();
-                      continue;
-                  }
-                  Thread.sleep((1000 - t) / eps);
-                  time = System.currentTimeMillis();
-              } else if (cnt % 100 == 0){
-                  long diff = System.currentTimeMillis() - time;
-                  Thread.sleep((1000 - (eps / 100 * diff)) / eps / 100);
-                  time = System.currentTimeMillis();
-                  
-              }
-          } catch (InterruptedException e) {
-              log.error(e.getMessage(), e);
-          } catch (Exception e) {
-              log.error(e.getMessage(), e);
-              this.stopGenerator();
-        }
+            int eps = this.epsBounds.randomInt();
+            try {
+                Map<String, Object> map = logger.getDetail().generateLog();
+                outputService.push(map, logger.getId());
+                cnt++;
+                if (eps < 1000) {
+                    long t = System.currentTimeMillis() - time;
+                    if (t >= 1000) {
+                        time = System.currentTimeMillis();
+                        continue;
+                    }
+                    Thread.sleep((1000 - t) / eps);
+                    time = System.currentTimeMillis();
+                } else if (cnt % 100 == 0){
+                    long diff = System.currentTimeMillis() - time;
+                    Thread.sleep((1000 - (eps / 100 * diff)) / eps / 100);
+                    time = System.currentTimeMillis();
+                }
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                this.stopGenerator();
+            }
         }
     }
 

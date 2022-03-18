@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://www.padual.com/java/logback.xsd"
-    debug="true" packagingData="true" scan="true" scanPeriod="30 seconds">
+<configuration debug="true" packagingData="true" scan="true" scanPeriod="30 seconds">
     <property name="LOG_DIR" value="./logs" />
     <property name="PATH_LOG_FULL" value="${LOG_DIR}/logger.log"/>
     <property name="PATH_LOG_ERR" value="${LOG_DIR}/logger.err"/>

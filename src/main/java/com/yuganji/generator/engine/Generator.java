@@ -1,10 +1,12 @@
 package com.yuganji.generator.engine;
 
+import com.google.common.collect.Range;
 import com.yuganji.generator.model.LoggerDto;
 import com.yuganji.generator.output.OutputService;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
+import java.util.Random;
 
 @Log4j2
 public class Generator extends AGenerator {
@@ -14,20 +16,31 @@ public class Generator extends AGenerator {
     
     private volatile boolean state = true;
     
-    private long eps;
+    private Range<Integer> eps;
     
     public Generator(OutputService outputService, LoggerDto logger) {
         this.outputService = outputService;
         this.logger = logger;
-        this.eps = this.logger.getDetail().getEps();
+        String[] arr = this.logger.getDetail().getEps().split("~|-");
+        String eps = this.logger.getDetail().getEps();
+        if (arr.length == 2){
+            this.eps = Range.closed(Integer.parseInt(arr[0]), Integer.parseInt(arr[1]));
+        } else if (arr.length == 1){
+            this.eps = Range.closed(
+                    Integer.parseInt(eps),
+                    Integer.parseInt(eps));
+        } else {
+            throw new IllegalArgumentException("Invalid range: " + eps);
+        }
     }
 
     @Override
     public void run() {
         int cnt = 0;
         long time = System.currentTimeMillis();
+        Random r = new Random();
         while(this.state) {
-
+            int e = r.ints(eps.lowerEndpoint(), eps.upperEndpoint());
           try {
               Map<String, Object> map = logger.getDetail().generateLog();
               outputService.push(map, logger.getId());

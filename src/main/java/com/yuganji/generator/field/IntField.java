@@ -29,9 +29,9 @@ public class IntField extends FieldInfoVO implements IFieldGenerator {
             
             StringTokenizer token = new StringTokenizer(entry.getKey(), "~|-");
             while (token.hasMoreTokens()) {
-                int a = Integer.parseInt(token.nextToken());
-                this.min = Math.min(min, a);
-                this.max = Math.max(max, a);
+                int num = Integer.parseInt(token.nextToken());
+                this.min = Math.min(min, num);
+                this.max = Math.max(max, num);
             }
         }
         if (sum < Constants.D_THOUSAND) {

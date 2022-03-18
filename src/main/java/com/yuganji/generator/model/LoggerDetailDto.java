@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoggerDetailDto {
     private String log;
-    private long eps;
+    private String eps;
     private String logtype;
     private String raw;
 

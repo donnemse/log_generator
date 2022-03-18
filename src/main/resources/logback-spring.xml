@@ -45,6 +45,7 @@
     <logger name="org.springframework" level="WARN" />
     <logger name="org.springframework.security" level="WARN" />
     <logger name="org.apache.kafka" level="WARN" />
+    <logger name="org.springframework.boot.autoconfigure.logging" level="WARN" />
 
     <logger name="org.hibernate" level="WARN" />
     <logger name="org.springframework.web" level="DEBUG" />

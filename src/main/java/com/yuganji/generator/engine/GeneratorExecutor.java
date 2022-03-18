@@ -1,6 +1,14 @@
 package com.yuganji.generator.engine;
 
 import java.util.Map;
+import java.util.concurrent.Future;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Service;
 
 import com.yuganji.generator.model.IntBound;
 import com.yuganji.generator.model.LoggerDto;
@@ -9,28 +17,24 @@ import com.yuganji.generator.output.OutputService;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-@Deprecated
-public class Generator extends AGenerator {
+@Service
+public class GeneratorExecutor {
     
+    @Autowired
     private OutputService outputService;
-    private LoggerDto logger;
     
-    private volatile boolean state = true;
-    
-    private IntBound epsBounds;
-    
-    public Generator(OutputService outputService, LoggerDto logger) {
-        this.outputService = outputService;
-        this.logger = logger;
-        this.epsBounds = new IntBound(logger.getEps());
+    @PostConstruct
+    public void init() {
+        
     }
-
-    @Override
-    public void run() {
+    
+    @Async
+    public Future<String> run(LoggerDto logger) {
         int cnt = 0;
+        IntBound epsBounds = new IntBound(logger.getEps()); 
         long time = System.currentTimeMillis();
-        while(this.state) {
-            int eps = this.epsBounds.randomInt();
+        while(!Thread.interrupted()) {
+            int eps = epsBounds.randomInt();
             try {
                 Map<String, Object> map = logger.getDetail().generateLog();
                 outputService.push(map, logger.getId());
@@ -52,29 +56,10 @@ public class Generator extends AGenerator {
                 log.error(e.getMessage(), e);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                this.stopGenerator();
+//                this.stopGenerator();
             }
         }
+        return new AsyncResult<String>("Result");
     }
-
-    @Override
-    public boolean startGenerator() {
-        this.start();
-        return true;
-    }
-
-    @Override
-    public boolean stopGenerator() {
-        this.state = false;
-        return false;
-    }
-
-    @Override
-    public int checkStatus() {
-        if (this.state) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
+    
 }

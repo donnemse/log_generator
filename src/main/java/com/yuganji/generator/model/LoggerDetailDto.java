@@ -1,6 +1,7 @@
 package com.yuganji.generator.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.yuganji.generator.util.Constants;
 import lombok.Data;
@@ -15,9 +16,9 @@ import java.util.stream.Collectors;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LoggerDetailDto {
     private String log;
-    private long eps;
     private String logtype;
     private String raw;
 

@@ -1,5 +1,12 @@
 package com.yuganji.generator.output.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,18 +18,12 @@ import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.util.Constants;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 @Data
 @Builder
@@ -65,29 +66,6 @@ public class OutputDto {
 
     private String type;
     private int status;
-
-    public void setInfo(Object info) {
-        try {
-            Map<String, Object> map = null;
-            if (info == null) {
-                map = new HashMap<>();
-            } else if (info instanceof String) {
-                map = om.readValue(info.toString(), new TypeReference<Map<String, Object>>() {
-                });
-            } else if (info instanceof Map<?, ?>) {
-                map = (Map<String, Object>) info;
-            }
-            if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
-                this.handler = new SparrowOutput(this.id, map);
-            } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
-                this.handler = new FileOutput(this.id, map);
-            }
-            this.info = map;
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage(), e);
-            this.info = null;
-        }
-    }
     
     public void resetHandler() {
         if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
@@ -95,10 +73,6 @@ public class OutputDto {
         } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
             this.handler = new FileOutput(this.id, this.info);
         }
-    }
-    
-    private void initialize(int maxQueueSize) {
-
     }
     
     public long getRunningTime() {
@@ -136,6 +110,7 @@ public class OutputDto {
             return this;
         }
 
+        @SuppressWarnings("unchecked")
         public OutputDtoBuilder info(Object info) {
             try {
                 Map<String, Object> map = null;

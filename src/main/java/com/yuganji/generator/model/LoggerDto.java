@@ -1,21 +1,23 @@
 package com.yuganji.generator.model;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yuganji.generator.ApplicationContextProvider;
 import com.yuganji.generator.db.Logger;
 import com.yuganji.generator.engine.Ip2LocationService;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
-import java.util.Date;
 
 @Data
 @Builder
@@ -28,9 +30,12 @@ public class LoggerDto {
     @JsonIgnore
     @Builder.Default
     private ObjectMapper om = new ObjectMapper(new YAMLFactory())
-            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+    
     private int id;
     private String name;
+    private String eps;
     private LoggerDetailDto detail;
     private String yamlStr;
     private String ip;
@@ -83,7 +88,8 @@ public class LoggerDto {
     public static class LoggerDtoBuilder {
 
         private ObjectMapper om = new ObjectMapper(new YAMLFactory())
-                .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+                .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
         private Ip2LocationService ip2LocService = ApplicationContextProvider.getApplicationContext().getBean(Ip2LocationService .class);
 
         public LoggerDtoBuilder yamlStr(String yamlStr){

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://www.padual.com/java/logback.xsd"
-    debug="true" packagingData="true" scan="true" scanPeriod="30 seconds">
+<configuration debug="true" packagingData="true" scan="true" scanPeriod="30 seconds">
     <property name="LOG_DIR" value="./logs" />
     <property name="PATH_LOG_FULL" value="${LOG_DIR}/logger.log"/>
     <property name="PATH_LOG_ERR" value="${LOG_DIR}/logger.err"/>
@@ -47,6 +45,7 @@
     <logger name="org.springframework" level="WARN" />
     <logger name="org.springframework.security" level="WARN" />
     <logger name="org.apache.kafka" level="WARN" />
+    <logger name="org.springframework.boot.autoconfigure.logging" level="WARN" />
 
     <logger name="org.hibernate" level="WARN" />
     <logger name="org.springframework.web" level="DEBUG" />

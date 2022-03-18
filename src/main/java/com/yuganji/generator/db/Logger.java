@@ -1,10 +1,21 @@
 package com.yuganji.generator.db;
 
-import com.yuganji.generator.model.LoggerDto;
-import lombok.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.*;
+import com.yuganji.generator.model.LoggerDto;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
@@ -19,6 +30,9 @@ public class Logger {
     private Integer id;
 
     private String name;
+    
+    @Column(nullable = false)
+    private String eps;
 
     @Column(name = "yaml_str", nullable = false)
     private String yamlStr;
@@ -43,6 +57,7 @@ public class Logger {
         return LoggerBuilder()
                 .id(loggerDto.getId())
                 .name(loggerDto.getName())
+                .eps(loggerDto.getEps())
                 .yamlStr(loggerDto.getYamlStr())
                 .ip(loggerDto.getIp())
                 .created(loggerDto.getCreated())
@@ -54,6 +69,7 @@ public class Logger {
         return LoggerDto.builder()
                 .id(this.id)
                 .name(this.name)
+                .eps(this.eps)
                 .yamlStr(this.yamlStr)
                 .ip(this.ip)
                 .created(this.created)

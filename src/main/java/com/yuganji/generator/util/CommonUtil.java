@@ -1,10 +1,10 @@
 package com.yuganji.generator.util;
 
+import lombok.extern.log4j.Log4j2;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public final class CommonUtil {

@@ -1,8 +1,10 @@
 package com.yuganji.generator.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class HistoryDto {
     private int id;
     private String ip;
@@ -14,5 +16,4 @@ public class HistoryDto {
     private String detail;
     private String error;
     private String last;
-    
 }

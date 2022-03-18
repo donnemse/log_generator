@@ -5,8 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.RandomUtils;
 
 import com.yuganji.generator.finnegan.Finnegan;
 import com.yuganji.generator.model.FieldInfoVO;
@@ -17,15 +18,12 @@ public class UrlField extends FieldInfoVO implements IFieldGenerator {
     
     private List<String> keys;
     private List<Double> arr;
-    private Random r;
     private int minWord = Integer.MAX_VALUE;
     private int maxWord = 0;
     private Finnegan fin;
-    private Random payloadRandom;
+    private String[] extentions = new String[] {".jsp", ".xml", ".js"};
     
     public UrlField(Map<String, Double> values) {
-        this.r = new Random();
-        this.payloadRandom = new Random();
         this.arr = new LinkedList<>();
         this.keys = new LinkedList<>();
         this.fin = Finnegan.ENGLISH;
@@ -45,7 +43,7 @@ public class UrlField extends FieldInfoVO implements IFieldGenerator {
     
     @Override
     public FieldVO get() {
-        double val =  r.nextInt(Constants.I_THOUSAND) * 1.d;
+        double val = RandomUtils.nextInt(0, Constants.I_THOUSAND) * 1.d;
         int originIdx = Collections.binarySearch(arr, val);
         int idx = originIdx >= 0 ? originIdx : originIdx * -1 -1;
         
@@ -56,15 +54,15 @@ public class UrlField extends FieldInfoVO implements IFieldGenerator {
     private String generatePayload(String str) {
         if (str.equals(Constants.RANDOM_VALUE)) {
             String url = "/" + fin.sentence(
-                    payloadRandom.nextLong(), minWord, maxWord, 
+                    RandomUtils.nextLong(), minWord, maxWord, 
                     new String[]{"/"},
-                    new String[] {".jsp", ".xml", ".js"}, 1).replaceAll(" ", "");
-            int param = payloadRandom.nextInt(5);
+                    this.extentions, 1).replaceAll(" ", "");
+            int param = RandomUtils.nextInt(0, 5);
             if (param > 0) {
                 String[] p = new String[param];
                 url += "?" + String.join("&",
                     Stream.of(p).map(x -> 
-                    fin.word(payloadRandom.nextLong(), false, 1) + "=" + fin.word(payloadRandom.nextLong(), false, 1))
+                    fin.word(RandomUtils.nextLong(), false, 1) + "=" + fin.word(RandomUtils.nextLong(), false, 1))
                     .toArray(String[]::new));
             }
             return url;

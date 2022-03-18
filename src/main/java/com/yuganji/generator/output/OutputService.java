@@ -1,5 +1,23 @@
 package com.yuganji.generator.output;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
 import com.yuganji.generator.db.Output;
 import com.yuganji.generator.db.OutputRepository;
 import com.yuganji.generator.exception.OutputHandleException;
@@ -9,17 +27,9 @@ import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.model.SingleObjectResponse;
 import com.yuganji.generator.output.model.OutputDto;
 import com.yuganji.generator.output.model.SparrowOutput;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -213,9 +223,7 @@ public class OutputService {
         
         this.cache.entrySet().parallelStream().forEach(entry -> {
             if (!entry.getValue().getProducerEps().containsKey(loggerId)) {
-                EpsVO epsVO = new EpsVO();
-                epsVO.setName(loggerMgr.get(loggerId).getName());
-                epsVO.setLastCheckTime(System.currentTimeMillis());
+                EpsVO epsVO = new EpsVO(loggerMgr.get(loggerId).getName());
                 entry.getValue().getProducerEps().put(loggerId, epsVO);
             }
             
@@ -229,10 +237,8 @@ public class OutputService {
     }
 
     public List<Map<String, Object>> poll(int queueId, int maxBuffer) {
-        long time = System.currentTimeMillis();
         if (this.cache.get(queueId).getConsumerEps() == null) {
-            EpsVO epsVO = new EpsVO();
-            epsVO.setLastCheckTime(time);
+            EpsVO epsVO = new EpsVO(null);
             this.cache.get(queueId).setConsumerEps(epsVO);
         }
         
@@ -258,7 +264,7 @@ public class OutputService {
             value.getEpsHistory().forEach(vo -> {
                 Map<String, Long> tick = new HashMap<>();
                 tick.put("x", vo.getTime());
-                tick.put("y", (long) vo.getEps());
+                tick.put("y", (long) Math.round(vo.getEps()));
                 list.add(tick);
             });
             logger.put("data", list);

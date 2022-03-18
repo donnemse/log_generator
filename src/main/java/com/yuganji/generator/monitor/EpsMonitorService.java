@@ -21,10 +21,14 @@ public class EpsMonitorService {
         long time = System.currentTimeMillis();
         for (Entry<Integer, OutputDto> entryInfo: outputService.getCache().entrySet()){
             for (Entry<Integer, EpsVO> entryEps: entryInfo.getValue().getProducerEps().entrySet()){
-                entryEps.getValue().setEps(time);
+                if (time - entryEps.getValue().getLastCheckTime() > 1000L) {
+                    entryEps.getValue().setEps(time);
+                }
             }
             if (entryInfo.getValue().getConsumerEps() != null) {
-                entryInfo.getValue().getConsumerEps().setEps(time);
+                if (time - entryInfo.getValue().getConsumerEps().getLastCheckTime() > 1000L) {
+                    entryInfo.getValue().getConsumerEps().setEps(time);
+                }
             }
             entryInfo.getValue().setCurrentQueueSize(entryInfo.getValue().getQueue().size());
             entryInfo.getValue().setCurrentQueueByte(

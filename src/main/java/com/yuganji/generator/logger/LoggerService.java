@@ -41,6 +41,11 @@ public class LoggerService {
         return this.cache.get(id);
     }
     
+    public LoggerDto get(int id, String ip) {
+        this.cache.get(id).setIp(ip);
+        return this.cache.get(id);
+    }
+    
     public Map<Integer, LoggerDto> list() {
         return this.cache;
     }

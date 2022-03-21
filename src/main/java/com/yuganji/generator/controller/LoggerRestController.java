@@ -22,19 +22,19 @@ public class LoggerRestController {
     @Autowired
     private GeneratorSerivce generatorSerivce;
     @Autowired
-    private LoggerService loggerPropMng;
+    private LoggerService loggerService;
 
     @ApiOperation(value = "Getting information of Logger")
     @RequestMapping(value = "/loggers", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse list() {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.list());
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerService.list());
     }
 
     @ApiOperation(value = "Getting information of Logger")
     @ApiImplicitParam(name = "id", value = "Look up target ID", required = true, dataType = "int", example = "0")
     @RequestMapping(value = "/loggers/{id}", method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse get(@PathVariable(value = "id") int id) {
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.get(id));
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerService.get(id));
     }
 
     @ApiOperation(value = "Add Logger")
@@ -44,7 +44,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.add(logger);
+        return loggerService.add(logger);
     }
 
     @ApiOperation(value = "Modify Logger")
@@ -54,7 +54,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.modify(logger);
+        return loggerService.modify(logger);
     }
 
     @ApiOperation(value = "Remove Logger")
@@ -64,7 +64,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return loggerPropMng.remove(logger);
+        return loggerService.remove(logger);
     }
 
     @ApiOperation(value = "Sample Logger")
@@ -74,7 +74,7 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerPropMng.sample(logger));
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", loggerService.sample(logger));
     }
 
     @ApiOperation(value = "Start Logger")

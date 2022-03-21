@@ -1,25 +1,33 @@
 package com.yuganji.generator.output;
 
-import com.yuganji.generator.db.Output;
-import com.yuganji.generator.db.OutputRepository;
-import com.yuganji.generator.exception.OutputHandleException;
-import com.yuganji.generator.logger.LoggerService;
-import com.yuganji.generator.model.EpsHistoryVO;
-import com.yuganji.generator.model.EpsVO;
-import com.yuganji.generator.model.SingleObjectResponse;
-import com.yuganji.generator.output.model.OutputDto;
-import com.yuganji.generator.output.model.SparrowOutput;
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import com.yuganji.generator.db.Output;
+import com.yuganji.generator.db.OutputRepository;
+import com.yuganji.generator.exception.OutputHandleException;
+import com.yuganji.generator.logger.LoggerService;
+import com.yuganji.generator.model.EpsHistoryVO;
+import com.yuganji.generator.model.SingleObjectResponse;
+import com.yuganji.generator.output.model.OutputDto;
+import com.yuganji.generator.output.model.SparrowOutput;
+import com.yuganji.generator.queue.QueueObject;
+import com.yuganji.generator.queue.QueueService;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
@@ -31,18 +39,18 @@ public class OutputService {
     @Autowired
     private OutputRepository outputRepository;
 
-    private LoggerService loggerMgr;
+    @Autowired
+    private LoggerService loggerService;
 
     @Autowired
-    public OutputService (LoggerService loggerMgr) {
-        this.cache = new ConcurrentHashMap<>();
-        this.loggerMgr = loggerMgr;
-    }
+    private QueueService queueSerivce;
 
     @PostConstruct
     public void init(){
         this.cache = outputRepository.findAll().stream().collect(Collectors.toMap(Output::getId, x -> x.toDto()));
-//        this.cache = new ConcurrentHashMap<>(this.cache);
+        this.cache.forEach((k, v) -> {
+            this.queueSerivce.getQueue().putIfAbsent(k, new QueueObject(v.getMaxQueueSize()));
+        });
     }
 
     @Scheduled(initialDelay = 3000, fixedDelay = 20 * 1000)
@@ -72,6 +80,7 @@ public class OutputService {
         try {
             output = outputRepository.save(output);
             this.cache.put(output.getId(), output.toDto());
+            this.queueSerivce.getQueue().putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
             res.setMsg(msg);
             res.setData(output);
         } catch(Exception e) {
@@ -98,6 +107,7 @@ public class OutputService {
             this.cache.remove(output.getId());
             output = outputRepository.save(output);
             this.cache.put(output.getId(), output.toDto());
+            this.queueSerivce.getQueue().putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
             res.setMsg(msg);
             res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
@@ -120,6 +130,7 @@ public class OutputService {
 
             outputRepository.deleteById(output.getId());
             this.cache.remove(output.getId());
+            this.queueSerivce.getQueue().remove(output.getId());
         } catch (Exception e) {
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -199,50 +210,19 @@ public class OutputService {
         Collection<OutputDto> dto = this.cache.values();
         return dto;
     }
-
-    public void push(Map<String, Object> data, int loggerId) {
-
-        this.cache.entrySet().parallelStream().forEach(entry -> {
-            if (!entry.getValue().getProducerEps().containsKey(loggerId)) {
-                EpsVO epsVO = new EpsVO(loggerMgr.get(loggerId).getName());
-                entry.getValue().getProducerEps().put(loggerId, epsVO);
-            }
-
-            if (entry.getValue().getQueue().remainingCapacity() == 0) {
-                entry.getValue().getQueue().poll();
-                entry.getValue().getProducerEps().get(loggerId).addDeleted();
-            }
-            entry.getValue().getQueue().offer(data);
-            if (entry.getValue().getProducerEps().get(loggerId) != null) {
-                entry.getValue().getProducerEps().get(loggerId).addCnt();
-            }
-        });
-    }
-
-    public List<Map<String, Object>> poll(int queueId, int maxBuffer) {
-        if (this.cache.get(queueId).getConsumerEps() == null) {
-            EpsVO epsVO = new EpsVO(null);
-            this.cache.get(queueId).setConsumerEps(epsVO);
-        }
-
-        List<Map<String, Object>> list = new ArrayList<>();
-        int cnt = this.cache.get(queueId).getQueue().drainTo(list, maxBuffer);
-        this.cache.get(queueId).getConsumerEps().addCnt(cnt);
-        return list;
-    }
-
-    public void removeProducerEps(int loggerId) {
-        Set<Integer> set = new TreeSet<>(this.cache.keySet());
-        for (int queueId: set) {
-            this.cache.get(queueId).getProducerEps().remove(loggerId);
-        }
-    }
+//    public void removeProducerEps(int loggerId) {
+//        Set<Integer> set = new TreeSet<>(this.cache.keySet());
+//        for (int queueId: set) {
+//            this.cache.get(queueId).getProducerEps().remove(loggerId);
+//        }
+//    }
     
-    public List<Map<String, Object>> listProducerEpsHistory(int port){
+    public List<Map<String, Object>> listProducerEpsHistory(int outputId){
         List<Map<String, Object>> res = new ArrayList<>();
-        this.cache.get(port).getProducerEps().forEach((key, value) -> {
+        
+        queueSerivce.getQueue().get(outputId).getProducerEps().forEach((key, value) -> {
             Map<String, Object> logger = new HashMap<>();
-            logger.put("name", loggerMgr.get(key).getName());
+            logger.put("name", loggerService.get(key).getName());
             List<Map<String, Long>> list = new ArrayList<>();
             value.getEpsHistory().forEach(vo -> {
                 Map<String, Long> tick = new HashMap<>();
@@ -256,7 +236,7 @@ public class OutputService {
         return res;
     }
     
-    public Queue<EpsHistoryVO> listProducerEpsHistory(int port, int loggerId){
-        return this.cache.get(port).getProducerEps().get(loggerId).getEpsHistory();
+    public Queue<EpsHistoryVO> listProducerEpsHistory(int outputId, int loggerId){
+        return queueSerivce.getQueue().get(outputId).getProducerEps().get(loggerId).getEpsHistory();
     }
 }

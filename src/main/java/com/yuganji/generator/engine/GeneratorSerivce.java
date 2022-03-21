@@ -17,7 +17,7 @@ import com.yuganji.generator.db.LoggerRepository;
 import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.LoggerDto;
 import com.yuganji.generator.model.SingleObjectResponse;
-import com.yuganji.generator.output.OutputService;
+import com.yuganji.generator.queue.QueueService;
 import com.yuganji.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -27,7 +27,7 @@ import lombok.extern.log4j.Log4j2;
 public class GeneratorSerivce {
     
     @Autowired
-    private OutputService outputService;
+    private QueueService queueService;
     
     private Map<Integer, Future<String>> cache;
     
@@ -55,12 +55,11 @@ public class GeneratorSerivce {
     
     @Scheduled(initialDelay = 1_000, fixedDelay = 10 * 1000)
     private void schedule() {
-        
         for (Entry<Integer, LoggerDto> entry: loggerService.list().entrySet()){
             if (entry.getValue().getStatus() == 1 && 
                     (cache.get(entry.getKey()).isCancelled() || cache.get(entry.getKey()).isDone())) {
                 this.exceptStop(entry.getKey(), NetUtil.getLocalHostIp());
-                log.debug("Stopped generator by unknown error: " + entry.getKey());
+                log.error("Stopped generator by unknown error: " + entry.getKey());
             }
         }
     }
@@ -68,9 +67,8 @@ public class GeneratorSerivce {
     private void exceptStop(int id, String ip) {
         this.cache.get(id).cancel(true);
         this.cache.remove(id);
-        this.outputService.removeProducerEps(id);
+        this.queueService.removeProducerEps(id);
         loggerService.get(id).setStatus(0);
-        this.updateLoggerStatus(id, 0, ip);
     }
 
     public SingleObjectResponse start(Logger logger) {
@@ -98,9 +96,9 @@ public class GeneratorSerivce {
         logger =  loggerService.get(logger.getId(), logger.getIp()).toEntity();
         
         if (this.cache.containsKey(logger.getId())) {
-          this.cache.get(logger.getId()).cancel(true);
+          log.debug(this.cache.get(logger.getId()).cancel(true));
           this.cache.remove(logger.getId());
-          this.outputService.removeProducerEps(logger.getId());
+          this.queueService.removeProducerEps(logger.getId());
         } else {
             String message = "Genrator was not running status: " + loggerService.get(logger.getId()).getName();
             return new SingleObjectResponse(

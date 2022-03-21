@@ -1,9 +1,19 @@
 package com.yuganji.generator.output.sparrow;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.yuganji.generator.configuration.ApplicationContextProvider;
-import com.yuganji.generator.output.OutputService;
+import com.yuganji.generator.queue.QueueService;
+
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -15,10 +25,6 @@ import io.netty.handler.logging.LoggingHandler;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Log4j2
 public class TCPSocketServerInstance {
     private final int port;
@@ -27,7 +33,7 @@ public class TCPSocketServerInstance {
     
     private EventLoopGroup parentGroup;
     private EventLoopGroup childGroup;
-    private final OutputService outputService;
+    private final QueueService queueService;
     
     private final int maxBuffer = 200;
     private volatile boolean state = true;
@@ -41,7 +47,7 @@ public class TCPSocketServerInstance {
         this.port = port;
         this.clients = new ConcurrentHashMap<>();
         this.startSender();
-        this.outputService = ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
+        this.queueService = ApplicationContextProvider.getApplicationContext().getBean(QueueService.class);
     }
 
     public void startSender() {
@@ -52,7 +58,7 @@ public class TCPSocketServerInstance {
                         Thread.sleep(1_000);
                         continue;
                     }
-                    List<Map<String, Object>> list = outputService.poll(id, maxBuffer);
+                    List<Map<String, Object>> list = queueService.poll(id, maxBuffer);
                     if (list.size() == 0) {
                         Thread.sleep(1_000);
                         continue;

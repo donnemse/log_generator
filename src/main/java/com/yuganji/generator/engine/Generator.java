@@ -4,7 +4,7 @@ import java.util.Map;
 
 import com.yuganji.generator.model.IntBound;
 import com.yuganji.generator.model.LoggerDto;
-import com.yuganji.generator.output.OutputService;
+import com.yuganji.generator.queue.QueueService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -12,15 +12,15 @@ import lombok.extern.log4j.Log4j2;
 @Deprecated
 public class Generator extends AGenerator {
     
-    private OutputService outputService;
+    private QueueService queueService;
     private LoggerDto logger;
     
     private volatile boolean state = true;
     
     private IntBound epsBounds;
     
-    public Generator(OutputService outputService, LoggerDto logger) {
-        this.outputService = outputService;
+    public Generator(QueueService queueService, LoggerDto logger) {
+        this.queueService = queueService;
         this.logger = logger;
         this.epsBounds = new IntBound(logger.getEps());
     }
@@ -33,7 +33,7 @@ public class Generator extends AGenerator {
             int eps = this.epsBounds.randomInt();
             try {
                 Map<String, Object> map = logger.getDetail().generateLog();
-                outputService.push(map, logger.getId());
+                queueService.push(map, logger.getId());
                 cnt++;
                 if (eps < 1000) {
                     long t = System.currentTimeMillis() - time;

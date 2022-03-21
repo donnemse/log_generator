@@ -1,17 +1,18 @@
 package com.yuganji.generator.output.file;
 
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.google.gson.Gson;
 import com.yuganji.generator.configuration.ApplicationContextProvider;
-import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.output.model.FileOutputConfig;
+import com.yuganji.generator.queue.QueueService;
+
 import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j2;
-
-import java.util.List;
-import java.util.Map;
 
 @Log4j2
 @EqualsAndHashCode(callSuper=false)
@@ -52,11 +53,11 @@ public class RawOutputWriter extends OutputFileWriter {
     public void run() {
         Gson gson = new Gson();
         boolean state = true;
-        OutputService outputService = ApplicationContextProvider.getApplicationContext().getBean(OutputService.class);
+        QueueService queueService = ApplicationContextProvider.getApplicationContext().getBean(QueueService.class);
 
         while (state) {
             try {
-                List<Map<String, Object>> list = outputService.poll(this.getOutputId(), super.config.getBatchSize());
+                List<Map<String, Object>> list = queueService.poll(this.getOutputId(), super.config.getBatchSize());
                 if (list.size() == 0) {
                     Thread.sleep(1_000);
                     continue;

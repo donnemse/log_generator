@@ -68,6 +68,8 @@ public class LoggingAop {
                     .fid(output.getId())
                     .type("output")
                     .ip(output.getIp());
+        } else {
+            return;
         }
         historyRepository.save(history.build());
     }

@@ -1,5 +1,10 @@
 package com.yuganji.generator.output.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,18 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.yuganji.generator.db.Output;
 import com.yuganji.generator.model.AbstractOutputHandler;
+import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.util.Constants;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
@@ -42,10 +44,16 @@ public class OutputDto {
     private int maxQueueSize;
     private int currentQueueSize;
     private long currentQueueByte;
-    private long startedTime;
+    
+    @Builder.Default
+    private long startedTime = System.currentTimeMillis();
     private long runningTime;
     private long created;
     private long lastModified;
+    
+    private EpsVO consumerEps;
+    
+    private Map<Integer, EpsVO> producerEps;
 
     @JsonIgnore
     transient private AbstractOutputHandler handler;
@@ -94,6 +102,7 @@ public class OutputDto {
     public static class OutputDtoBuilder {
 
         public OutputDtoBuilder maxQueueSize(int maxQueueSize) {
+            this.maxQueueSize = maxQueueSize;
             return this;
         }
 

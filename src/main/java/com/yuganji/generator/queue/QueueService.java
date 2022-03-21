@@ -1,13 +1,22 @@
 package com.yuganji.generator.queue;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.yuganji.generator.logger.LoggerService;
-import com.yuganji.generator.model.EpsVO;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.yuganji.generator.logger.LoggerService;
+import com.yuganji.generator.model.EpsVO;
+
+import lombok.Getter;
 
 @Service
 public class QueueService {
@@ -15,9 +24,8 @@ public class QueueService {
     @JsonIgnore
     transient private static final int MAX_QUEUE_SIZE = 10_000;
 
+    @Getter
     private transient Map<Integer, QueueObject> queue;
-
-    private EpsVO consumerEps;
 
     @Autowired
     private LoggerService loggerService;
@@ -28,39 +36,34 @@ public class QueueService {
     }
 
     public void push(Map<String, Object> data, int loggerId) {
-
         this.queue.entrySet().parallelStream().forEach(entry -> {
-            if (!producerEps.containsKey(loggerId)) {
-                EpsVO epsVO = new EpsVO(loggerService.get(loggerId).getName());
-                this.producerEps.put(loggerId, epsVO);
+            EpsVO eps = entry.getValue().getProducerEps().putIfAbsent(loggerId, new EpsVO(loggerService.get(loggerId).getName()));
+            if (eps == null) {
+                eps = entry.getValue().getProducerEps().get(loggerId);
             }
-            if (entry.getValue().remainingCapacity() == 0) {
-                entry.getValue().poll();
-                this.producerEps.get(loggerId).addDeleted();
+            
+            if (entry.getValue().getQueue().remainingCapacity() == 0) {
+                entry.getValue().getQueue().poll();
+                eps.addDeleted();
             }
-            entry.getValue().offer(data);
-            if (producerEps.get(loggerId) != null) {
-                producerEps.get(loggerId).addCnt();
-            }
+            entry.getValue().getQueue().offer(data);
+            eps.addCnt();
         });
     }
 
     public List<Map<String, Object>> poll(int queueId, int maxBuffer) {
-        if (this.queue.get(queueId).getConsumerEps() == null) {
-            EpsVO epsVO = new EpsVO(null);
-            this.cache.get(queueId).setConsumerEps(epsVO);
-        }
-
+        EpsVO eps = this.queue.get(queueId).getConsumerEps();
+        
         List<Map<String, Object>> list = new ArrayList<>();
-        int cnt = this.cache.get(queueId).getQueue().drainTo(list, maxBuffer);
-        this.cache.get(queueId).getConsumerEps().addCnt(cnt);
+        int cnt = this.queue.get(queueId).getQueue().drainTo(list, maxBuffer);
+        eps.addCnt(cnt);
         return list;
     }
 
     public void removeProducerEps(int loggerId) {
-        Set<Integer> set = new TreeSet<>(this.cache.keySet());
+        Set<Integer> set = new TreeSet<>(this.queue.keySet());
         for (int queueId: set) {
-            this.cache.get(queueId).getProducerEps().remove(loggerId);
+            this.queue.get(queueId).getProducerEps().remove(loggerId);
         }
     }
 }

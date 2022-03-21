@@ -1,21 +1,27 @@
 package com.yuganji.generator.queue;
 
-import com.yuganji.generator.model.EpsVO;
-import lombok.Data;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@Data
+import com.yuganji.generator.model.EpsVO;
+
+import lombok.Getter;
+
 public class QueueObject {
+    
+    @Getter
     private LinkedBlockingQueue<Map<String, Object>> queue;
-    private Map<Integer, EpsVO> consumerEps;
+    
+    @Getter
+    private EpsVO consumerEps;
+    
+    @Getter
     private Map<Integer, EpsVO> producerEps;
 
     public QueueObject(int maxQueueSize) {
-        this.queue = new LinkedBlockingQueue<>();
-        this.consumerEps = new ConcurrentHashMap<>();
+        this.queue = new LinkedBlockingQueue<>(maxQueueSize);
+        this.consumerEps = new EpsVO(null);
         this.producerEps = new ConcurrentHashMap<>();
     }
 }

@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import com.yuganji.generator.db.Logger;
 import com.yuganji.generator.db.LoggerRepository;
 import com.yuganji.generator.model.LoggerDto;
-import com.yuganji.generator.model.LoggerRequestVO;
 import com.yuganji.generator.model.SingleObjectResponse;
 
 import lombok.extern.log4j.Log4j2;
@@ -124,10 +123,5 @@ public class LoggerService {
             list.add(map);
         }
         return list;
-    }
-
-    public boolean addHistory(LoggerRequestVO vo, String msg, String detail, String error) {
-//        histMapper.insertHistory(vo.getId(), vo.getIp(), TYPE, new Date().getTime(), msg, detail, null);
-        return true;
     }
 }

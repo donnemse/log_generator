@@ -1,6 +1,6 @@
 package com.yuganji.generator.output.sparrow;
 
-import com.yuganji.generator.ApplicationContextProvider;
+import com.yuganji.generator.configuration.ApplicationContextProvider;
 import com.yuganji.generator.output.OutputService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -21,18 +21,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Log4j2
 public class TCPSocketServerInstance {
-    private int port;
-    private int id;
+    private final int port;
+    private final int id;
     private ChannelFuture cf;
     
     private EventLoopGroup parentGroup;
     private EventLoopGroup childGroup;
-    private OutputService outputService;
+    private final OutputService outputService;
     
-    private int maxBuffer = 200;
+    private final int maxBuffer = 200;
     private volatile boolean state = true;
     @Getter
-    private Map<String, ChannelHandlerContext> clients;
+    private final Map<String, ChannelHandlerContext> clients;
     
     private TCPSocketServerHandler handler;
     
@@ -57,7 +57,7 @@ public class TCPSocketServerInstance {
                         Thread.sleep(1_000);
                         continue;
                     }
-                    clients.entrySet().forEach(x -> x.getValue().writeAndFlush(list));
+                    clients.forEach((key, value) -> value.writeAndFlush(list));
 
                     Thread.sleep(0, 10);
                 } catch (Exception e) {

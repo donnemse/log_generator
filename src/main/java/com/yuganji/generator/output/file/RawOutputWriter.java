@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.google.gson.Gson;
-import com.yuganji.generator.ApplicationContextProvider;
+import com.yuganji.generator.configuration.ApplicationContextProvider;
 import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.output.model.FileOutputConfig;
 import lombok.EqualsAndHashCode;

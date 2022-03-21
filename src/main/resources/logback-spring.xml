@@ -41,7 +41,7 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="springfox" level="WARN" />
+<!--    <logger name="springfox" level="WARN" />-->
     <logger name="org.springframework" level="WARN" />
     <logger name="org.springframework.security" level="WARN" />
     <logger name="org.apache.kafka" level="WARN" />

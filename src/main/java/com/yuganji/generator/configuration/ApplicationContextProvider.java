@@ -1,4 +1,4 @@
-package com.yuganji.generator;
+package com.yuganji.generator.configuration;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

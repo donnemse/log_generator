@@ -1,4 +1,4 @@
-package com.yuganji.generator;
+package com.yuganji.generator.configuration;
 
 import com.yuganji.generator.db.History;
 import com.yuganji.generator.db.HistoryRepository;

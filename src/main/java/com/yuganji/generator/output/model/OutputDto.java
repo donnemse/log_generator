@@ -1,12 +1,5 @@
 package com.yuganji.generator.output.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,15 +8,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.yuganji.generator.db.Output;
 import com.yuganji.generator.model.AbstractOutputHandler;
-import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.util.Constants;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -43,10 +39,6 @@ public class OutputDto {
     private String ip;
     private List<String> clients;
 
-    @Builder.Default
-    private Map<Integer, EpsVO> producerEps = new ConcurrentHashMap<>();;
-    private EpsVO consumerEps;
-
     private int maxQueueSize;
     private int currentQueueSize;
     private long currentQueueByte;
@@ -54,10 +46,6 @@ public class OutputDto {
     private long runningTime;
     private long created;
     private long lastModified;
-
-    @Builder.Default
-    @JsonIgnore
-    private transient LinkedBlockingQueue<Map<String, Object>> queue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
 
     @JsonIgnore
     transient private AbstractOutputHandler handler;
@@ -73,6 +61,7 @@ public class OutputDto {
         } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
             this.handler = new FileOutput(this.id, this.info);
         }
+        this.startedTime = System.currentTimeMillis();
     }
     
     public long getRunningTime() {
@@ -105,8 +94,6 @@ public class OutputDto {
     public static class OutputDtoBuilder {
 
         public OutputDtoBuilder maxQueueSize(int maxQueueSize) {
-            this.maxQueueSize = maxQueueSize;
-            this.queue(new LinkedBlockingQueue<>(maxQueueSize));
             return this;
         }
 

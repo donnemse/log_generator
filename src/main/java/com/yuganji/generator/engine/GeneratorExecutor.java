@@ -1,20 +1,17 @@
 package com.yuganji.generator.engine;
 
-import java.util.Map;
-import java.util.concurrent.Future;
-
-import javax.annotation.PostConstruct;
-
+import com.yuganji.generator.model.IntBound;
+import com.yuganji.generator.model.LoggerDto;
+import com.yuganji.generator.output.OutputService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
-import com.yuganji.generator.model.IntBound;
-import com.yuganji.generator.model.LoggerDto;
-import com.yuganji.generator.output.OutputService;
-
-import lombok.extern.log4j.Log4j2;
+import javax.annotation.PostConstruct;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 @Log4j2
 @Service
@@ -31,10 +28,11 @@ public class GeneratorExecutor {
     @Async
     public Future<String> run(LoggerDto logger) {
         int cnt = 0;
-        IntBound epsBounds = new IntBound(logger.getEps()); 
+        IntBound epsBounds = new IntBound(logger.getEps());
         long time = System.currentTimeMillis();
+        int eps = epsBounds.randomInt();
+
         while(!Thread.interrupted()) {
-            int eps = epsBounds.randomInt();
             try {
                 Map<String, Object> map = logger.getDetail().generateLog();
                 outputService.push(map, logger.getId());
@@ -47,10 +45,14 @@ public class GeneratorExecutor {
                     }
                     Thread.sleep((1000 - t) / eps);
                     time = System.currentTimeMillis();
+                    eps = epsBounds.randomInt();
                 } else if (cnt % 100 == 0){
                     long diff = System.currentTimeMillis() - time;
-                    Thread.sleep((1000 - (eps / 100 * diff)) / eps / 100);
+                    if (eps / 100 * diff < 1000) {
+                        Thread.sleep(1000 - (eps / 100 * diff));
+                    }
                     time = System.currentTimeMillis();
+                    eps = epsBounds.randomInt();
                 }
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);

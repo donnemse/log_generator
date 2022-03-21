@@ -370,7 +370,6 @@
                 updateSaveForm(function() {
                     $.each($(".default_info").serializeArray().map(x => x.name), function(i, v) {
                         $node = $(".default_info").find("#" + v);
-                        console.log($node)
                         $node.val(last_selected_object[v]);
                         if ($node.is("select")) {
                             $node.trigger("change");

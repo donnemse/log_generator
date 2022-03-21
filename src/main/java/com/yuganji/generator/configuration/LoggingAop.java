@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,7 @@ public class LoggingAop {
     }
 
 
-//    @Around(value = "loggerRest()")
+    @Around(value = "execution(public * com.yuganji.generator.output.OutputService.list(..))")
     public Object calPerformanceAdvice(ProceedingJoinPoint point) throws Throwable {
         StopWatch sw = new StopWatch();
         sw.start();

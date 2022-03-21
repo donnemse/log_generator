@@ -16,7 +16,6 @@
 #
 
 log: EXAMPLE  # required
-eps: 10       # required - number
 logtype: WEB  # required - str
 raw: |
     $\{sip\} - - [$\{event_time\}] "$\{method\} $\{url\} $\{http_version\}" $\{status\} $\{event_size\}
@@ -164,12 +163,15 @@ data:         # required - this is field list
                     editor.setValue(data.yaml_str, -1)
                     
                     let $div = $(
-                        "<h2 class=\"logger-content-title\">" +
+                        "<h3 class=\"logger-content-title\">" +
                         "   <input type=\"text\" id=\"selected_name\" value=\"" + data.name + "\">" +
-                        "</h2>" +
+                        "</h3>" +
                         "<p class=\"logger-content-subtitle\">" +
                             "From <a>" + data.ip + "</a> at <span>" + moment(data.last_modified).format("YYYY/MM/DD HH:mm:ss") + "</span>" +
                         "</p>" +
+                        "<h6 class=\"logger-content-title\">" +
+                        "   EPS: <input type=\"text\" id=\"selected_eps\" value=\"" + data.eps + "\">" +
+                        "</h6>" +
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
                     );
@@ -188,6 +190,7 @@ data:         # required - this is field list
             $(document).on("click", ".save-button", function (e) {
                 let name = $("#selected_name").val();
                 let id = $("#selected_id").val();
+                let eps = $("#selected_eps").val();
                 let yaml = editor.getValue();
 
                 axios({
@@ -196,7 +199,8 @@ data:         # required - this is field list
                     data: {
                         name: name,
                         id: id,
-                        yaml_str: yaml
+                        yaml_str: yaml,
+                        eps: eps
                     }
                 }).then(function (response) {
                     console.log(response.data)

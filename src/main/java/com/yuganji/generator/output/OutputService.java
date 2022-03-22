@@ -1,20 +1,5 @@
 package com.yuganji.generator.output;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import com.yuganji.generator.db.Output;
 import com.yuganji.generator.db.OutputRepository;
 import com.yuganji.generator.exception.OutputHandleException;
@@ -25,9 +10,16 @@ import com.yuganji.generator.output.model.OutputDto;
 import com.yuganji.generator.output.model.SparrowOutput;
 import com.yuganji.generator.queue.QueueObject;
 import com.yuganji.generator.queue.QueueService;
-
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -47,10 +39,8 @@ public class OutputService {
 
     @PostConstruct
     public void init(){
-        this.cache = outputRepository.findAll().stream().collect(Collectors.toMap(Output::getId, x -> x.toDto()));
-        this.cache.forEach((k, v) -> {
-            this.queueSerivce.getQueue().putIfAbsent(k, new QueueObject(v.getMaxQueueSize()));
-        });
+        this.cache = outputRepository.findAll().stream().collect(Collectors.toMap(Output::getId, Output::toDto));
+        this.cache.forEach((k, v) -> this.queueSerivce.putIfAbsent(k, new QueueObject(v.getMaxQueueSize())));
     }
 
     @Scheduled(initialDelay = 3000, fixedDelay = 20 * 1000)
@@ -80,7 +70,7 @@ public class OutputService {
         try {
             output = outputRepository.save(output);
             this.cache.put(output.getId(), output.toDto());
-            this.queueSerivce.getQueue().putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
+            this.queueSerivce.putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
             res.setMsg(msg);
             res.setData(output);
         } catch(Exception e) {
@@ -107,7 +97,7 @@ public class OutputService {
             this.cache.remove(output.getId());
             output = outputRepository.save(output);
             this.cache.put(output.getId(), output.toDto());
-            this.queueSerivce.getQueue().putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
+            this.queueSerivce.putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
             res.setMsg(msg);
             res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
@@ -130,7 +120,7 @@ public class OutputService {
 
             outputRepository.deleteById(output.getId());
             this.cache.remove(output.getId());
-            this.queueSerivce.getQueue().remove(output.getId());
+            this.queueSerivce.removeQueueObj(output.getId());
         } catch (Exception e) {
             res.setMsg(e.getMessage());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -207,27 +197,20 @@ public class OutputService {
     }
 
     public Collection<OutputDto> list() {
-        Collection<OutputDto> dto = this.cache.values();
-        return dto;
+        return this.cache.values();
     }
-//    public void removeProducerEps(int loggerId) {
-//        Set<Integer> set = new TreeSet<>(this.cache.keySet());
-//        for (int queueId: set) {
-//            this.cache.get(queueId).getProducerEps().remove(loggerId);
-//        }
-//    }
-    
+
     public List<Map<String, Object>> listProducerEpsHistory(int outputId){
         List<Map<String, Object>> res = new ArrayList<>();
         
-        queueSerivce.getQueue().get(outputId).getProducerEps().forEach((key, value) -> {
+        queueSerivce.getQueueObj(outputId).getProducerEps().forEach((key, value) -> {
             Map<String, Object> logger = new HashMap<>();
             logger.put("name", loggerService.get(key).getName());
             List<Map<String, Long>> list = new ArrayList<>();
             value.getEpsHistory().forEach(vo -> {
                 Map<String, Long> tick = new HashMap<>();
                 tick.put("x", vo.getTime());
-                tick.put("y", (long) Math.round(vo.getEps()));
+                tick.put("y", Math.round(vo.getEps()));
                 list.add(tick);
             });
             logger.put("data", list);
@@ -237,6 +220,6 @@ public class OutputService {
     }
     
     public Queue<EpsHistoryVO> listProducerEpsHistory(int outputId, int loggerId){
-        return queueSerivce.getQueue().get(outputId).getProducerEps().get(loggerId).getEpsHistory();
+        return queueSerivce.getQueueObj(outputId).getProducerEps().get(loggerId).getEpsHistory();
     }
 }

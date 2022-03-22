@@ -1,22 +1,13 @@
 package com.yuganji.generator.queue;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.EpsVO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import lombok.Getter;
+import javax.annotation.PostConstruct;
+import java.util.*;
 
 @Service
 public class QueueService {
@@ -24,7 +15,6 @@ public class QueueService {
     @JsonIgnore
     transient private static final int MAX_QUEUE_SIZE = 10_000;
 
-    @Getter
     private transient Map<Integer, QueueObject> queue;
 
     @Autowired
@@ -35,8 +25,20 @@ public class QueueService {
         this.queue = new LinkedHashMap<>();
     }
 
+    public QueueObject getQueueObj(int outputId) {
+        return this.queue.get(outputId);
+    }
+
+    public QueueObject removeQueueObj(int outputId) {
+        return this.queue.remove(outputId);
+    }
+
+    public Set<Map.Entry<Integer, QueueObject>> entry(){
+        return this.queue.entrySet();
+    }
+
     public void push(Map<String, Object> data, int loggerId) {
-        this.queue.entrySet().parallelStream().forEach(entry -> {
+        this.entry().parallelStream().forEach(entry -> {
             EpsVO eps = entry.getValue().getProducerEps().putIfAbsent(loggerId, new EpsVO(loggerService.get(loggerId).getName()));
             if (eps == null) {
                 eps = entry.getValue().getProducerEps().get(loggerId);
@@ -65,5 +67,9 @@ public class QueueService {
         for (int queueId: set) {
             this.queue.get(queueId).getProducerEps().remove(loggerId);
         }
+    }
+
+    public QueueObject putIfAbsent(Integer k, QueueObject queueObject) {
+        return this.queue.putIfAbsent(k, queueObject);
     }
 }

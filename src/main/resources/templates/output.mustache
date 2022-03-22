@@ -44,7 +44,7 @@
                 let i = 0;
                 $.each(response.data.data, function(k, v) {
                     let $div = $(
-                        "<div class=\"menu-item pure-g " + (i++ == 0? "menu-item-selected menu-item-unread": "") + "\">" +
+                        "<div class=\"menu-item pure-g " + (i++ === 0? "menu-item-selected menu-item-unread": "") + "\">" +
                         "   <div class=\"pure-u-1\">" +
                         "       <h5 class=\"menu-name\">" + v.type + ": " + v.name + "</h5>" +
                         "       <h6 class=\"menu-subject\">" +
@@ -53,7 +53,7 @@
                         "   </div>" +
                         "   <div class=\"pure-u-1-8 change-state\">" +
                         "       <div class=\"form-check form-switch\">" +
-                        "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status == 1? "checked": "") + ">" +
+                        "           <input class=\"form-check-input checkbox-change-state\" type=\"checkbox\" role=\"switch\" " + (v.status === 1? "checked": "") + ">" +
                         "       </div>" +
                         "   </div>" +
                         "</div>");
@@ -70,7 +70,7 @@
         
         function cleanOutputJson(obj) {
             for(prop in obj) {
-                if (prop == "cnt" || prop == "last_check_time" || prop == "deleted"){
+                if (prop === "cnt" || prop === "last_check_time" || prop === "deleted"){
                     delete obj[prop];
                 } else if(typeof(obj[prop]) == "object"){
                     cleanOutputJson(obj[prop]);
@@ -78,8 +78,8 @@
                     
                     if(prop.indexOf("_byte") > -1) {
                         obj[prop] = getByteStr(obj[prop])
-                    } else if(prop.indexOf("_time") > -1) {
-                        if (prop == "running_time") {
+                    } else if(prop.indexOf("_time") > -1 || prop.indexOf("created") > -1 || prop.indexOf("last_modified") > -1) {
+                        if (prop === "running_time") {
                             obj[prop] = getRunningTimeStr(obj[prop]);
                         } else {
                             obj[prop] = moment(obj[prop]).format("YYYY/MM/DD HH:mm:ss")
@@ -94,10 +94,10 @@
         function getRunningTimeStr(time) {
             let result = "";
             let map = {
-                "일": 24,
-                "시간": 60,
-                "분": 60,
-                "초": 1000
+                "day": 24,
+                "hour": 60,
+                "min": 60,
+                "sec": 1000
             };
             let millis = 1000 * 60 * 60 * 24;
             
@@ -132,15 +132,15 @@
             }).then(function (response) {
                 console.log(response)
                 $.each(response.data.data, function(k, v) {
-                    if (v.type == "text") {
+                    if (v.type === "text") {
                         $form.append(
                                 "<div class=\"pure-control-group\">"
                                 + "     <label for=\""+ k + "\">" + v.label + "</label>"
                                 + "     <input id=\""+ k + "\" name=\""+ k + "\" class=\"pure-input-1-2\" type=\""+ v.type + "\" placeholder=\""+ v.placeholder + "\">"
                                 + "</div>");
-                    } else if (v.type == "select"){
+                    } else if (v.type === "select"){
                         $select = $("<select name=\""+ k + "\" id=\"" + k + "\" class=\"pure-input-1-3\"></select>");
-                        $.each(v.info, function(t, o) {
+                        $.each(v.info, function(t) {
                             $select.append("<option value=\"" + t + "\">" + t + "</option>");
                         });
                         $form.append("<div class=\"pure-control-group\">"
@@ -148,19 +148,19 @@
                                 + " </div>");
                         $form.find(".pure-control-group:last").append($select)
 
-                        $select.change(function(e) {
+                        $select.change(function() {
                             let key = $(this).val();
                             $detail.empty();
                             $.each(v.info[key], function(t, o) {
-                                if (o.type == "text") {
+                                if (o.type === "text") {
                                     $detail.append(
                                             "<div class=\"pure-control-group\">"
                                             + "     <label for=\""+ o.label + "\">" + o.label + "</label>"
                                             + "     <input name=\""+ o.label + "\" id=\""+ o.label + "\" class=\"pure-input-1-2\" type=\""+ o.type + "\" placeholder=\""+ o.placeholder + "\">"
                                             + "</div>");
-                                } else if (o.type == "select"){
+                                } else if (o.type === "select"){
                                     $subselect = $("<select name=\""+ o.label + "\" id=\"" + o.label + "\" class=\"pure-input-1-3\"></select>");
-                                    $.each(o.info, function(i, option) {
+                                    $.each(o.info, function(i) {
                                         $subselect.append("<option value=\"" + i + "\">" + i + "</option>");
                                     });
                                     $detail.append("<div class=\"pure-control-group\">"
@@ -178,10 +178,10 @@
                     callback();
                 }
             });
-
-            $("#new_output_modal").find(".modal-body").empty();
-            $("#new_output_modal").find(".modal-body").append($form);
-            $("#new_output_modal").find(".modal-body").append($detail);
+            let $output_modal = $("#new_output_modal");
+            $output_modal.find(".modal-body").empty();
+            $output_modal.find(".modal-body").append($form);
+            $output_modal.find(".modal-body").append($detail);
         }
 
         $(function() {
@@ -192,11 +192,11 @@
             editor.setFontSize(15);
             loadList();
             
-            $(document).on('click',".save-output-button",function (e) {
+            $(document).on('click',".save-output-button",function () {
                 let data = $('.default_info').serializeObject();
                 data["info"] = $('.detail_info').serializeObject();
                 let method = "put";
-                if (data["id"] != undefined) {
+                if (data["id"] !== undefined) {
                     method = "patch";
                 }
                 axios({
@@ -204,9 +204,10 @@
                     method: method,
                     data: data
                 }).then(function (response) {
-                    if (response.data.status == 200) {
-                        $("#new_output_modal").find("form")[0].reset()
-                        $("#new_output_modal").modal("hide");
+                    if (response.data.status === 200) {
+                        let $output_modal = $("#new_output_modal");
+                        $output_modal.find("form")[0].reset()
+                        $output_modal.modal("hide");
                         loadList();
                         $.notify({message: response.data.msg},{type: 'success'});
                     } else {
@@ -232,7 +233,7 @@
                     }
                 }).then(function (response) {
                     console.log(response)
-                    if (response.data.status == 200) {
+                    if (response.data.status === 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                     } else {
                         $.notify({message: response.data.msg},{type: 'danger'});
@@ -261,9 +262,9 @@
                     cleanOutputJson(data);
                     editor.setValue(JSON.stringify(data, null, '\t'), -1)
                     let title = "";
-                    if (data.type == "sparrow") {
+                    if (data.type === "sparrow") {
                         title = "Port: " + data.info.port;
-                    } else if (data.type == "file") {
+                    } else if (data.type === "file") {
                         title = "File: " + data.info.output_type;
                     }
                     console.log(data.started_time)
@@ -317,20 +318,21 @@
                 });
             });
 
-            $(document).on('click',".remove-button",function (e) {
+            $(document).on('click',".remove-button",function () {
                 let id = $("#selected_id").val();
                 let flag = $(".menu-item[output-id=" + id + "]").find(".checkbox-change-state").is(":checked");
                 if (flag) {
                     $.notify({message: "Stop it first"},{type: 'danger'});
                     return;
                 }
-                $("#removeModal").modal("show")
-                $("#removeModal").find(".modal-body").html(
+                let $remove_modal = $("#removeModal");
+                $remove_modal.modal("show")
+                $remove_modal.find(".modal-body").html(
                         "[ " + $("#selected_name").val() + " ] remove. " +
                         "Are you sure?");
             });
 
-            $(document).on('click',".remove-ok",function (e) {
+            $(document).on('click',".remove-ok",function () {
                 let id = $("#selected_id").val();
                 axios({
                     url: "/api/outputs",
@@ -340,7 +342,7 @@
                     }
                 }).then(function (response) {
                     console.log(response)
-                    if (response.data.status == 200) {
+                    if (response.data.status === 200) {
                         $.notify({message: response.data.msg},{type: 'success'});
                         $("#selected_id").val("-1");
                         $("#selected_name").val("");
@@ -356,33 +358,34 @@
                 });
             });
 
-            $(document).on('click',".new-button",function (e) {
+            $(document).on('click',".new-button",function () {
                 updateSaveForm();
             });
 
-            $(document).on('click',".modify-button",function (e) {
-                if ($("#selected_status").val() == "1") {
+            $(document).on('click',".modify-button",function () {
+                if ($("#selected_status").val() === "1") {
                     $.notify({message: "Please stop it first"},{type: 'danger'});
                     return;
                 }
                 // $(".new-button").trigger("click");
                 $("#new_output_modal").modal("show");
                 updateSaveForm(function() {
-                    $.each($(".default_info").serializeArray().map(x => x.name), function(i, v) {
-                        $node = $(".default_info").find("#" + v);
+                    let $detail_info = $(".default_info");
+                    $.each($detail_info.serializeArray().map(x => x.name), function(i, v) {
+                        $node = $detail_info.find("#" + v);
                         $node.val(last_selected_object[v]);
                         if ($node.is("select")) {
                             $node.trigger("change");
                         }
                     });
-                    $.each($(".detail_info").serializeArray().map(x => x.name), function(i, v) {
-                        $node = $(".detail_info").find("#" + v);
+                    $.each($detail_info.serializeArray().map(x => x.name), function(i, v) {
+                        $node = $detail_info.find("#" + v);
                         $node.val(last_selected_object.info[v]);
                         if ($node.is("select")) {
                             $node.trigger("change");
                         }
                     });
-                    $(".default_info").append("<input type=\"hidden\" name=\"id\" value=\"" + $("#selected_id").val() + "\">");
+                    $detail_info.append("<input type=\"hidden\" name=\"id\" value=\"" + $("#selected_id").val() + "\">");
                 });
             });
         });

@@ -375,7 +375,8 @@ textarea {
     overflow: scroll;
 }
 
-#new_output_modal .modal-dialog {
+#new_output_modal .modal-dialog,
+#importModal .modal-dialog {
     max-width: 35% !important;
     min-width: 35% !important;
 }

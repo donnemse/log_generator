@@ -19,6 +19,9 @@ public class QueueObject {
     private final Map<Integer, EpsVO> producerEps;
 
     public QueueObject(int maxQueueSize) {
+        if (maxQueueSize == 0){
+            maxQueueSize = 100_000;
+        }
         this.queue = new LinkedBlockingQueue<>(maxQueueSize);
         this.consumerEps = new EpsVO(null);
         this.producerEps = new ConcurrentHashMap<>();

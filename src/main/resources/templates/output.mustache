@@ -6,7 +6,7 @@
     <meta name="description" content="A layout example that shows off a responsive logger layout.">
     <title>ILogger</title>
     {{>import}}
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="/js/highcharts.js"></script>
 
 
     <style rel="stylesheet">
@@ -370,15 +370,18 @@
                 // $(".new-button").trigger("click");
                 $("#new_output_modal").modal("show");
                 updateSaveForm(function() {
-                    let $detail_info = $(".default_info");
-                    $.each($detail_info.serializeArray().map(x => x.name), function(i, v) {
-                        $node = $detail_info.find("#" + v);
+                    let $default_info = $(".default_info");
+                    let $detail_info = $(".detail_info");
+                    $.each($default_info.serializeArray().map(x => x.name), function(i, v) {
+                        console.log(v)
+                        $node = $default_info.find("#" + v);
                         $node.val(last_selected_object[v]);
                         if ($node.is("select")) {
                             $node.trigger("change");
                         }
                     });
                     $.each($detail_info.serializeArray().map(x => x.name), function(i, v) {
+                        console.log(v)
                         $node = $detail_info.find("#" + v);
                         $node.val(last_selected_object.info[v]);
                         if ($node.is("select")) {

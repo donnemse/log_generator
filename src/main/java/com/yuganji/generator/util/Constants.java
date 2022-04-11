@@ -82,12 +82,15 @@ public final class Constants {
 
     public enum OutputType {
         SPARROW(new HashMap<String, List<OutputTemplate>>(){{
-            put("sparrow", Arrays.asList(
-                new OutputTemplate("port", "3303", InputForm.TEXT.getValue(), null)));
+            put("sparrow", Collections.singletonList(
+                    new OutputTemplate("port", "3303", InputForm.TEXT.getValue(), null)));
         }}),
         KAFKA(new HashMap<String, List<OutputTemplate>>(){{
             put("kafka", Arrays.asList(
-                    new OutputTemplate("port", "3303", InputForm.TEXT.getValue(), null)));
+                    new OutputTemplate("bootstrap_servers", "prep1:9092,prep2:9092,prep3:9092", InputForm.TEXT.getValue(), null),
+                    new OutputTemplate("topic_name", "test-topic", InputForm.TEXT.getValue(), null),
+                    new OutputTemplate("output_type", "csv", InputForm.TEXT.getValue(), null),
+                    new OutputTemplate("batch_size", "10", InputForm.TEXT.getValue(), null)));
         }}),
         FILE(new HashMap<String, List<OutputTemplate>>(){{
             put("file", Arrays.asList(

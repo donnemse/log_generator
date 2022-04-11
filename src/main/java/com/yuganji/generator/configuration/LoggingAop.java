@@ -34,8 +34,8 @@ public class LoggingAop {
 
     @AfterReturning(value = "loggerRest() || outputRest()", returning = "returnValue")
     public void afterReturning(JoinPoint jp, Object returnValue) {
-        if (jp.getArgs().length == 0 ||
-                (!(jp.getArgs()[0] instanceof Logger) && !(jp.getArgs()[0] instanceof Output))) {
+        if (jp.getArgs().length == 0
+                || (!(jp.getArgs()[0] instanceof Logger) && !(jp.getArgs()[0] instanceof Output))) {
             return;
         }
         SingleObjectResponse res = (SingleObjectResponse) returnValue;
@@ -44,25 +44,25 @@ public class LoggingAop {
         if (res.getStatus() != 200) {
             history = history.error(res.getMsg());
         }
-        if (res.getData() instanceof Logger){
+        if (res.getData() instanceof Logger) {
             Logger logger = (Logger) (res.getData());
             history = history.detail(logger.getYamlStr())
                     .fid(logger.getId())
                     .type("logger")
                     .ip(logger.getIp());
-        } else if (res.getData() instanceof LoggerDto){
+        } else if (res.getData() instanceof LoggerDto) {
             LoggerDto logger = (LoggerDto) (res.getData());
             history = history.detail(logger.getYamlStr())
                     .fid(logger.getId())
                     .type("logger")
                     .ip(logger.getIp());
-        } else if (res.getData() instanceof Output){
+        } else if (res.getData() instanceof Output) {
             Output output = (Output) (res.getData());
             history = history.detail(output.getInfo().toString())
                     .fid(output.getId())
                     .type("output")
                     .ip(output.getIp());
-        }  else if (res.getData() instanceof OutputDto){
+        }  else if (res.getData() instanceof OutputDto) {
             OutputDto output = (OutputDto) (res.getData());
             history = history.detail(output.getInfo().toString())
                     .fid(output.getId())

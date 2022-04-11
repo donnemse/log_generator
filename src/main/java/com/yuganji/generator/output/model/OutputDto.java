@@ -1,10 +1,5 @@
 package com.yuganji.generator.output.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,12 +11,16 @@ import com.yuganji.generator.model.AbstractOutputHandler;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.sparrow.ISocketServer;
 import com.yuganji.generator.util.Constants;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -68,6 +67,8 @@ public class OutputDto {
             this.handler = new SparrowOutput(this.id, this.info);
         } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
             this.handler = new FileOutput(this.id, this.info);
+        } else if (this.type.equalsIgnoreCase(Constants.Output.KAFKA.getValue())) {
+            this.handler = new KafkaOutput(this.id, this.info);
         }
         this.startedTime = System.currentTimeMillis();
     }
@@ -109,7 +110,7 @@ public class OutputDto {
         @SuppressWarnings("unchecked")
         public OutputDtoBuilder info(Object info) {
             try {
-                Map<String, Object> map = null;
+                Map<String, Object> map;
                 if (info == null) {
                     map = new HashMap<>();
                 } else if (info instanceof String) {
@@ -117,12 +118,16 @@ public class OutputDto {
                     });
                 } else if (info instanceof Map<?, ?>) {
                     map = (Map<String, Object>) info;
+                } else {
+                    map = new HashMap<>();
                 }
 
                 if (this.type.equalsIgnoreCase(Constants.Output.SPARROW.getValue())) {
                     this.handler = new SparrowOutput(this.id, map);
                 } else if (this.type.equalsIgnoreCase(Constants.Output.FILE.getValue())) {
                     this.handler = new FileOutput(this.id, map);
+                } else if (this.type.equalsIgnoreCase(Constants.Output.KAFKA.getValue())) {
+                    this.handler = new KafkaOutput(this.id, map);
                 }
                 this.info = map;
             } catch (JsonProcessingException e) {

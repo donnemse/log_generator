@@ -92,8 +92,8 @@ public class OutputRestController {
 
     @ApiOperation(value = "Stop sparrow client")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="id", value = "Output Id", required = true, dataType = "int", example = "0"),
-            @ApiImplicitParam(name="clientId", value = "Sparrow client id", required = true, dataType = "string")})
+            @ApiImplicitParam(name = "id", value = "Output Id", required = true, dataType = "int", example = "0"),
+            @ApiImplicitParam(name = "clientId", value = "Sparrow client id", required = true, dataType = "string")})
     @RequestMapping(value = "/outputs/stop-client/{id}/{clientId}", method = RequestMethod.PATCH)
     public @ResponseBody SingleObjectResponse stopClient(
             @PathVariable(value = "id") int id,
@@ -104,9 +104,9 @@ public class OutputRestController {
 
     @ApiOperation(value = "Eps time series data from producer")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="id", value = "Output Id", required = true, dataType = "int",
+            @ApiImplicitParam(name = "id", value = "Output Id", required = true, dataType = "int",
                     example = "0"),
-            @ApiImplicitParam(name="loggerId", value = "Logger Id",
+            @ApiImplicitParam(name = "loggerId", value = "Logger Id",
                     dataTypeClass = Integer.class, example = "0")})
     @RequestMapping(value = {
             "/outputs/eps/producer/{id}",
@@ -116,10 +116,10 @@ public class OutputRestController {
             @PathVariable(value = "id") int id,
             @PathVariable(value = "loggerId", required = false) Integer loggerId) {
         if (loggerId == null) {
-            return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
+            return new SingleObjectResponse(HttpStatus.OK.value(), "OK",
                     outputService.listProducerEpsHistory(id));
         }
-        return new SingleObjectResponse(HttpStatus.OK.value(), "OK", 
+        return new SingleObjectResponse(HttpStatus.OK.value(), "OK",
                 outputService.listProducerEpsHistory(id, loggerId));
     }
 }

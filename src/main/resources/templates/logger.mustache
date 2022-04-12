@@ -356,6 +356,7 @@ data:         # required - this is field list
                 }).then(function (response) {
                     console.log(response)
                     if (response.data.status == 200) {
+                        editor.setValue(response.data.data.yaml_str, -1);
                         $.notify({message: response.data.msg},{type: 'success'});
                         $("#importModal").modal("hide");
                     } else {
@@ -448,8 +449,8 @@ data:         # required - this is field list
                     <div class="pure-control-group">
                         <label for="engine_id">Engine ID</label>
                         <input id="engine_id" name="engine_id" class="pure-input-1-2" type="text"
-                               placeholder="engine00001"
-                               value="engine00001">
+                               placeholder="engine00345"
+                               value="engine00345">
                     </div>
                 </form>
             </div>

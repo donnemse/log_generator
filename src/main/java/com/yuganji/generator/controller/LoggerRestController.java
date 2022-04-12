@@ -99,7 +99,7 @@ public class LoggerRestController {
 
     @ApiOperation(value = "Import Logger from Zookeeper Model")
     @ApiImplicitParam(name = "logger", value = "Logger details. (only id)", required = true, dataTypeClass = Logger.class)
-    @RequestMapping(value = "/loggers/import", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/loggers/import", method = RequestMethod.POST)
     public @ResponseBody SingleObjectResponse importFromModel(
             @RequestBody ImportFromModel importFromModel,
             HttpServletRequest request) {

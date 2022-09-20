@@ -97,15 +97,18 @@ data:         # required - this is field list
             "34rti34ti34ujt0p3uj": 0.2
 `
         function addItemList(v) {
+            let log = v.detail == undefined || v.detail["log"] == undefined ? "" : v.detail.log;
+            let logtype = v.detail == undefined || v.detail["logtype"] == undefined ? "" : v.detail.logtype;
+            let raw = v.detail == undefined || v.detail["raw"] == undefined ? "" : v.detail.raw;
             let $div = $(
                 "<div logger-id=\"" + v.id + "\" class=\"menu-item pure-g " + ($(".menu-item").length == 0? "menu-item-selected menu-item-unread": "") + "\">" +
                   "   <div class=\"pure-u-1\">" +
                   "       <h5 class=\"menu-name\">" + v.name + "</h5>" + 
-                  "       <h4 class=\"menu-subject\">" + v.detail.log + "</h4>" +
+                  "       <h4 class=\"menu-subject\">" + log + "</h4>" +
                   "       <h6 class=\"menu-subject\">" +
-                  "           EPS: " + v.eps + "\nlogtype: " + v.detail.logtype +
+                  "           EPS: " + v.eps + "\nlogtype: " + logtype +
                   "       </h6>" +
-                  "       <p class=\"menu-desc\">" + v.detail.raw + "</p>" +
+                  "       <p class=\"menu-desc\">" + raw + "</p>" +
                   "   </div>" +
                   "   <div class=\"pure-u-1-8 change-state\">" +
                   "       <div class=\"form-check form-switch\">" +

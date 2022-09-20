@@ -1,20 +1,17 @@
 package com.yuganji.generator.engine;
 
-import java.util.Map;
-import java.util.concurrent.Future;
-
-import javax.annotation.PostConstruct;
-
+import com.yuganji.generator.model.IntBound;
+import com.yuganji.generator.model.LoggerDto;
+import com.yuganji.generator.queue.QueueService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
-import com.yuganji.generator.model.IntBound;
-import com.yuganji.generator.model.LoggerDto;
-import com.yuganji.generator.queue.QueueService;
-
-import lombok.extern.log4j.Log4j2;
+import javax.annotation.PostConstruct;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 @Log4j2
 @Service
@@ -30,7 +27,7 @@ public class GeneratorExecutor {
     
     @Async
     public Future<String> run(LoggerDto logger) {
-        AsyncResult<String> res = new AsyncResult<String>("Result");
+        AsyncResult<String> res = new AsyncResult<>("Result");
         
         int cnt = 0;
         IntBound epsBounds = new IntBound(logger.getEps());

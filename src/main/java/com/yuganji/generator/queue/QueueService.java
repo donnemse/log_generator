@@ -3,6 +3,7 @@ package com.yuganji.generator.queue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.EpsVO;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Service
+@Log4j2
 public class QueueService {
 
     @JsonIgnore
@@ -39,7 +41,11 @@ public class QueueService {
 
     public void push(Map<String, Object> data, int loggerId) {
         this.entry().parallelStream().forEach(entry -> {
-            EpsVO eps = entry.getValue().getProducerEps().putIfAbsent(loggerId, new EpsVO(loggerService.get(loggerId).getName()));
+            String loggerNm = loggerService.get(loggerId).getName();
+            if (entry.getValue().getFilter() != null && !entry.getValue().getFilter().contains(loggerNm.toLowerCase())){
+                return;
+            }
+            EpsVO eps = entry.getValue().getProducerEps().putIfAbsent(loggerId, new EpsVO(loggerNm));
             if (eps == null) {
                 eps = entry.getValue().getProducerEps().get(loggerId);
             }

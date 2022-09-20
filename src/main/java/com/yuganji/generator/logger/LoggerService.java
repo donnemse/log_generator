@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 public class LoggerService {
-    private final int SAMEPLE_CNT = 100; 
+    private final int SAMPLE_CNT = 100;
     private Map<Integer, LoggerDto> cache;
 
     @Autowired
@@ -115,7 +115,7 @@ public class LoggerService {
         List<Map<String, Object>> list = new ArrayList<>();
         try {
             LoggerDto dto =  logger.toDto();
-            for (int i = 0; i < SAMEPLE_CNT; i++) {
+            for (int i = 0; i < SAMPLE_CNT; i++) {
                 list.add(dto.getDetail().generateLog());
             }
         } catch (Exception e) {
@@ -138,7 +138,6 @@ public class LoggerService {
             byte[] data = zoo.getData("/gauss/engines/" + importFromModel.getEngineId(), false, null);
 
             JsonObject engine = JsonParser.parseString(new String(data)).getAsJsonObject();
-
             Logger logger = Logger.LoggerBuilder()
                     .yamlStr(this.generatrYamlFromEngineInfo(engine))
                     .build();
@@ -162,6 +161,7 @@ public class LoggerService {
                     zoo.close(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+
                 }
             }
         }

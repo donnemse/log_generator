@@ -90,7 +90,8 @@ public final class Constants {
                     new OutputTemplate("bootstrap_servers", "prep1:9092,prep2:9092,prep3:9092", InputForm.TEXT.getValue(), null),
                     new OutputTemplate("topic_name", "test-topic", InputForm.TEXT.getValue(), null),
                     new OutputTemplate("output_type", "csv", InputForm.TEXT.getValue(), null),
-                    new OutputTemplate("batch_size", "10", InputForm.TEXT.getValue(), null)));
+                    new OutputTemplate("batch_size", "10", InputForm.TEXT.getValue(), null),
+                    new OutputTemplate("filter", "logger1", InputForm.TEXT.getValue(), null)));
         }}),
         FILE(new HashMap<String, List<OutputTemplate>>(){{
             put("file", Arrays.asList(

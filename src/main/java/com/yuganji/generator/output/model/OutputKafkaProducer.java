@@ -3,6 +3,7 @@ package com.yuganji.generator.output.model;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.google.gson.Gson;
 import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
 import com.yuganji.generator.configuration.ApplicationContextProvider;
@@ -74,6 +75,7 @@ public class OutputKafkaProducer extends Thread implements IOutput {
         CsvWriter writer = new CsvWriter(settings);
         StringBuilder msgBuilder = new StringBuilder();
 
+        Gson gson = new Gson();
         while (true) {
             try {
                 List<Map<String, Object>> list = queueService.poll(this.outputId, this.config.getBatchSize());
@@ -81,15 +83,19 @@ public class OutputKafkaProducer extends Thread implements IOutput {
                     Thread.sleep(1_000);
                     continue;
                 }
-                Set<String> header = list.get(0).keySet();
-                msgBuilder.append(writer.writeHeadersToString(header)).append('\n');
-                list.forEach(row -> msgBuilder.append(writer.writeRowToString(row)).append('\n'));
-                producer.send(
-                        new ProducerRecord<>(config.getTopicName(), msgBuilder.toString().getBytes(StandardCharsets.UTF_8)));
-                producer.flush();
-                msgBuilder.setLength(0);
-
-
+                if (config.getOutputType().equalsIgnoreCase("csv")) {
+                    Set<String> header = list.get(0).keySet();
+                    msgBuilder.append(writer.writeHeadersToString(header)).append('\n');
+                    list.forEach(row -> msgBuilder.append(writer.writeRowToString(row)).append('\n'));
+                    producer.send(
+                            new ProducerRecord<>(config.getTopicName(), msgBuilder.toString().getBytes(StandardCharsets.UTF_8)));
+                    producer.flush();
+                    msgBuilder.setLength(0);
+                } else if (config.getOutputType().equalsIgnoreCase("json")) {
+                    list.forEach(row -> {
+                        producer.send(new ProducerRecord<>(config.getTopicName(), gson.toJson(row).getBytes(StandardCharsets.UTF_8)));
+                    });
+                }
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
                 producer.flush();

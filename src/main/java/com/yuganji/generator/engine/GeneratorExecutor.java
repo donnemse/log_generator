@@ -31,34 +31,21 @@ public class GeneratorExecutor {
     @Async
     public Future<String> run(LoggerDto logger) {
         AsyncResult<String> res = new AsyncResult<String>("Result");
-        
-        int cnt = 0;
+
         IntBound epsBounds = new IntBound(logger.getEps());
-        long time = System.currentTimeMillis();
         int eps = epsBounds.randomInt();
+        long checkPoint = System.currentTimeMillis();
+        int cnt = 0;
         while (!res.isCancelled()) {
             try {
                 Map<String, Object> map = logger.getDetail().generateLog();
                 queueService.push(map, logger.getId());
-                cnt++;
-                if (eps < 1000) {
-                    long t = System.currentTimeMillis() - time;
-                    if (t >= 1000) {
-                        time = System.currentTimeMillis();
-                        continue;
-                    }
-                    Thread.sleep((1000 - t) / eps);
-                    time = System.currentTimeMillis();
-                    eps = epsBounds.randomInt();
-                } else if (cnt % 100 == 0){
-                    long diff = System.currentTimeMillis() - time;
-                    if (eps / 100 * diff < 1000) {
-                        Thread.sleep(1000 - (eps / 100 * diff));
-                    } else {
-                        Thread.sleep(0, 1);
-                    }
-                    time = System.currentTimeMillis();
-                    eps = epsBounds.randomInt();
+                eps = epsBounds.randomInt();
+
+                if (++cnt >= eps) {
+                    Thread.sleep(Math.max(0, 1000 - (System.currentTimeMillis() - checkPoint)));
+                    checkPoint = System.currentTimeMillis();
+                    cnt = 0;
                 }
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);

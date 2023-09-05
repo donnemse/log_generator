@@ -89,7 +89,7 @@ public class LoggerDto {
         private final ObjectMapper om = new ObjectMapper(new YAMLFactory())
                 .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
                 .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-        private final Ip2LocationService ip2LocService = ApplicationContextProvider.getApplicationContext().getBean(Ip2LocationService .class);
+        private final Ip2LocationService ip2LocService = ApplicationContextProvider.getApplicationContext().getBean(Ip2LocationService.class);
 
         public LoggerDtoBuilder yamlStr(String yamlStr){
             this.yamlStr = yamlStr;

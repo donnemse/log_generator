@@ -19,6 +19,7 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -29,6 +30,8 @@ public class OutputKafkaProducer extends Thread implements IOutput {
 
     private final KafkaOutputConfig config;
     private final int outputId;
+
+    private transient boolean flag = true;
 
     public OutputKafkaProducer(int id, Map<String, Object> map) {
         ObjectMapper mapper = new ObjectMapper();
@@ -44,12 +47,14 @@ public class OutputKafkaProducer extends Thread implements IOutput {
     public boolean startOutput() throws OutputHandleException {
         super.setName("thread_output_" + outputId);
         super.start();
+        this.flag = true;
         return true;
     }
 
     @Override
     public boolean stopOutput() throws OutputHandleException {
         super.interrupt();
+        this.flag = false;
         return true;
     }
 
@@ -76,7 +81,8 @@ public class OutputKafkaProducer extends Thread implements IOutput {
         StringBuilder msgBuilder = new StringBuilder();
 
         Gson gson = new Gson();
-        while (true) {
+
+        while (flag) {
             try {
                 List<Map<String, Object>> list = queueService.poll(this.outputId, this.config.getBatchSize());
                 if (list.size() == 0) {
@@ -99,10 +105,12 @@ public class OutputKafkaProducer extends Thread implements IOutput {
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
                 producer.flush();
-                producer.close();
+                producer.close(Duration.ofSeconds(1L));
+                flag = false;
                 break;
             }
         }
+        log.debug("{} was stopped", config.getBootstrapServers());
     }
 
     private Properties getKafkaProducerProperties(String bootstrapServers) {
@@ -116,6 +124,7 @@ public class OutputKafkaProducer extends Thread implements IOutput {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.GZIP.name);
+        props.put(ProducerConfig.CLIENT_DNS_LOOKUP_CONFIG, "use_all_dns_ips");
         return props;
     }
 }

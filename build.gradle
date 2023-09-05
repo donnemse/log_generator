@@ -32,7 +32,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'io.netty:netty-all:4.1.75.Final'
     implementation 'com.univocity:univocity-parsers:2.9.1'
-    implementation 'com.google.guava:guava:31.1-jre'
+    implementation group: 'com.google.guava', name: 'guava', version: '32.1.1-jre'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.5'
 
     implementation 'org.projectlombok:lombok:1.18.22'

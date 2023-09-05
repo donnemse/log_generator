@@ -23,6 +23,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop:2.6.5'
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
     implementation 'org.apache.kafka:kafka-clients:3.1.0'
+    implementation 'org.apache.zookeeper:zookeeper:3.8.0'
+    implementation 'org.apache.hadoop:hadoop-client:2.8.1'
+    implementation 'org.apache.parquet:parquet-hadoop:1.12.2'
+
 
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'

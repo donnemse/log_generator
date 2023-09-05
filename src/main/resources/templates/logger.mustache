@@ -22,7 +22,7 @@ raw: |
 
 data:         # required - this is field list
     logtype:  # this is a field name
-        type: str    # type can be str, int, ip, time, url, payload
+        type: str    # type can be str, int, ip, time, url, payload, ip2loc, sparrow_id
         values:
             WEB: 1
     sip:
@@ -97,15 +97,18 @@ data:         # required - this is field list
             "34rti34ti34ujt0p3uj": 0.2
 `
         function addItemList(v) {
+            let log = v.detail == undefined || v.detail["log"] == undefined ? "" : v.detail.log;
+            let logtype = v.detail == undefined || v.detail["logtype"] == undefined ? "" : v.detail.logtype;
+            let raw = v.detail == undefined || v.detail["raw"] == undefined ? "" : v.detail.raw;
             let $div = $(
                 "<div logger-id=\"" + v.id + "\" class=\"menu-item pure-g " + ($(".menu-item").length == 0? "menu-item-selected menu-item-unread": "") + "\">" +
                   "   <div class=\"pure-u-1\">" +
                   "       <h5 class=\"menu-name\">" + v.name + "</h5>" + 
-                  "       <h4 class=\"menu-subject\">" + v.detail.log + "</h4>" +
+                  "       <h4 class=\"menu-subject\">" + log + "</h4>" +
                   "       <h6 class=\"menu-subject\">" +
-                  "           EPS: " + v.eps + "\nlogtype: " + v.detail.logtype +
+                  "           EPS: " + v.eps + "\nlogtype: " + logtype +
                   "       </h6>" +
-                  "       <p class=\"menu-desc\">" + v.detail.raw + "</p>" +
+                  "       <p class=\"menu-desc\">" + raw + "</p>" +
                   "   </div>" +
                   "   <div class=\"pure-u-1-8 change-state\">" +
                   "       <div class=\"form-check form-switch\">" +
@@ -342,6 +345,33 @@ data:         # required - this is field list
                     // always executed
                 });
             });
+
+            $(document).on('click',".import-ok",function (e) {
+                let zookeeper_url = $("#zookeeper_url").val();
+                let engine_id = $("#engine_id").val();
+                axios({
+                    url: "/api/loggers/import",
+                    method: "post",
+                    data: {
+                        zookeeper_url: zookeeper_url,
+                        engine_id: engine_id
+                    }
+                }).then(function (response) {
+                    console.log(response)
+                    if (response.data.status == 200) {
+                        editor.setValue(response.data.data.yaml_str, -1);
+                        $.notify({message: response.data.msg},{type: 'success'});
+                        $("#importModal").modal("hide");
+                    } else {
+                        $.notify({message: response.data.msg},{type: 'danger'});
+                    }
+                }).catch(function (error) {
+                    $.notify({message: error},{type: 'danger'});
+                    console.log(error);
+                }).then(function () {
+                    // always executed
+                });
+            });
         });
     </script>
 </head>
@@ -358,6 +388,11 @@ data:         # required - this is field list
                 <div class="logger-content-header pure-g">
                     <div class="logger-info pure-u-1-2"></div>
                     <div class="logger-content-controls pure-u-1-2">
+                        {{#igloo}}
+                        <button type="button" class="secondary-button pure-button import-button" data-bs-toggle="modal" data-bs-target="#importModal">
+                            Import from Engine
+                        </button>
+                        {{/igloo}}
                         <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
                             Sample
                         </button>
@@ -394,6 +429,37 @@ data:         # required - this is field list
             </div>
             <div class="modal-footer">
                 <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import from Engine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="pure-form pure-form-aligned default_info">
+                    <div class="pure-control-group">
+                        <label for="zookeeper_url">Zookeeper</label>
+                        <input id="zookeeper_url" name="zookeeper_url" class="pure-input-1-2" type="text"
+                               placeholder="prep1:2181,prep2:2181,prep3:2181"
+                               value="prep1:2181,prep2:2181,prep3:2181">
+                    </div>
+                    <div class="pure-control-group">
+                        <label for="engine_id">Engine ID</label>
+                        <input id="engine_id" name="engine_id" class="pure-input-1-2" type="text"
+                               placeholder="engine00345"
+                               value="engine00345">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="pure-button" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="pure-button pure-button-primary import-ok">Ok</button>
             </div>
         </div>
     </div>

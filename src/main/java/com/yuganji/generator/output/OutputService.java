@@ -40,7 +40,12 @@ public class OutputService {
     @PostConstruct
     public void init(){
         this.cache = outputRepository.findAll().stream().collect(Collectors.toMap(Output::getId, Output::toDto));
-        this.cache.forEach((k, v) -> this.queueSerivce.putIfAbsent(k, new QueueObject(v.getMaxQueueSize())));
+        this.cache.forEach((k, v) -> {
+
+            this.queueSerivce.putIfAbsent(
+                    k, new QueueObject(v.getMaxQueueSize(),
+                            v.getInfo().get("filter") != null? v.getInfo().get("filter").toString(): null));
+        });
     }
 
     @Scheduled(initialDelay = 3000, fixedDelay = 20 * 1000)
@@ -48,13 +53,15 @@ public class OutputService {
         this.cache.values().forEach(x -> {
             try {
                 if (x.getStatus() == 1 && !x.getHandler().isRunning()) {
+                    if (!x.getHandler().isReadyForRunning()) {
+                        x.resetHandler();
+                    }
                     x.getHandler().startOutput();
-            }
+                }
             } catch (OutputHandleException e) {
                 x.setStatus(0);
                 log.error(e.getMessage(), e);
             }
-
             this.cache.put(x.getId(), x);
         });
     }
@@ -70,7 +77,10 @@ public class OutputService {
         try {
             output = outputRepository.save(output);
             this.cache.put(output.getId(), output.toDto());
-            this.queueSerivce.putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
+            this.queueSerivce.putIfAbsent(
+                    output.getId(),
+                    new QueueObject(output.getMaxQueueSize(),
+                            output.getInfo().get("filter") != null? output.getInfo().get("filter").toString(): null));
             res.setMsg(msg);
             res.setData(output);
         } catch(Exception e) {
@@ -97,7 +107,10 @@ public class OutputService {
             this.cache.remove(output.getId());
             output = outputRepository.save(output);
             this.cache.put(output.getId(), output.toDto());
-            this.queueSerivce.putIfAbsent(output.getId(), new QueueObject(output.getMaxQueueSize()));
+            this.queueSerivce.putIfAbsent(
+                    output.getId(),
+                    new QueueObject(output.getMaxQueueSize(),
+                            output.getInfo().get("filter") != null? output.getInfo().get("filter").toString(): null));
             res.setMsg(msg);
             res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {

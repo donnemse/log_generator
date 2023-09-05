@@ -19,15 +19,15 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Service
 public class GeneratorExecutor {
-    
+
     @Autowired
     private QueueService queueService;
-    
+
     @PostConstruct
     public void init() {
-        
+
     }
-    
+
     @Async
     public Future<String> run(LoggerDto logger) {
         AsyncResult<String> res = new AsyncResult<String>("Result");
@@ -60,5 +60,5 @@ public class GeneratorExecutor {
         log.debug("#############################3");
         return res;
     }
-    
+
 }

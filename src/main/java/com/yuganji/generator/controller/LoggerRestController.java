@@ -96,4 +96,14 @@ public class LoggerRestController {
         logger.setIp(NetUtil.getClientIP(request));
         return generatorSerivce.stop(logger);
     }
+
+    @ApiOperation(value = "Import Logger from Zookeeper Model")
+    @ApiImplicitParam(name = "logger", value = "Logger details. (only id)", required = true, dataTypeClass = Logger.class)
+    @RequestMapping(value = "/loggers/import", method = RequestMethod.POST)
+    public @ResponseBody SingleObjectResponse importFromModel(
+            @RequestBody ImportFromModel importFromModel,
+            HttpServletRequest request) {
+        importFromModel.setIp(NetUtil.getClientIP(request));
+        return loggerService.importFromModel(importFromModel);
+    }
 }

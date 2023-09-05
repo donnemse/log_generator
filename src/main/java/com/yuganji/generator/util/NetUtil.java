@@ -76,16 +76,11 @@ public final class NetUtil {
         return false;
     }
     
-    public static String long2ip(long ip) {
-        String result = "";
-        while (ip > 0) {
-            if (!"".equals(result)) {
-                result = "." + result;
-            }//w  w  w  . j a  v  a  2 s  .  c o m
-            result = ip % 256 + result;
-            ip = (long) Math.floor(ip / 256);
-        }
-        return result;
+    public static String long2ip(long longIp) {
+        return ((longIp >> 24) & 0xFF) + "." +
+                ((longIp >> 16) & 0xFF) + "." +
+                ((longIp >> 8) & 0xFF) + "." +
+                (longIp & 0xFF);
     }
     
     public static String getClientIP(HttpServletRequest request) {

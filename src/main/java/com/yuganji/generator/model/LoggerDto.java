@@ -66,7 +66,7 @@ public class LoggerDto {
         try {
             lp = om.readValue(yamlStr, LoggerDetailDto.class);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         this.detail = lp;
     }

@@ -42,7 +42,9 @@ public class QueueService {
     public void push(Map<String, Object> data, int loggerId) {
         this.entry().parallelStream().forEach(entry -> {
             String loggerNm = loggerService.get(loggerId).getName();
-            if (entry.getValue().getFilter() != null && !entry.getValue().getFilter().contains(loggerNm.toLowerCase())){
+            if (entry.getValue().getFilter() != null
+                    && entry.getValue().getFilter().size() > 0
+                    && !entry.getValue().getFilter().contains(loggerNm.toLowerCase())){
                 return;
             }
             EpsVO eps = entry.getValue().getProducerEps().putIfAbsent(loggerId, new EpsVO(loggerNm));

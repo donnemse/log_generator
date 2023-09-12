@@ -107,10 +107,11 @@ public class OutputService {
             this.cache.remove(output.getId());
             output = outputRepository.save(output);
             this.cache.put(output.getId(), output.toDto());
+            this.queueSerivce.removeQueueObj(output.getId());
             this.queueSerivce.putIfAbsent(
                     output.getId(),
                     new QueueObject(output.getMaxQueueSize(),
-                            output.getInfo().get("filter") != null? output.getInfo().get("filter").toString(): null));
+                            output.getInfo().get("filter") != null ? output.getInfo().get("filter").toString(): null));
             res.setMsg(msg);
             res.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {

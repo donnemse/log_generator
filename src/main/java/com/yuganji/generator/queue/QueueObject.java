@@ -31,7 +31,8 @@ public class QueueObject {
         if (filter != null){
             this.filter = new HashSet<>();
             Arrays.stream(filter.split(",")).forEach(x -> {
-                this.filter.add(x.trim().toLowerCase());
+                if (x.trim().length() > 0)
+                    this.filter.add(x.trim().toLowerCase());
             });
         }
         this.queue = new LinkedBlockingQueue<>(maxQueueSize);

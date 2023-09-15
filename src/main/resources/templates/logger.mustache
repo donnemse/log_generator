@@ -216,7 +216,15 @@ data:         # required - this is field list
                                 $(".menu-item:last").trigger("click");
                                 $(".remove-button").removeClass("d-none");
                             } else {
-                                
+                                let logtype = "";
+                                $.each(response.data.data.yaml_str.split("\n"), function(i, x) {
+                                   if (x.startsWith("logtype:")) {
+                                       logtype = x.replace("logtype:", "").trim();
+                                   }
+                                });
+
+                                $(".menu-item[logger-id=" + id + "]").find("h6.menu-subject")
+                                        .html("EPS: " + eps + "\nlogtype: " + logtype);
                             }
                         }
                     } else {

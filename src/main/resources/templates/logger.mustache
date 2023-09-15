@@ -147,11 +147,12 @@ data:         # required - this is field list
             editor.setTheme("ace/theme/tomorrow");
             editor.setOption("showInvisibles", true)
             editor.session.setOptions({ tabSize: 4, useSoftTabs: true });
-            
+            editor.setFontSize(15);
             loadList();
             
             $(document).on("click", ".menu-item", function (e) {
-                if ($(e.target).hasClass("button-change-state")) {
+                console.log(e.target)
+                if ($(e.target).hasClass("checkbox-change-state")) {
                     return;
                 }
                 $(".menu-item").removeClass("menu-item-selected menu-item-unread");

@@ -186,9 +186,13 @@
 
         $(function() {
             let editor = ace.edit("editor");
-            editor.session.setMode("ace/mode/yaml");
+            editor.session.setUseWrapMode(true);
+            editor.session.setMode("ace/mode/json");
+            editor.session.setOptions({ tabSize: 4, useSoftTabs: true });
             editor.setTheme("ace/theme/tomorrow");
-            editor.setReadOnly(false);
+            editor.setOption("showInvisibles", true)
+
+            editor.setReadOnly(true);
             editor.setFontSize(15);
             loadList();
             
@@ -260,7 +264,7 @@
                     let data = response.data.data;
                     // data.clients = ["client1", "client2"];
                     cleanOutputJson(data);
-                    editor.setValue(JSON.stringify(data, null, '\t'), -1)
+                    editor.setValue(JSON.stringify(data, null, '  '), -1)
                     let title = "";
                     if (data.type === "sparrow") {
                         title = "Port: " + data.info.port;
@@ -278,6 +282,10 @@
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />" +
                         "<input type=\"hidden\" id=\"selected_name\" value=\"" + data.name + "\" />"
+                    );
+
+                    $(e.target).parents(".menu-item").find(".menu-subject").html(
+                            "Max Queue: " + data.max_queue_size + "<br />Current Queue: " + data.current_queue_size
                     );
                     $(".logger-info").html($div);
 

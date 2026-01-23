@@ -1,10 +1,10 @@
-FROM azul/zulu-openjdk:8
+FROM 192.168.1.10:18093/azul/zulu-openjdk:8
 
 COPY build/libs/LogGenerator-0.0.1-SNAPSHOT.jar /work/log-generator/
 COPY src/main/resources/logback-spring.xml /work/log-generator/
-COPY src/main/resources/application.properties /work/log-generator/
-COPY config/IPCountry.csv /work/log-generator/config/
-COPY db/logger.db /work/log-generator/db/
+#COPY src/main/resources/application.properties /work/log-generator/
+COPY csv/IPCountry.csv /work/log-generator/csv/
+COPY db/logger.db /work/log-generator/tmp/
 
 WORKDIR /work/log-generator
 

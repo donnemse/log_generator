@@ -18,14 +18,14 @@ import java.util.stream.IntStream;
 @Log4j2
 public class BinarySearchTest {
     
-    @Value("${file.path.ip2location:./config/IPCountry.csv}")
+    @Value("${file.path.ip2location:./csv/IPCountry.csv}")
     private String filePath;
     
     RangeMap<Long, IpLocationVO> rangeMap;
     
     public void init() {
         CsvParser parser = new CsvParser(new CsvParserSettings());
-        parser.beginParsing(new File("./config/IPCountry.csv"));
+        parser.beginParsing(new File(filePath));
         
         rangeMap = TreeRangeMap.create();
         

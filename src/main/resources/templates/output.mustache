@@ -6,7 +6,7 @@
     <meta name="description" content="A layout example that shows off a responsive logger layout.">
     <title>ILogger</title>
     {{>import}}
-    <script src="/js/highcharts.js"></script>
+    <script src="js/highcharts.js"></script>
 
 
     <style rel="stylesheet">
@@ -38,7 +38,7 @@
         function loadList(){
             $(".list").empty();
             axios({
-                url: '/api/outputs',
+                url: 'api/outputs',
                 method: 'get'
             }).then(function (response) {
                 let i = 0;
@@ -127,7 +127,7 @@
             $form = $("<form class=\"pure-form pure-form-aligned default_info\"></form>")
             $detail = $("<form class=\"pure-form pure-form-aligned detail_info\"></form>")
             axios({
-                url: '/api/const/output/template',
+                url: 'api/const/output/template',
                 method: "get"
             }).then(function (response) {
                 console.log(response)
@@ -204,7 +204,7 @@
                     method = "patch";
                 }
                 axios({
-                    url: "/api/outputs",
+                    url: "api/outputs",
                     method: method,
                     data: data
                 }).then(function (response) {
@@ -230,7 +230,7 @@
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
                 axios({
-                    url: "/api/outputs/" + (flag? "start": "stop"),
+                    url: "api/outputs/" + (flag? "start": "stop"),
                     method: "patch",
                     data: {
                         id: id
@@ -258,7 +258,7 @@
                 $(e.currentTarget).addClass("menu-item-selected menu-item-unread");
 
                 axios({
-                    url: "/api/outputs/" + $(e.currentTarget).data("output-id"),
+                    url: "api/outputs/" + $(e.currentTarget).data("output-id"),
                     method: "get"
                 }).then(function (response) {
                     let data = response.data.data;
@@ -312,7 +312,7 @@
                 });
 
                 axios({
-                    url: '/api/outputs/eps/producer/' + $(e.currentTarget).data("output-id"),
+                    url: 'api/outputs/eps/producer/' + $(e.currentTarget).data("output-id"),
                     method: "get"
                 }).then(function (response) {
                     makeChart(response.data.data)
@@ -343,7 +343,7 @@
             $(document).on('click',".remove-ok",function () {
                 let id = $("#selected_id").val();
                 axios({
-                    url: "/api/outputs",
+                    url: "api/outputs",
                     method: "delete",
                     data: {
                         id: id

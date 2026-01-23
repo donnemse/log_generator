@@ -23,7 +23,7 @@ import lombok.extern.log4j.Log4j2;
 public class Ip2LocationService {
     RangeMap<Long, IpLocationVO> rangeMap;
     
-    @Value("${file.path.ip2location:./config/IPCountry.csv}")
+    @Value("${file.path.ip2location:./csv/IPCountry.csv}")
     private String filePath;
     
     @PostConstruct

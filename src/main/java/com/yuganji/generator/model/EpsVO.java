@@ -11,12 +11,12 @@ import lombok.Data;
 @Data
 public class EpsVO {
     private String name;
-    private long lastCheckTime;
+    private volatile long lastCheckTime;
     private AtomicInteger cnt = new AtomicInteger(0);
-    private double eps;
+    private volatile double eps;
     @JsonIgnore
     private transient AtomicInteger del = new AtomicInteger(0);
-    private double delEps;
+    private volatile double delEps;
     private long startedTime;
     private long runningTime;
     @JsonIgnore

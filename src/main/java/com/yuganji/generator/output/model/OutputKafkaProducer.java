@@ -86,7 +86,7 @@ public class OutputKafkaProducer extends Thread implements IOutput {
             try {
                 List<Map<String, Object>> list = queueService.poll(this.outputId, this.config.getBatchSize());
                 if (list.isEmpty()) {
-                    Thread.sleep(50);
+                    Thread.sleep(200);
                     continue;
                 }
                 if (config.getOutputType().equalsIgnoreCase("csv")) {
@@ -120,7 +120,7 @@ public class OutputKafkaProducer extends Thread implements IOutput {
         props.put(ProducerConfig.RETRIES_CONFIG, 0);
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, 1024 * 128);
         props.put(ProducerConfig.LINGER_MS_CONFIG, 10);
-        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024L * 1024 * 256);
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024L * 1024 * 64);
         props.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 5000);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());

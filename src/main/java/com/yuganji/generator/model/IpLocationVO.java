@@ -1,14 +1,14 @@
 package com.yuganji.generator.model;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
-public class IpLocationVO implements Comparable<Long> { 
+@Getter
+public class IpLocationVO implements Comparable<Long> {
 
-    private String code;
-    private String name;
-    private long sip;
-    private long eip;
+    private final String code;
+    private final String name;
+    private final long sip;
+    private final long eip;
 
     public IpLocationVO(String code, String name,long sip, long eip) {
         this.code = code;

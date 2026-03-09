@@ -51,7 +51,7 @@ public class QueueObject {
     }
 
     public void subtractBytes(int count) {
-        totalBytes.addAndGet((long) -ESTIMATED_BYTES_PER_ENTRY * count);
+        totalBytes.updateAndGet(v -> Math.max(0, v - (long) ESTIMATED_BYTES_PER_ENTRY * count));
     }
 
     public void clearQueue() {

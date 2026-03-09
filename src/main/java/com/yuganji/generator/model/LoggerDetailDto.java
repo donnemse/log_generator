@@ -82,13 +82,19 @@ public class LoggerDetailDto {
         Map<String, Object> map = new HashMap<>(size + 1, 1.0f);
         Map<String, Object> raw = new HashMap<>(size, 1.0f);
         for (Entry<String, FieldInfoVO> entry : this.getData().entrySet()) {
-            FieldVO gen = entry.getValue().get();
-            if (entry.getValue().getType().equals(Constants.DataType.IP2LOC.getValue())) {
-                String val = mapCache.getIp2Locations().getLocation(String.valueOf(map.get(entry.getValue().getBased()))).getCode();
-                gen = new FieldVO(val, val);
+            try {
+                FieldVO gen = entry.getValue().get();
+                if (entry.getValue().getType().equals(Constants.DataType.IP2LOC.getValue())) {
+                    String val = mapCache.getIp2Locations().getLocation(String.valueOf(map.get(entry.getValue().getBased()))).getCode();
+                    gen = new FieldVO(val, val);
+                }
+                map.put(entry.getKey(), gen.getValue());
+                raw.put(entry.getKey(), gen.getRawValue());
+            } catch (Exception e) {
+                map.put("_error_field", entry.getKey());
+                map.put("_error_msg", e.getMessage());
+                throw e;
             }
-            map.put(entry.getKey(), gen.getValue());
-            raw.put(entry.getKey(), gen.getRawValue());
         }
         StringBuilder rawStr = new StringBuilder(128);
         for (int i = 0; i < templateKeys.length; i++) {

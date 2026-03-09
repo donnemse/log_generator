@@ -37,7 +37,6 @@ public class TCPSocketServerInstance {
     @Getter
     private final Map<String, ChannelHandlerContext> clients;
 
-    private TCPSocketServerHandler handler;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public TCPSocketServerInstance(int id, int port) {
@@ -89,7 +88,7 @@ public class TCPSocketServerInstance {
                 @Override
                 protected void initChannel(SocketChannel sc) {
                     ChannelPipeline p = sc.pipeline();
-                    handler = new TCPSocketServerHandler(clients);
+                    TCPSocketServerHandler handler = new TCPSocketServerHandler(clients);
                     p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4));
                     p.addLast("decoder", new StringDecoder(StandardCharsets.UTF_8));
                     p.addLast("framePrepender", new LengthFieldPrepender(4));

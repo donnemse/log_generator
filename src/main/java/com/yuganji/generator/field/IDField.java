@@ -27,7 +27,7 @@ public class IDField extends FieldInfoVO implements IFieldGenerator {
     }
 
     @Override
-    public FieldVO get() {
+    public synchronized FieldVO get() {
         LocalDateTime now = LocalDateTime.now();
         String hour = now.format(FORMATTER_HOUR);
         if (!hour.equals(this.currentTime)) {

@@ -1,6 +1,7 @@
 package com.yuganji.generator.monitor;
 
 import com.yuganji.generator.logger.LoggerService;
+import com.yuganji.generator.model.LoggerDto;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.output.model.OutputDto;
@@ -31,7 +32,8 @@ public class EpsMonitorService {
             java.util.Iterator<Entry<Integer, EpsVO>> it = entryInfo.getValue().getProducerEps().entrySet().iterator();
             while (it.hasNext()) {
                 Entry<Integer, EpsVO> entryEps = it.next();
-                if (loggerService.get(entryEps.getKey()).getStatus() == 0) {
+                LoggerDto logger = loggerService.get(entryEps.getKey());
+                if (logger == null || logger.getStatus() == 0) {
                     it.remove();
                     continue;
                 }

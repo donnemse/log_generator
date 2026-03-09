@@ -50,12 +50,12 @@ public class QueueService {
             }
             EpsVO eps = entry.getValue().getProducerEps().computeIfAbsent(loggerId, id -> new EpsVO(loggerNm));
             
-            if (entry.getValue().getQueue().remainingCapacity() == 0) {
+            if (!entry.getValue().getQueue().offer(data)) {
                 entry.getValue().getQueue().poll();
                 entry.getValue().subtractBytes(1);
                 eps.addDeleted();
+                entry.getValue().getQueue().offer(data);
             }
-            entry.getValue().getQueue().offer(data);
             entry.getValue().addBytes(1);
             eps.addCnt();
         });

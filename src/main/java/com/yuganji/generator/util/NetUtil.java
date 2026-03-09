@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
 
 @Log4j2
 public final class NetUtil {
+    private static final String DOT = "\\.";
+    private static final Pattern DOT_PATTERN = Pattern.compile(DOT);
+
     private NetUtil() {
         throw new IllegalStateException("NetUtil is Utility class");
     }
@@ -20,11 +23,11 @@ public final class NetUtil {
     public static long ip2long(String str) {
         long result = 0L;
         try {
-            String[] ipAddressInArray = str.split("\\.");
+            String[] ipAddressInArray = DOT_PATTERN.split(str);
             for (int i = 0; i < ipAddressInArray.length; i++) {
                 int power = 3 - i;
                 int ip = Integer.parseInt(ipAddressInArray[i]);
-                result += ip * Math.pow(256, power);
+                result += (long) ip << (power * 8);
             }
         } catch (Exception e) {
             log.warn(str + " is not ipv4 type.");
@@ -48,12 +51,15 @@ public final class NetUtil {
     }
 
     public static final String IP_REGEXP = "(\\d+\\.){3}\\d+";
+    private static final Pattern CIDR_PATTERN = Pattern.compile(IP_REGEXP + "/\\d+");
+    private static final Pattern RANGE_PATTERN = Pattern.compile(IP_REGEXP + "\\s*~\\s*" + IP_REGEXP);
 
     public static long[] getIpRanges(String str) {
-        if (Pattern.matches(NetUtil.IP_REGEXP + "\\/\\d+", str.trim())) {
+        String trimmed = str.trim();
+        if (CIDR_PATTERN.matcher(trimmed).matches()) {
             return NetUtil.getSubnet(str);
-        } else if (Pattern.matches(NetUtil.IP_REGEXP + "(\\s+|)\\~(\\s+|)" + NetUtil.IP_REGEXP, str.trim())) {
-            StringTokenizer token = new StringTokenizer(str, "~");
+        } else if (RANGE_PATTERN.matcher(trimmed).matches()) {
+            StringTokenizer token = new StringTokenizer(trimmed, "~");
             List<Long> list = new ArrayList<>();
             while (token.hasMoreTokens()) {
                 list.add(NetUtil.ip2long(token.nextToken().trim()));

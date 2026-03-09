@@ -1,7 +1,7 @@
 package com.yuganji.generator.field;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,16 +24,17 @@ public class UrlField extends FieldInfoVO implements IFieldGenerator {
     private String[] extentions = new String[] {".jsp", ".xml", ".js"};
     
     public UrlField(Map<String, Double> values) {
-        this.arr = new LinkedList<>();
-        this.keys = new LinkedList<>();
+        this.arr = new ArrayList<>();
+        this.keys = new ArrayList<>();
         this.fin = Finnegan.ENGLISH;
         
         double sum = 0.0d;
         for (Entry<String, Double> entry: values.entrySet()) {
             arr.add(sum += entry.getValue() * Constants.D_THOUSAND);
             keys.add(entry.getKey());
-            minWord = Math.min(minWord, entry.getKey().split("/").length);
-            maxWord = Math.max(maxWord, entry.getKey().split("/").length);
+            int parts = entry.getKey().split("/").length;
+            minWord = Math.min(minWord, parts);
+            maxWord = Math.max(maxWord, parts);
         }
         if (sum < Constants.D_THOUSAND) {
             arr.add(Constants.D_THOUSAND);
@@ -56,7 +57,7 @@ public class UrlField extends FieldInfoVO implements IFieldGenerator {
             String url = "/" + fin.sentence(
                     RandomUtils.nextLong(), minWord, maxWord, 
                     new String[]{"/"},
-                    this.extentions, 1).replaceAll(" ", "");
+                    this.extentions, 1).replace(" ", "");
             int param = RandomUtils.nextInt(0, 5);
             if (param > 0) {
                 String[] p = new String[param];

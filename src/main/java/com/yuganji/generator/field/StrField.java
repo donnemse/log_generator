@@ -1,7 +1,7 @@
 package com.yuganji.generator.field;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,8 +18,8 @@ public class StrField extends FieldInfoVO implements IFieldGenerator {
     private List<Double> arr;
     
     public StrField(Map<String, Double> values) {
-        this.arr = new LinkedList<>();
-        this.keys = new LinkedList<>();
+        this.arr = new ArrayList<>();
+        this.keys = new ArrayList<>();
         
         double sum = 0.0d;
         for (Entry<String, Double> entry: values.entrySet()) {

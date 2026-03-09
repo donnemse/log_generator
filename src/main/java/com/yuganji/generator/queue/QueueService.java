@@ -41,17 +41,14 @@ public class QueueService {
     }
 
     public void push(Map<String, Object> data, int loggerId) {
+        String loggerNm = loggerService.get(loggerId).getName();
         this.entry().forEach(entry -> {
-            String loggerNm = loggerService.get(loggerId).getName();
             if (entry.getValue().getFilter() != null
                     && entry.getValue().getFilter().size() > 0
                     && !entry.getValue().getFilter().contains(loggerNm.toLowerCase())){
                 return;
             }
-            EpsVO eps = entry.getValue().getProducerEps().putIfAbsent(loggerId, new EpsVO(loggerNm));
-            if (eps == null) {
-                eps = entry.getValue().getProducerEps().get(loggerId);
-            }
+            EpsVO eps = entry.getValue().getProducerEps().computeIfAbsent(loggerId, id -> new EpsVO(loggerNm));
             
             if (entry.getValue().getQueue().remainingCapacity() == 0) {
                 entry.getValue().getQueue().poll();

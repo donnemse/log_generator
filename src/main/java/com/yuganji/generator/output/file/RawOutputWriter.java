@@ -58,8 +58,8 @@ public class RawOutputWriter extends OutputFileWriter {
         while (state) {
             try {
                 List<Map<String, Object>> list = queueService.poll(this.getOutputId(), super.config.getBatchSize());
-                if (list.size() == 0) {
-                    Thread.sleep(1_000);
+                if (list.isEmpty()) {
+                    Thread.sleep(50);
                     continue;
                 }
                 // TODO Avoid each event writes.

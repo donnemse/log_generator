@@ -1374,6 +1374,14 @@ public class Finnegan implements Serializable {
         return true;
     }
 
+    protected boolean checkAll(String fixed, Pattern[] checks, boolean dummy) {
+        for (int i = 0; i < checks.length; i++) {
+            if(checks[i].matcher(fixed).find())
+                return false;
+        }
+        return true;
+    }
+
     /**
      * Generate a word from this Finnegan, using and changing the current seed.
      * @param capitalize true if the word should start with a capital letter, false otherwise
@@ -1457,8 +1465,14 @@ public class Finnegan implements Serializable {
                     }
                 }
             }
-            if(sanityChecks != null && !checkAll(sb, sanityChecks))
-                continue;
+            String fixed = removeAccents(sb);
+            if(sanityChecks != null) {
+                boolean pass = true;
+                for (int ci = 0; ci < sanityChecks.length; ci++) {
+                    if(sanityChecks[ci].matcher(fixed).find()) { pass = false; break; }
+                }
+                if(!pass) continue;
+            }
 
             for(Modifier mod : modifiers)
             {
@@ -1468,8 +1482,14 @@ public class Finnegan implements Serializable {
             if (capitalize)
                 sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
 
-            if(clean && !checkAll(sb, vulgarChecks))
-                continue;
+            if(clean) {
+                String fixedFinal = modifiers.isEmpty() ? fixed : removeAccents(sb);
+                boolean pass = true;
+                for (int ci = 0; ci < vulgarChecks.length; ci++) {
+                    if(vulgarChecks[ci].matcher(fixedFinal).find()) { pass = false; break; }
+                }
+                if(!pass) continue;
+            }
             return sb.toString();
         }
     }
@@ -1559,8 +1579,14 @@ public class Finnegan implements Serializable {
                 }
             }
 
-            if(sanityChecks != null && !checkAll(sb, sanityChecks))
-                continue;
+            String fixed = removeAccents(sb);
+            if(sanityChecks != null) {
+                boolean pass = true;
+                for (int ci = 0; ci < sanityChecks.length; ci++) {
+                    if(sanityChecks[ci].matcher(fixed).find()) { pass = false; break; }
+                }
+                if(!pass) continue;
+            }
 
             for(Modifier mod : modifiers)
             {
@@ -1570,8 +1596,14 @@ public class Finnegan implements Serializable {
             if (capitalize)
                 sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
 
-            if(clean && !checkAll(sb, vulgarChecks))
-                continue;
+            if(clean) {
+                String fixedFinal = modifiers.isEmpty() ? fixed : removeAccents(sb);
+                boolean pass = true;
+                for (int ci = 0; ci < vulgarChecks.length; ci++) {
+                    if(vulgarChecks[ci].matcher(fixedFinal).find()) { pass = false; break; }
+                }
+                if(!pass) continue;
+            }
             return sb.toString();
         }
     }

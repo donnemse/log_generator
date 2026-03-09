@@ -85,8 +85,8 @@ public class OutputKafkaProducer extends Thread implements IOutput {
         while (flag) {
             try {
                 List<Map<String, Object>> list = queueService.poll(this.outputId, this.config.getBatchSize());
-                if (list.size() == 0) {
-                    Thread.sleep(1_000);
+                if (list.isEmpty()) {
+                    Thread.sleep(50);
                     continue;
                 }
                 if (config.getOutputType().equalsIgnoreCase("csv")) {

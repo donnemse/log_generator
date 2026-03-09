@@ -54,7 +54,20 @@ public class LoggerRestController {
             @RequestBody Logger logger,
             HttpServletRequest request) {
         logger.setIp(NetUtil.getClientIP(request));
-        return loggerService.modify(logger);
+        boolean wasRunning = generatorSerivce.isRunning(logger.getId());
+
+        if (wasRunning) {
+            generatorSerivce.stop(logger);
+        }
+
+        SingleObjectResponse res = loggerService.modify(logger);
+
+        if (wasRunning && res.getStatus() == HttpStatus.OK.value()) {
+            generatorSerivce.start(logger);
+            res.setMsg(res.getMsg() + " (auto restarted)");
+        }
+
+        return res;
     }
 
     @ApiOperation(value = "Remove Logger")

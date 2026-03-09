@@ -76,10 +76,6 @@ public class LoggerService {
             res.setMsg("can not found logger. " + logger.getName());
             res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             return res;
-        } else if (this.cache.get(logger.getId()).getStatus() == 1) {
-            res.setMsg(logger.getName() + " is running now. stop it first.");
-            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            return res;
         }
         try {
             loggerRepository.save(logger);

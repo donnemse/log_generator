@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuganji.generator.model.FieldInfoVO;
 import com.yuganji.generator.model.FieldVO;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class TimeField extends FieldInfoVO implements IFieldGenerator {
@@ -21,7 +21,7 @@ public class TimeField extends FieldInfoVO implements IFieldGenerator {
 
     @Override
     public FieldVO get() {
-        LocalDateTime now = LocalDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now();
         return new FieldVO(
                 now.format(rawFormatter),
                 now.format(parsedFormatter));

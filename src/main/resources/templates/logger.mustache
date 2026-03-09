@@ -123,7 +123,7 @@ data:         # required - this is field list
         function loadList(){
             $(".list").empty();
             axios({
-                url: '/api/loggers',
+                url: CTX + '/api/loggers',
                 method: 'get'
             }).then(function (response) {
                 console.log(response);
@@ -159,7 +159,7 @@ data:         # required - this is field list
                 $(e.currentTarget).addClass("menu-item-selected menu-item-unread");
 
                 axios({
-                    url: '/api/loggers/' + $(e.currentTarget).data("logger_id"),
+                    url: CTX + '/api/loggers/' + $(e.currentTarget).data("logger_id"),
                     method: 'get'
                 }).then(function (response) {
                     console.log(response.data);
@@ -198,7 +198,7 @@ data:         # required - this is field list
                 let yaml = editor.getValue();
 
                 axios({
-                    url: "/api/loggers",
+                    url: CTX + "/api/loggers",
                     method: (id < 0? "put": "patch"),
                     data: {
                         name: name,
@@ -242,7 +242,7 @@ data:         # required - this is field list
                 $tbody = $(".modal .modal-body .pure-table tbody")
                 $tbody.empty();
                 axios({
-                    url: "/api/loggers/sample",
+                    url: CTX + "/api/loggers/sample",
                     method: "post",
                     data: {
                         id: -1,
@@ -288,7 +288,7 @@ data:         # required - this is field list
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
                 axios({
-                    url: "/api/loggers/" + (flag? "start": "stop"),
+                    url: CTX + "/api/loggers/" + (flag? "start": "stop"),
                     method: "patch",
                     data: {
                         id: id
@@ -332,7 +332,7 @@ data:         # required - this is field list
             $(document).on('click',".remove-ok",function (e) {
                 let id = $("#selected_id").val();
                 axios({
-                    url: "/api/loggers",
+                    url: CTX + "/api/loggers",
                     method: "delete",
                     data: {
                         id: id
@@ -359,7 +359,7 @@ data:         # required - this is field list
                 let zookeeper_url = $("#zookeeper_url").val();
                 let engine_id = $("#engine_id").val();
                 axios({
-                    url: "/api/loggers/import",
+                    url: CTX + "/api/loggers/import",
                     method: "post",
                     data: {
                         zookeeper_url: zookeeper_url,

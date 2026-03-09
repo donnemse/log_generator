@@ -1,4 +1,6 @@
-FROM azul/zulu-openjdk:8
+#FROM --platform=linux/amd64 azul/zulu-openjdk:8
+
+FROM --platform=linux/amd64 192.168.1.10:18093/bellsoft/liberica-runtime-container:jdk-17-musl
 
 COPY build/libs/LogGenerator-0.0.1-SNAPSHOT.jar /work/log-generator/
 COPY src/main/resources/logback-spring.xml /work/log-generator/

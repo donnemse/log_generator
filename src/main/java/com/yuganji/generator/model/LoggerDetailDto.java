@@ -43,24 +43,15 @@ public class LoggerDetailDto {
     
     public Map<String, Object> generateLog() throws Exception {
         Map<String, Object> map = new HashMap<>();
-        Map<String, Object> raw = this.getData().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                entry -> {
-                    try {
-                        FieldVO gen = entry.getValue().get();
-                        if (entry.getValue().getType().equals(Constants.DataType.IP2LOC.getValue())) {
-                            String val = mapCache.getIp2Locations().getLocation(map.get(entry.getValue().getBased()) + "").getCode();
-                            gen = new FieldVO(val, val);
-                        }
-                        map.put(entry.getKey(), gen.getValue());
-                        return gen.getRawValue();
-                    } catch (Exception e) {
-                        map.put("_error", e.getCause());
-                        map.put("_error_msg", entry.getValue().toString());
-                        return e.getMessage();
-                    }
-                }));
-        if (map.containsKey("_error")) {
-            throw new Exception(map.get("_error_msg").toString(), (Throwable) map.get("_error"));
+        Map<String, Object> raw = new HashMap<>();
+        for (Entry<String, FieldInfoVO> entry : this.getData().entrySet()) {
+            FieldVO gen = entry.getValue().get();
+            if (entry.getValue().getType().equals(Constants.DataType.IP2LOC.getValue())) {
+                String val = mapCache.getIp2Locations().getLocation(map.get(entry.getValue().getBased()) + "").getCode();
+                gen = new FieldVO(val, val);
+            }
+            map.put(entry.getKey(), gen.getValue());
+            raw.put(entry.getKey(), gen.getRawValue());
         }
         map.put("RAW", StringSubstitutor.replace(this.raw, raw));
         return map;

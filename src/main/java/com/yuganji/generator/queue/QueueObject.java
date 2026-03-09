@@ -9,9 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class QueueObject {
-    
+
+    private static final int ESTIMATED_BYTES_PER_ENTRY = 200;
+
+    @Getter
+    private final AtomicLong totalBytes = new AtomicLong(0);
+
     @Getter
     private final LinkedBlockingQueue<Map<String, Object>> queue;
     
@@ -38,6 +44,14 @@ public class QueueObject {
         this.queue = new LinkedBlockingQueue<>(maxQueueSize);
         this.consumerEps = new EpsVO(null);
         this.producerEps = new ConcurrentHashMap<>();
+    }
+
+    public void addBytes(int count) {
+        totalBytes.addAndGet((long) ESTIMATED_BYTES_PER_ENTRY * count);
+    }
+
+    public void subtractBytes(int count) {
+        totalBytes.addAndGet((long) -ESTIMATED_BYTES_PER_ENTRY * count);
     }
 
     public void clearQueue() {

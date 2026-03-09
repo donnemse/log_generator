@@ -4,26 +4,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuganji.generator.model.FieldInfoVO;
 import com.yuganji.generator.model.FieldVO;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class TimeField extends FieldInfoVO implements IFieldGenerator {
 
     @JsonIgnore
-    private transient final SimpleDateFormat sdfRaw;
+    private transient final DateTimeFormatter rawFormatter;
     @JsonIgnore
-    private transient final SimpleDateFormat sdfParsed;
-    
+    private transient final DateTimeFormatter parsedFormatter;
+
     public TimeField(String rawFormat, String parseFormat) {
-        this.sdfRaw = new SimpleDateFormat(rawFormat);
-        this.sdfParsed = new SimpleDateFormat(parseFormat);
+        this.rawFormatter = DateTimeFormatter.ofPattern(rawFormat);
+        this.parsedFormatter = DateTimeFormatter.ofPattern(parseFormat);
     }
 
     @Override
     public FieldVO get() {
-        Date d = new Date();
+        LocalDateTime now = LocalDateTime.now();
         return new FieldVO(
-                sdfRaw.format(d),
-                sdfParsed.format(d));
+                now.format(rawFormatter),
+                now.format(parsedFormatter));
     }
 }

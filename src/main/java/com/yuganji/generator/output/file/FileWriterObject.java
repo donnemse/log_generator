@@ -8,9 +8,11 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ import java.util.Map;
 @Log4j2
 public class FileWriterObject {
     private CsvWriter csvWriter;
-    private FileWriter fileWriter;
+    private Writer fileWriter;
 
     private FileOutputConfig config;
     private String prefix;
@@ -49,7 +51,7 @@ public class FileWriterObject {
                 this.fileWriter.flush();
                 IOUtils.closeQuietly(this.fileWriter);
             }
-            this.fileWriter = new FileWriter(f);
+            this.fileWriter = new BufferedWriter(new FileWriter(f), 65536);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }

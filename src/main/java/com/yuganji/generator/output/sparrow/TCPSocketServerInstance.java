@@ -7,9 +7,12 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.Getter;
@@ -35,6 +38,7 @@ public class TCPSocketServerInstance {
     private final Map<String, ChannelHandlerContext> clients;
 
     private TCPSocketServerHandler handler;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public TCPSocketServerInstance(int id, int port) {
         this.id = id;
@@ -57,7 +61,12 @@ public class TCPSocketServerInstance {
                         Thread.sleep(1_000);
                         continue;
                     }
-                    clients.forEach((key, value) -> value.writeAndFlush(list));
+                    try {
+                        String json = objectMapper.writeValueAsString(list);
+                        clients.forEach((key, value) -> value.writeAndFlush(json));
+                    } catch (Exception e) {
+                        log.error("Failed to serialize to JSON", e);
+                    }
 
                     Thread.sleep(0, 10);
                 } catch (Exception e) {
@@ -81,8 +90,10 @@ public class TCPSocketServerInstance {
                 protected void initChannel(SocketChannel sc) {
                     ChannelPipeline p = sc.pipeline();
                     handler = new TCPSocketServerHandler(clients);
-                    p.addLast("encoder", new ObjectEncoder());
-                    p.addLast("decoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                    p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4));
+                    p.addLast("decoder", new StringDecoder(StandardCharsets.UTF_8));
+                    p.addLast("framePrepender", new LengthFieldPrepender(4));
+                    p.addLast("encoder", new StringEncoder(StandardCharsets.UTF_8));
                     p.addLast(handler);
                 }
             });

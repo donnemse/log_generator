@@ -119,8 +119,9 @@ public class OutputKafkaProducer extends Thread implements IOutput {
         props.put(ProducerConfig.ACKS_CONFIG, "0");
         props.put(ProducerConfig.RETRIES_CONFIG, 0);
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, 1024 * 128);
-        props.put(ProducerConfig.LINGER_MS_CONFIG, 1000);
-        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024L * 1024 * 1024 * 5);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 10);
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024L * 1024 * 256);
+        props.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 5000);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.GZIP.name);

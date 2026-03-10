@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +40,8 @@ public class OutputService {
 
     @PostConstruct
     public void init(){
-        this.cache = outputRepository.findAll().stream().collect(Collectors.toMap(Output::getId, Output::toDto));
+        this.cache = outputRepository.findAll().stream()
+                .collect(Collectors.toMap(Output::getId, Output::toDto, (a, b) -> a, ConcurrentHashMap::new));
         this.cache.forEach((k, v) -> {
 
             this.queueSerivce.putIfAbsent(

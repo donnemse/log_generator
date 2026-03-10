@@ -21,6 +21,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Service
 public class Ip2LocationService {
+    private static final IpLocationVO UNKNOWN = new IpLocationVO("-", "-", 0L, 0L);
+
     RangeMap<Long, IpLocationVO> rangeMap;
     
     @Value("${file.path.ip2location:./config/IPCountry.csv}")
@@ -46,7 +48,7 @@ public class Ip2LocationService {
         IpLocationVO res = this.rangeMap.get(longIp);
         
         if (res == null) {
-            return new IpLocationVO("-", "-", longIp, longIp);
+            return UNKNOWN;
         }
         return res;
     }

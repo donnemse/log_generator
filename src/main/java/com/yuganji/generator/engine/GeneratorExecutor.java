@@ -40,12 +40,12 @@ public class GeneratorExecutor {
             try {
                 Map<String, Object> map = logger.getDetail().generateLog();
                 queueService.push(map, logger.getId());
-                eps = epsBounds.randomInt();
 
                 if (++cnt >= eps) {
                     Thread.sleep(Math.max(0, 1000 - (System.currentTimeMillis() - checkPoint)));
                     checkPoint = System.currentTimeMillis();
                     cnt = 0;
+                    eps = epsBounds.randomInt();
                 }
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);

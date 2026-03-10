@@ -1,7 +1,7 @@
 package com.yuganji.generator.field;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,8 +19,8 @@ public class IntField extends FieldInfoVO implements IFieldGenerator {
     private List<Double> arr;
     
     public IntField(Map<String, Double> values) {
-        this.arr = new LinkedList<>();
-        this.keys = new LinkedList<>();
+        this.arr = new ArrayList<>();
+        this.keys = new ArrayList<>();
 
         int min = Integer.MAX_VALUE;
         int max = 0;

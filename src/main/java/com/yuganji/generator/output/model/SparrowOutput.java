@@ -56,8 +56,7 @@ public class SparrowOutput extends AbstractOutputHandler {
 
     @Override
     public boolean isReadyForRunning() throws OutputHandleException {
-        // TODO Checking already opened port 
-        return false;
+        return this.server == null || !this.server.isRunning();
     }
     
 }

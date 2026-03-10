@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Log4j2
@@ -24,7 +25,7 @@ public class QueueService {
 
     @PostConstruct
     public void init() {
-        this.queue = new LinkedHashMap<>();
+        this.queue = new ConcurrentHashMap<>();
     }
 
     public QueueObject getQueueObj(int outputId) {
@@ -40,23 +41,22 @@ public class QueueService {
     }
 
     public void push(Map<String, Object> data, int loggerId) {
-        this.entry().parallelStream().forEach(entry -> {
-            String loggerNm = loggerService.get(loggerId).getName();
+        String loggerNm = loggerService.get(loggerId).getName();
+        this.entry().forEach(entry -> {
             if (entry.getValue().getFilter() != null
                     && entry.getValue().getFilter().size() > 0
                     && !entry.getValue().getFilter().contains(loggerNm.toLowerCase())){
                 return;
             }
-            EpsVO eps = entry.getValue().getProducerEps().putIfAbsent(loggerId, new EpsVO(loggerNm));
-            if (eps == null) {
-                eps = entry.getValue().getProducerEps().get(loggerId);
-            }
+            EpsVO eps = entry.getValue().getProducerEps().computeIfAbsent(loggerId, id -> new EpsVO(loggerNm));
             
-            if (entry.getValue().getQueue().remainingCapacity() == 0) {
+            if (!entry.getValue().getQueue().offer(data)) {
                 entry.getValue().getQueue().poll();
+                entry.getValue().subtractBytes(1);
                 eps.addDeleted();
+                entry.getValue().getQueue().offer(data);
             }
-            entry.getValue().getQueue().offer(data);
+            entry.getValue().addBytes(1);
             eps.addCnt();
         });
     }
@@ -66,6 +66,7 @@ public class QueueService {
         
         List<Map<String, Object>> list = new ArrayList<>();
         int cnt = this.queue.get(queueId).getQueue().drainTo(list, maxBuffer);
+        this.queue.get(queueId).subtractBytes(cnt);
         eps.addCnt(cnt);
         return list;
     }

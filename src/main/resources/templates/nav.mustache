@@ -4,9 +4,9 @@
         <button class="primary-button pure-button new-button" {{#output}}data-bs-toggle="modal" data-bs-target="#new_output_modal"{{/output}}>New</button>
         <div class="pure-menu">
             <ul class="pure-menu-list">
-                <li class="pure-menu-item" name="output">   <a href="/output" class="pure-menu-link {{#output}}pure-menu-active{{/output}}">Output <span class="logger-count">(2)</span></a></li>
-                <li class="pure-menu-item" name="logger">   <a href="/logger" class="pure-menu-link {{#logger}}pure-menu-active{{/logger}}">Logger</a></li>
-                <li class="pure-menu-item" name="hist">     <a href="/hist"   class="pure-menu-link {{#hist}}pure-menu-active{{/hist}}">History</a></li>
+                <li class="pure-menu-item" name="output">   <a href="{{contextPath}}/output" class="pure-menu-link {{#output}}pure-menu-active{{/output}}">Output <span class="logger-count">(2)</span></a></li>
+                <li class="pure-menu-item" name="logger">   <a href="{{contextPath}}/logger" class="pure-menu-link {{#logger}}pure-menu-active{{/logger}}">Logger</a></li>
+                <li class="pure-menu-item" name="hist">     <a href="{{contextPath}}/hist"   class="pure-menu-link {{#hist}}pure-menu-active{{/hist}}">History</a></li>
                 <li class="pure-menu-heading">Labels</li>
                 <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="menu-label-personal"></span>Personal</a></li>
                 <li class="pure-menu-item"><a href="#" class="pure-menu-link"><span class="menu-label-work"></span>Work</a></li>

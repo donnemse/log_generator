@@ -47,12 +47,18 @@ public class FieldInfoVO implements Comparable<Integer> {
         return null;
     }
     
-    public FieldVO get() throws Exception {
+    public void initializeGenerator() throws Exception {
         if (this.ins == null) {
             this.ins = this.getInstance();
         }
         if (this.ins == null) {
-            throw new Exception("### ERROR ###\n" + this);
+            throw new Exception("Unsupported field type: " + this.type);
+        }
+    }
+
+    public FieldVO get() throws Exception {
+        if (this.ins == null) {
+            throw new IllegalStateException("Generator not initialized. Call initializeGenerator() first. Field: " + this.type);
         }
         return this.ins.get();
     }

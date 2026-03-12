@@ -6,6 +6,7 @@
     <meta name="description" content="A layout example that shows off a responsive logger layout.">
     <title>ILogger</title>
     {{>import}}
+    <script src="{{contextPath}}/js/highcharts.js"></script>
     <script type="text/javascript">
         let sample_yaml = `################################
 # this is a example for logger #
@@ -149,7 +150,40 @@ data:         # required - this is field list
             editor.session.setOptions({ tabSize: 4, useSoftTabs: true });
             editor.setFontSize(15);
             loadList();
-            
+
+            // Load Kafka global settings
+            axios({
+                url: CTX + '/api/kafka/settings',
+                method: 'get'
+            }).then(function (response) {
+                let s = response.data.data;
+                if (s) {
+                    $("#kafka_bootstrap_servers").val(s.bootstrap_servers || "");
+                    $("#kafka_output_type").val(s.output_type || "json");
+                    $("#kafka_batch_size").val(s.batch_size || 1000);
+                }
+            });
+
+            $(document).on('click', '.save-kafka-settings', function () {
+                axios({
+                    url: CTX + '/api/kafka/settings',
+                    method: 'post',
+                    data: {
+                        bootstrap_servers: $("#kafka_bootstrap_servers").val(),
+                        output_type: $("#kafka_output_type").val(),
+                        batch_size: parseInt($("#kafka_batch_size").val()) || 1000,
+                    }
+                }).then(function (response) {
+                    if (response.data.status === 200) {
+                        $.notify({message: response.data.msg},{type: 'success'});
+                    } else {
+                        $.notify({message: response.data.msg},{type: 'danger'});
+                    }
+                }).catch(function (error) {
+                    $.notify({message: "Failed to save Kafka settings"},{type: 'danger'});
+                });
+            });
+
             $(document).on("click", ".menu-item", function (e) {
                 console.log(e.target)
                 if ($(e.target).hasClass("checkbox-change-state")) {
@@ -176,6 +210,9 @@ data:         # required - this is field list
                         "<h6 class=\"logger-content-title\">" +
                         "   EPS: <input type=\"text\" id=\"selected_eps\" value=\"" + data.eps + "\">" +
                         "</h6>" +
+                        "<h6 class=\"logger-content-title\">" +
+                        "   Kafka Topic: <input type=\"text\" id=\"selected_kafka_topic\" value=\"" + (data.kafka_topic || "") + "\" placeholder=\"topic name\">" +
+                        "</h6>" +
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
                     );
@@ -189,14 +226,25 @@ data:         # required - this is field list
                 .then(function () {
                     // always executed
                 });
+
+                // Fetch EPS chart data
+                axios({
+                    url: CTX + '/api/loggers/eps/' + $(e.currentTarget).data("logger_id"),
+                    method: "get"
+                }).then(function (response) {
+                    makeChart(response.data.data);
+                }).catch(function (error) {
+                    console.log(error);
+                });
             });
-            
+
             $(document).on("click", ".save-button", function (e) {
                 let name = $("#selected_name").val();
                 let id = $("#selected_id").val();
                 let eps = $("#selected_eps").val();
                 let yaml = editor.getValue();
 
+                let kafkaTopic = $("#selected_kafka_topic").val();
                 axios({
                     url: CTX + "/api/loggers",
                     method: (id < 0? "put": "patch"),
@@ -204,7 +252,8 @@ data:         # required - this is field list
                         name: name,
                         id: id,
                         yaml_str: yaml,
-                        eps: eps
+                        eps: eps,
+                        kafka_topic: kafkaTopic
                     }
                 }).then(function (response) {
                     console.log(response.data)
@@ -287,6 +336,12 @@ data:         # required - this is field list
                 let id = $(e.target).parents(".menu-item").data("logger_id");
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
+                if (flag) {
+                    let topic = $("#selected_kafka_topic").val();
+                    if (!topic || topic.trim() === "") {
+                        $.notify({message: "Kafka topic is not configured. Events will be dropped."},{type: 'warning'});
+                    }
+                }
                 axios({
                     url: CTX + "/api/loggers/" + (flag? "start": "stop"),
                     method: "patch",
@@ -311,6 +366,7 @@ data:         # required - this is field list
                 $("#selected_id").val("-1");
                 $("#selected_name").val("");
                 $("#selected_status").val("0");
+                $("#selected_kafka_topic").val("");
                 $(".logger-content-subtitle").empty();
                 $(".remove-button").addClass("d-none");
                 editor.setValue(sample_yaml, -1)
@@ -381,6 +437,41 @@ data:         # required - this is field list
                     // always executed
                 });
             });
+
+            function makeChart(data) {
+                Highcharts.chart('chart', {
+                    chart: {
+                        type: 'spline',
+                        height: 350
+                    },
+                    title: {
+                        text: ''
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Producer EPS'
+                        },
+                        tickInterval: 1
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                    },
+                    tooltip: {
+                        split: true,
+                        valueDecimals: 0,
+                        valueSuffix: ''
+                    },
+                    plotOptions: {
+                        series: {
+                            animation: false,
+                            marker: {
+                                enabled: false
+                            }
+                        }
+                    },
+                    series: data
+                });
+            }
         });
     </script>
 </head>
@@ -393,6 +484,33 @@ data:         # required - this is field list
     <div class="pure-u-1">
         <div class="pure-u-1 list"></div>
         <div class="pure-u-1 main">
+            <div style="padding: 10px 20px; background: #f7f7f7; border-bottom: 1px solid #ddd;">
+                <a href="#" onclick="$('#kafka-settings-panel').toggle(); return false;" style="font-size: 14px; color: #333;">
+                    Kafka Settings &#9660;
+                </a>
+                <div id="kafka-settings-panel" style="display:none; margin-top: 10px;">
+                    <form class="pure-form pure-form-aligned" id="kafka-settings-form">
+                        <div class="pure-control-group">
+                            <label for="kafka_bootstrap_servers">Bootstrap Servers</label>
+                            <input id="kafka_bootstrap_servers" type="text" class="pure-input-1-2" placeholder="broker1:9092,broker2:9092">
+                        </div>
+                        <div class="pure-control-group">
+                            <label for="kafka_output_type">Output Type</label>
+                            <select id="kafka_output_type">
+                                <option value="json">JSON</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                        <div class="pure-control-group">
+                            <label for="kafka_batch_size">Batch Size</label>
+                            <input id="kafka_batch_size" type="text" value="1000" placeholder="1000">
+                        </div>
+                        <div class="pure-controls">
+                            <button type="button" class="pure-button pure-button-primary save-kafka-settings">Save Kafka Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <div class="logger-content">
                 <div class="logger-content-header pure-g">
                     <div class="logger-info pure-u-1-2"></div>
@@ -411,7 +529,10 @@ data:         # required - this is field list
                 </div>
     
                 <div class="logger-content-body">
-                    <div id="editor"></div>
+                    <div class="pure-g">
+                        <div id="editor" class="pure-u-1-2"></div>
+                        <div id="chart" class="pure-u-1-2"></div>
+                    </div>
                 </div>
             </div>
         </div>

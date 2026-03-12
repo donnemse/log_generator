@@ -18,12 +18,6 @@ public class WebController {
         return "logger";
     }
     
-    @GetMapping(value={"/output"})
-    public String output(Model model) {
-        model.addAttribute("output", true);
-        return "output";
-    }
-    
     @GetMapping(value={"/hist"})
     public String main(Model model) {
         model.addAttribute("hist", true);

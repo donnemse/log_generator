@@ -31,7 +31,13 @@ public class LoggerDetailDto {
     private transient String[] templateSegments;
     @JsonIgnore
     private transient String[] templateKeys;
-    
+    @JsonIgnore
+    private transient volatile String[] fieldKeys;
+    @JsonIgnore
+    private transient Map<String, Integer> fieldKeyIndex;
+    @JsonIgnore
+    private transient int[] templateKeyIndices;
+
     
     public void setData(Map<String, FieldInfoVO> data){
         this.data = data;
@@ -40,6 +46,14 @@ public class LoggerDetailDto {
                 .sorted(order)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+        // Eagerly initialize all field generators for thread-safety
+        for (FieldInfoVO field : this.data.values()) {
+            try {
+                field.initializeGenerator();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initialize field generator: " + field.getType(), e);
+            }
+        }
     }
     
     public Map<String, FieldInfoVO> getData() {
@@ -50,64 +64,95 @@ public class LoggerDetailDto {
         if (this.raw == null) {
             this.templateSegments = new String[0];
             this.templateKeys = new String[0];
-            return;
-        }
-        List<String> segments = new ArrayList<>();
-        List<String> keys = new ArrayList<>();
-        int pos = 0;
-        while (pos < raw.length()) {
-            int start = raw.indexOf("${", pos);
-            if (start == -1) {
-                segments.add(raw.substring(pos));
-                break;
+        } else {
+            List<String> segments = new ArrayList<>();
+            List<String> keys = new ArrayList<>();
+            int pos = 0;
+            while (pos < raw.length()) {
+                int start = raw.indexOf("${", pos);
+                if (start == -1) {
+                    segments.add(raw.substring(pos));
+                    break;
+                }
+                segments.add(raw.substring(pos, start));
+                int end = raw.indexOf("}", start + 2);
+                if (end == -1) {
+                    segments.add(raw.substring(start));
+                    break;
+                }
+                keys.add(raw.substring(start + 2, end));
+                pos = end + 1;
             }
-            segments.add(raw.substring(pos, start));
-            int end = raw.indexOf("}", start + 2);
-            if (end == -1) {
-                segments.add(raw.substring(start));
-                break;
-            }
-            keys.add(raw.substring(start + 2, end));
-            pos = end + 1;
+            this.templateSegments = segments.toArray(new String[0]);
+            this.templateKeys = keys.toArray(new String[0]);
         }
-        this.templateSegments = segments.toArray(new String[0]);
-        this.templateKeys = keys.toArray(new String[0]);
+
+        // Build shared key arrays for LogEvent (MUST always execute)
+        if (this.data != null) {
+            this.fieldKeys = new String[this.data.size() + 1]; // +1 for RAW
+            this.fieldKeyIndex = new HashMap<>(this.data.size() + 1, 1.0f);
+            int idx = 0;
+            for (String key : this.data.keySet()) {
+                this.fieldKeys[idx] = key;
+                this.fieldKeyIndex.put(key, idx);
+                idx++;
+            }
+            // RAW field at the end
+            this.fieldKeys[idx] = "RAW";
+            this.fieldKeyIndex.put("RAW", idx);
+
+            // Pre-compute template key indices for raw value lookup
+            this.templateKeyIndices = new int[this.templateKeys.length];
+            for (int i = 0; i < this.templateKeys.length; i++) {
+                Integer keyIdx = this.fieldKeyIndex.get(this.templateKeys[i]);
+                this.templateKeyIndices[i] = keyIdx != null ? keyIdx : -1;
+            }
+        }
     }
 
     public Map<String, Object> generateLog() throws Exception {
-        if (this.templateSegments == null) {
-            compileTemplate();
+        if (this.fieldKeys == null) {
+            synchronized (this) {
+                if (this.fieldKeys == null) {
+                    compileTemplate();
+                }
+            }
         }
-        int size = this.getData().size();
-        Map<String, Object> map = new HashMap<>(size + 1, 1.0f);
-        Map<String, Object> raw = new HashMap<>(size, 1.0f);
+        LogEvent event = new LogEvent(this.fieldKeys, this.fieldKeyIndex);
+        Object[] rawValues = new Object[this.fieldKeys.length];
+
+        int idx = 0;
         for (Entry<String, FieldInfoVO> entry : this.getData().entrySet()) {
             try {
                 FieldVO gen = entry.getValue().get();
                 if (entry.getValue().getType().equals(Constants.DataType.IP2LOC.getValue())) {
-                    String val = mapCache.getIp2Locations().getLocation(String.valueOf(map.get(entry.getValue().getBased()))).getCode();
+                    Integer basedIdx = this.fieldKeyIndex.get(entry.getValue().getBased());
+                    String basedVal = basedIdx != null ? String.valueOf(event.get(entry.getValue().getBased())) : "";
+                    String val = mapCache.getIp2Locations().getLocation(basedVal).getCode();
                     gen = new FieldVO(val, val);
                 }
-                map.put(entry.getKey(), gen.getValue());
-                raw.put(entry.getKey(), gen.getRawValue());
+                event.putByIndex(idx, gen.getValue());
+                rawValues[idx] = gen.getRawValue();
             } catch (Exception e) {
-                map.put("_error_field", entry.getKey());
-                map.put("_error_msg", e.getMessage());
                 throw e;
             }
+            idx++;
         }
+
+        // Template substitution using pre-computed indices
         StringBuilder rawStr = new StringBuilder(128);
         for (int i = 0; i < templateKeys.length; i++) {
             rawStr.append(templateSegments[i]);
-            Object val = raw.get(templateKeys[i]);
-            if (val != null) {
-                rawStr.append(val);
+            int keyIdx = templateKeyIndices[i];
+            if (keyIdx >= 0 && rawValues[keyIdx] != null) {
+                rawStr.append(rawValues[keyIdx]);
             }
         }
         if (templateSegments.length > templateKeys.length) {
             rawStr.append(templateSegments[templateSegments.length - 1]);
         }
-        map.put("RAW", rawStr.toString());
-        return map;
+        // RAW is the last field in fieldKeys
+        event.putByIndex(this.fieldKeys.length - 1, rawStr.toString());
+        return event;
     }
 }

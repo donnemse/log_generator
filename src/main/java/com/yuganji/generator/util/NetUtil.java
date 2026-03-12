@@ -83,10 +83,12 @@ public final class NetUtil {
     }
     
     public static String long2ip(long longIp) {
-        return ((longIp >> 24) & 0xFF) + "." +
-                ((longIp >> 16) & 0xFF) + "." +
-                ((longIp >> 8) & 0xFF) + "." +
-                (longIp & 0xFF);
+        StringBuilder sb = new StringBuilder(15);
+        sb.append((longIp >> 24) & 0xFF).append('.')
+          .append((longIp >> 16) & 0xFF).append('.')
+          .append((longIp >> 8) & 0xFF).append('.')
+          .append(longIp & 0xFF);
+        return sb.toString();
     }
     
     public static String getClientIP(HttpServletRequest request) {

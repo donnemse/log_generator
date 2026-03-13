@@ -117,16 +117,6 @@ public class LoggerRestController {
         return generatorSerivce.stop(logger);
     }
 
-    @ApiOperation(value = "Import Logger from Zookeeper Model")
-    @ApiImplicitParam(name = "logger", value = "Logger details. (only id)", required = true, dataTypeClass = Logger.class)
-    @RequestMapping(value = "/loggers/import", method = RequestMethod.POST)
-    public @ResponseBody SingleObjectResponse importFromModel(
-            @RequestBody ImportFromModel importFromModel,
-            HttpServletRequest request) {
-        importFromModel.setIp(NetUtil.getClientIP(request));
-        return loggerService.importFromModel(importFromModel);
-    }
-
     @ApiOperation(value = "Eps time series data for logger")
     @ApiImplicitParam(name = "loggerId", value = "Logger Id", required = true, dataType = "int", example = "0")
     @RequestMapping(value = {"/loggers/eps/{loggerId}"}, method = RequestMethod.GET)

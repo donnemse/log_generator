@@ -18,4 +18,10 @@ public class WebController {
         model.addAttribute("hist", true);
         return "hist";
     }
+
+    @GetMapping(value={"/settings"})
+    public String settings(Model model) {
+        model.addAttribute("settings", true);
+        return "settings";
+    }
 }

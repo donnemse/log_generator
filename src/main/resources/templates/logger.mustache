@@ -151,39 +151,6 @@ data:         # required - this is field list
             editor.setFontSize(15);
             loadList();
 
-            // Load Kafka global settings
-            axios({
-                url: CTX + '/api/kafka/settings',
-                method: 'get'
-            }).then(function (response) {
-                let s = response.data.data;
-                if (s) {
-                    $("#kafka_bootstrap_servers").val(s.bootstrap_servers || "");
-                    $("#kafka_output_type").val(s.output_type || "json");
-                    $("#kafka_batch_size").val(s.batch_size || 1000);
-                }
-            });
-
-            $(document).on('click', '.save-kafka-settings', function () {
-                axios({
-                    url: CTX + '/api/kafka/settings',
-                    method: 'post',
-                    data: {
-                        bootstrap_servers: $("#kafka_bootstrap_servers").val(),
-                        output_type: $("#kafka_output_type").val(),
-                        batch_size: parseInt($("#kafka_batch_size").val()) || 1000,
-                    }
-                }).then(function (response) {
-                    if (response.data.status === 200) {
-                        $.notify({message: response.data.msg},{type: 'success'});
-                    } else {
-                        $.notify({message: response.data.msg},{type: 'danger'});
-                    }
-                }).catch(function (error) {
-                    $.notify({message: "Failed to save Kafka settings"},{type: 'danger'});
-                });
-            });
-
             $(document).on("click", ".menu-item", function (e) {
                 console.log(e.target)
                 if ($(e.target).hasClass("checkbox-change-state")) {
@@ -457,33 +424,6 @@ data:         # required - this is field list
     <div class="pure-u-1">
         <div class="pure-u-1 list"></div>
         <div class="pure-u-1 main">
-            <div style="padding: 10px 20px; background: #f7f7f7; border-bottom: 1px solid #ddd;">
-                <a href="#" onclick="$('#kafka-settings-panel').toggle(); return false;" style="font-size: 14px; color: #333;">
-                    Kafka Settings &#9660;
-                </a>
-                <div id="kafka-settings-panel" style="display:none; margin-top: 10px;">
-                    <form class="pure-form pure-form-aligned" id="kafka-settings-form">
-                        <div class="pure-control-group">
-                            <label for="kafka_bootstrap_servers">Bootstrap Servers</label>
-                            <input id="kafka_bootstrap_servers" type="text" class="pure-input-1-2" placeholder="broker1:9092,broker2:9092">
-                        </div>
-                        <div class="pure-control-group">
-                            <label for="kafka_output_type">Output Type</label>
-                            <select id="kafka_output_type">
-                                <option value="json">JSON</option>
-                                <option value="csv">CSV</option>
-                            </select>
-                        </div>
-                        <div class="pure-control-group">
-                            <label for="kafka_batch_size">Batch Size</label>
-                            <input id="kafka_batch_size" type="text" value="1000" placeholder="1000">
-                        </div>
-                        <div class="pure-controls">
-                            <button type="button" class="pure-button pure-button-primary save-kafka-settings">Save Kafka Settings</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
             <div class="logger-content">
                 <div class="logger-content-header pure-g">
                     <div class="logger-info pure-u-1-2"></div>

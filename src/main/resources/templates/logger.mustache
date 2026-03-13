@@ -265,15 +265,19 @@ data:         # required - this is field list
                         yaml_str: editor.getValue()
                     }
                 }).then(function (response) {
+                    function escapeHtml(str) {
+                        if (str == null) return '';
+                        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+                    }
                     $.each(response.data.data, function(idx, val) {
                         let list = [];
                         $.each(val, function(k, v) {
                             list.push(
-                            	"<span class=\"field-span\" name=\"" + k + "\">" + 
-                            		"<span class=\"field-key\" name=\"" + k + "\">" + k + "=</span>" +
-                            v + "</span>");
+                            	"<span class=\"field-span\" name=\"" + escapeHtml(k) + "\">" +
+                            		"<span class=\"field-key\" name=\"" + escapeHtml(k) + "\">" + escapeHtml(k) + "=</span>" +
+                            escapeHtml(v) + "</span>");
                         });
-                        
+
                         $tbody.append(
                             "<tr class=\"" + (idx % 2 == 0? "": "pure-table-odd") + "\">" +
                             "    <td>" + (idx + 1) + "</td>" +

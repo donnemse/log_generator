@@ -30,3 +30,6 @@ hs_err_pid*
 /.gradle
 build.sh
 helm/
+docs/
+.omc/
+.omx/

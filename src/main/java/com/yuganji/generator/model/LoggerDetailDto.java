@@ -98,8 +98,8 @@ public class LoggerDetailDto {
                 idx++;
             }
             // RAW field at the end
-            this.fieldKeys[idx] = "RAW";
-            this.fieldKeyIndex.put("RAW", idx);
+            this.fieldKeys[idx] = "raw";
+            this.fieldKeyIndex.put("raw", idx);
 
             // Pre-compute template key indices for raw value lookup
             this.templateKeyIndices = new int[this.templateKeys.length];

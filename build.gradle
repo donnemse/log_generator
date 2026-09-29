@@ -61,3 +61,7 @@ test {
 bootJar {
     archiveFileName = 'LogGenerator.jar'
 }
+
+springBoot {
+    buildInfo()  // exposes BuildProperties (version) to the GUI
+}

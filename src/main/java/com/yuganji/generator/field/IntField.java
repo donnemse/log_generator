@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang3.RandomUtils;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.yuganji.generator.model.FieldInfoVO;
 import com.yuganji.generator.model.FieldVO;
@@ -42,7 +42,7 @@ public class IntField extends FieldInfoVO implements IFieldGenerator {
     
     @Override
     public FieldVO get() {
-        double val = RandomUtils.nextInt(0, Constants.I_THOUSAND) * 1.d;
+        double val = ThreadLocalRandom.current().nextInt(0, Constants.I_THOUSAND) * 1.d;
         int originIdx = Collections.binarySearch(arr, val);
         int idx = originIdx >= 0 ? originIdx : originIdx * -1 -1;
         

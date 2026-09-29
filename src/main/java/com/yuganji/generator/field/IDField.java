@@ -27,12 +27,17 @@ public class IDField extends FieldInfoVO implements IFieldGenerator {
     }
 
     @Override
-    public synchronized FieldVO get() {
+    public FieldVO get() {
         LocalDateTime now = LocalDateTime.now();
         String hour = now.format(FORMATTER_HOUR);
         if (!hour.equals(this.currentTime)) {
-            this.count.set(0L);
-            this.currentTime = hour;
+            synchronized (this) {
+                // Double-check under lock (hour boundary happens once per hour)
+                if (!hour.equals(this.currentTime)) {
+                    this.count.set(0L);
+                    this.currentTime = hour;
+                }
+            }
         }
         StringBuilder sb = new StringBuilder();
 

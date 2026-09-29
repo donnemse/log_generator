@@ -6,6 +6,7 @@
     <meta name="description" content="A layout example that shows off a responsive logger layout.">
     <title>ILogger</title>
     {{>import}}
+    <script src="{{contextPath}}/js/highcharts.js"></script>
     <script type="text/javascript">
         let sample_yaml = `################################
 # this is a example for logger #
@@ -149,7 +150,7 @@ data:         # required - this is field list
             editor.session.setOptions({ tabSize: 4, useSoftTabs: true });
             editor.setFontSize(15);
             loadList();
-            
+
             $(document).on("click", ".menu-item", function (e) {
                 console.log(e.target)
                 if ($(e.target).hasClass("checkbox-change-state")) {
@@ -176,6 +177,9 @@ data:         # required - this is field list
                         "<h6 class=\"logger-content-title\">" +
                         "   EPS: <input type=\"text\" id=\"selected_eps\" value=\"" + data.eps + "\">" +
                         "</h6>" +
+                        "<h6 class=\"logger-content-title\">" +
+                        "   Kafka Topic: <input type=\"text\" id=\"selected_kafka_topic\" value=\"" + (data.kafka_topic || "") + "\" placeholder=\"topic name\">" +
+                        "</h6>" +
                         "<input type=\"hidden\" id=\"selected_id\" value=\"" + data.id + "\" />" +
                         "<input type=\"hidden\" id=\"selected_status\" value=\"" + data.status + "\" />"
                     );
@@ -189,14 +193,25 @@ data:         # required - this is field list
                 .then(function () {
                     // always executed
                 });
+
+                // Fetch EPS chart data
+                axios({
+                    url: CTX + '/api/loggers/eps/' + $(e.currentTarget).data("logger_id"),
+                    method: "get"
+                }).then(function (response) {
+                    makeChart(response.data.data);
+                }).catch(function (error) {
+                    console.log(error);
+                });
             });
-            
+
             $(document).on("click", ".save-button", function (e) {
                 let name = $("#selected_name").val();
                 let id = $("#selected_id").val();
                 let eps = $("#selected_eps").val();
                 let yaml = editor.getValue();
 
+                let kafkaTopic = $("#selected_kafka_topic").val();
                 axios({
                     url: CTX + "/api/loggers",
                     method: (id < 0? "put": "patch"),
@@ -204,7 +219,8 @@ data:         # required - this is field list
                         name: name,
                         id: id,
                         yaml_str: yaml,
-                        eps: eps
+                        eps: eps,
+                        kafka_topic: kafkaTopic
                     }
                 }).then(function (response) {
                     console.log(response.data)
@@ -249,15 +265,19 @@ data:         # required - this is field list
                         yaml_str: editor.getValue()
                     }
                 }).then(function (response) {
+                    function escapeHtml(str) {
+                        if (str == null) return '';
+                        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+                    }
                     $.each(response.data.data, function(idx, val) {
                         let list = [];
                         $.each(val, function(k, v) {
                             list.push(
-                            	"<span class=\"field-span\" name=\"" + k + "\">" + 
-                            		"<span class=\"field-key\" name=\"" + k + "\">" + k + "=</span>" +
-                            v + "</span>");
+                            	"<span class=\"field-span\" name=\"" + escapeHtml(k) + "\">" +
+                            		"<span class=\"field-key\" name=\"" + escapeHtml(k) + "\">" + escapeHtml(k) + "=</span>" +
+                            escapeHtml(v) + "</span>");
                         });
-                        
+
                         $tbody.append(
                             "<tr class=\"" + (idx % 2 == 0? "": "pure-table-odd") + "\">" +
                             "    <td>" + (idx + 1) + "</td>" +
@@ -287,6 +307,12 @@ data:         # required - this is field list
                 let id = $(e.target).parents(".menu-item").data("logger_id");
                 let flag = $checkbox.is(":checked");
                 console.log(flag)
+                if (flag) {
+                    let topic = $("#selected_kafka_topic").val();
+                    if (!topic || topic.trim() === "") {
+                        $.notify({message: "Kafka topic is not configured. Events will be dropped."},{type: 'warning'});
+                    }
+                }
                 axios({
                     url: CTX + "/api/loggers/" + (flag? "start": "stop"),
                     method: "patch",
@@ -311,6 +337,7 @@ data:         # required - this is field list
                 $("#selected_id").val("-1");
                 $("#selected_name").val("");
                 $("#selected_status").val("0");
+                $("#selected_kafka_topic").val("");
                 $(".logger-content-subtitle").empty();
                 $(".remove-button").addClass("d-none");
                 editor.setValue(sample_yaml, -1)
@@ -355,32 +382,40 @@ data:         # required - this is field list
                 });
             });
 
-            $(document).on('click',".import-ok",function (e) {
-                let zookeeper_url = $("#zookeeper_url").val();
-                let engine_id = $("#engine_id").val();
-                axios({
-                    url: CTX + "/api/loggers/import",
-                    method: "post",
-                    data: {
-                        zookeeper_url: zookeeper_url,
-                        engine_id: engine_id
-                    }
-                }).then(function (response) {
-                    console.log(response)
-                    if (response.data.status == 200) {
-                        editor.setValue(response.data.data.yaml_str, -1);
-                        $.notify({message: response.data.msg},{type: 'success'});
-                        $("#importModal").modal("hide");
-                    } else {
-                        $.notify({message: response.data.msg},{type: 'danger'});
-                    }
-                }).catch(function (error) {
-                    $.notify({message: error},{type: 'danger'});
-                    console.log(error);
-                }).then(function () {
-                    // always executed
+            function makeChart(data) {
+                Highcharts.chart('chart', {
+                    chart: {
+                        type: 'spline',
+                        height: 350
+                    },
+                    title: {
+                        text: ''
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Producer EPS'
+                        },
+                        tickInterval: 1
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                    },
+                    tooltip: {
+                        split: true,
+                        valueDecimals: 0,
+                        valueSuffix: ''
+                    },
+                    plotOptions: {
+                        series: {
+                            animation: false,
+                            marker: {
+                                enabled: false
+                            }
+                        }
+                    },
+                    series: data
                 });
-            });
+            }
         });
     </script>
 </head>
@@ -397,11 +432,6 @@ data:         # required - this is field list
                 <div class="logger-content-header pure-g">
                     <div class="logger-info pure-u-1-2"></div>
                     <div class="logger-content-controls pure-u-1-2">
-                        {{#igloo}}
-                        <button type="button" class="secondary-button pure-button import-button" data-bs-toggle="modal" data-bs-target="#importModal">
-                            Import from Engine
-                        </button>
-                        {{/igloo}}
                         <button type="button" class="secondary-button pure-button sample-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
                             Sample
                         </button>
@@ -411,7 +441,10 @@ data:         # required - this is field list
                 </div>
     
                 <div class="logger-content-body">
-                    <div id="editor"></div>
+                    <div class="pure-g">
+                        <div id="editor" class="pure-u-1-2"></div>
+                        <div id="chart" class="pure-u-1-2"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -438,37 +471,6 @@ data:         # required - this is field list
             </div>
             <div class="modal-footer">
                 <button type="button" class="pure-button" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="importModalLabel">Import from Engine</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form class="pure-form pure-form-aligned default_info">
-                    <div class="pure-control-group">
-                        <label for="zookeeper_url">Zookeeper</label>
-                        <input id="zookeeper_url" name="zookeeper_url" class="pure-input-1-2" type="text"
-                               placeholder="prep1:2181,prep2:2181,prep3:2181"
-                               value="prep1:2181,prep2:2181,prep3:2181">
-                    </div>
-                    <div class="pure-control-group">
-                        <label for="engine_id">Engine ID</label>
-                        <input id="engine_id" name="engine_id" class="pure-input-1-2" type="text"
-                               placeholder="engine00345"
-                               value="engine00345">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="pure-button" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="pure-button pure-button-primary import-ok">Ok</button>
             </div>
         </div>
     </div>

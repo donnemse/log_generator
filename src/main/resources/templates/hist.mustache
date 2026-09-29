@@ -24,7 +24,41 @@
             }
         }
         .acediff {
-          height: 70vh
+          height: 70vh;
+          position: relative;
+        }
+        /* Left (original) - deleted lines in red */
+        .acediff__left .acediff__diffLine {
+          background-color: #fdd;
+          border-top: 1px solid #f5a9a9;
+          border-bottom: 1px solid #f5a9a9;
+        }
+        /* Right (changed) - added lines in green */
+        .acediff__right .acediff__diffLine {
+          background-color: #dfd;
+          border-top: 1px solid #a9d9a0;
+          border-bottom: 1px solid #a9d9a0;
+        }
+        /* Gutter */
+        .acediff__gutter {
+          background-color: #f7f7f7;
+          flex: 0 0 80px;
+        }
+        .acediff__gutter svg {
+          background-color: #f7f7f7;
+        }
+        /* Connector arrows between left and right */
+        .acediff__connector {
+          fill: rgba(255, 180, 50, 0.3);
+          stroke: #e8a020;
+          stroke-width: 1.5;
+        }
+        /* Inline character-level highlight */
+        .acediff__left .ace_marker-layer .acediff__charDiff {
+          background-color: #f8b0b0;
+        }
+        .acediff__right .ace_marker-layer .acediff__charDiff {
+          background-color: #a6e3a1;
         }
         .new-button {
             display: none
@@ -56,7 +90,7 @@
                         onClick: () => diffInit(`${row.cells[1].data}`, `${row.cells[6].data}`)
                       }, 'Diff(now)'),
                    ];
-                   if (row.cells[8].data != null) {
+                   if (row.cells[8].data != null && row.cells[8].data !== row.cells[6].data) {
                        but.push(
                            gridjs.h('button', {
                                className: 'btn btn-outline-success diff-button',
@@ -140,9 +174,17 @@
                 console.log(error);
             })
             .then(function () {
+                if (origin === yaml) {
+                    alert('No differences found.');
+                    return;
+                }
                 diffModal(origin, yaml);
-                return;
             });
+            return;
+        }
+        if (origin === yaml) {
+            alert('No differences found.');
+            return;
         }
         diffModal(origin, yaml);
     }
@@ -171,6 +213,38 @@
         });
         differ.editors.left.ace.setOption("showInvisibles", true);
         differ.editors.right.ace.setOption("showInvisibles", true);
+
+        // Proportional scroll sync (handles different heights)
+        let syncing = false;
+        let leftAce = differ.editors.left.ace;
+        let rightAce = differ.editors.right.ace;
+        function getMaxScroll(editor) {
+            let renderer = editor.renderer;
+            return renderer.layerConfig.maxHeight - renderer.$size.scrollerHeight;
+        }
+        leftAce.getSession().on('changeScrollTop', function() {
+            if (syncing) return;
+            syncing = true;
+            let leftMax = getMaxScroll(leftAce);
+            let rightMax = getMaxScroll(rightAce);
+            if (leftMax > 0 && rightMax > 0) {
+                let ratio = leftAce.getSession().getScrollTop() / leftMax;
+                rightAce.getSession().setScrollTop(Math.round(ratio * rightMax));
+            }
+            syncing = false;
+        });
+        rightAce.getSession().on('changeScrollTop', function() {
+            if (syncing) return;
+            syncing = true;
+            let leftMax = getMaxScroll(leftAce);
+            let rightMax = getMaxScroll(rightAce);
+            if (leftMax > 0 && rightMax > 0) {
+                let ratio = rightAce.getSession().getScrollTop() / rightMax;
+                leftAce.getSession().setScrollTop(Math.round(ratio * leftMax));
+            }
+            syncing = false;
+        });
+
         $(".modal").modal("show");
     }
     </script>
@@ -203,7 +277,7 @@
 </div>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>

@@ -1,6 +1,6 @@
 package com.yuganji.generator.model;
 
-import org.apache.commons.lang3.RandomUtils;
+import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.Data;
 
@@ -35,6 +35,6 @@ public class IntBound {
     }
     
     public int randomInt() {
-        return RandomUtils.nextInt(this.min, this.max);
+        return ThreadLocalRandom.current().nextInt(this.min, this.max);
     }
 }

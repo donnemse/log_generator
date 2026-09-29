@@ -42,7 +42,7 @@ dependencies {
 }
 
 group = 'com.yuganji.generator'
-version = '0.1.0'
+version = '1.0.8'
 description = 'LogGenerator'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -56,4 +56,8 @@ tasks.named('test') {
 
 test {
     exclude '**/*'
+}
+// ponytail: fixed jar name so Dockerfile doesn't change on every version bump
+bootJar {
+    archiveFileName = 'LogGenerator.jar'
 }

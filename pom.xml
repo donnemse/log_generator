@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.igloosec.generator</groupId>
     <artifactId>LogGenerator</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.8</version>
     <name>LogGenerator</name>
     <description>LogGenerator</description>
     <properties>

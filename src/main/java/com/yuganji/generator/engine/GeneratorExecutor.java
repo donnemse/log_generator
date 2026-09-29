@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.yuganji.generator.model.IntBound;
 import com.yuganji.generator.model.LoggerDto;
-import com.yuganji.generator.kafka.KafkaProducerService;
+import com.yuganji.generator.output.OutputService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -24,7 +24,7 @@ import lombok.extern.log4j.Log4j2;
 public class GeneratorExecutor {
 
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private OutputService outputService;
 
     @PostConstruct
     public void init() {
@@ -45,13 +45,13 @@ public class GeneratorExecutor {
                 batch.add(map);
 
                 if (batch.size() >= BATCH_SIZE) {
-                    kafkaProducerService.send(logger.getId(), batch);
+                    outputService.write(logger.getId(), batch);
                     batch = new ArrayList<>(BATCH_SIZE);
                 }
 
                 if (++cnt >= eps) {
                     if (!batch.isEmpty()) {
-                        kafkaProducerService.send(logger.getId(), batch);
+                        outputService.write(logger.getId(), batch);
                         batch = new ArrayList<>(BATCH_SIZE);
                     }
                     Thread.sleep(Math.max(0, 1000 - (System.currentTimeMillis() - checkPoint)));
@@ -73,7 +73,7 @@ public class GeneratorExecutor {
             }
         }
         if (!batch.isEmpty()) {
-            kafkaProducerService.send(logger.getId(), batch);
+            outputService.write(logger.getId(), batch);
         }
         log.debug("Generator thread stopped for logger: {}", logger.getName());
         return new AsyncResult<>("Completed");

@@ -7,8 +7,19 @@
     <title>ILogger - Settings</title>
     {{>import}}
     <script type="text/javascript">
+        function toggleOutputTarget() {
+            var target = $("#output_target").val();
+            if (target === 'file') {
+                $(".kafka-only").hide();
+                $(".file-only").show();
+            } else {
+                $(".kafka-only").show();
+                $(".file-only").hide();
+            }
+        }
+
         $(function() {
-            // Load Kafka global settings
+            // Load global output settings
             axios({
                 url: CTX + '/api/kafka/settings',
                 method: 'get'
@@ -18,8 +29,14 @@
                     $("#kafka_bootstrap_servers").val(s.bootstrap_servers || "");
                     $("#kafka_output_type").val(s.output_type || "json");
                     $("#kafka_batch_size").val(s.batch_size || 1000);
+                    $("#output_target").val(s.output_target || "kafka");
+                    $("#output_dir").val(s.output_dir || "./output");
+                    $("#output_file").val(s.output_file || "output.jsonl");
                 }
+                toggleOutputTarget();
             });
+
+            $(document).on('change', '#output_target', toggleOutputTarget);
 
             $(document).on('click', '.save-kafka-settings', function () {
                 axios({
@@ -29,6 +46,9 @@
                         bootstrap_servers: $("#kafka_bootstrap_servers").val(),
                         output_type: $("#kafka_output_type").val(),
                         batch_size: parseInt($("#kafka_batch_size").val()) || 1000,
+                        output_target: $("#output_target").val(),
+                        output_dir: $("#output_dir").val(),
+                        output_file: $("#output_file").val(),
                     }
                 }).then(function (response) {
                     if (response.data.status === 200) {
@@ -59,20 +79,35 @@
                 </div>
 
                 <div class="logger-content-body" style="padding: 20px;">
-                    <h4>Kafka Settings</h4>
+                    <h4>Output Settings</h4>
                     <form class="pure-form pure-form-aligned" id="kafka-settings-form">
                         <div class="pure-control-group">
+                            <label for="output_target">Output Target</label>
+                            <select id="output_target">
+                                <option value="kafka">Kafka</option>
+                                <option value="file">Local File (JSONL)</option>
+                            </select>
+                        </div>
+                        <div class="pure-control-group file-only">
+                            <label for="output_dir">Output Directory</label>
+                            <input id="output_dir" type="text" class="pure-input-1-2" value="./output" placeholder="./output">
+                        </div>
+                        <div class="pure-control-group file-only">
+                            <label for="output_file">Output File</label>
+                            <input id="output_file" type="text" class="pure-input-1-2" value="output.jsonl" placeholder="output.jsonl">
+                        </div>
+                        <div class="pure-control-group kafka-only">
                             <label for="kafka_bootstrap_servers">Bootstrap Servers</label>
                             <input id="kafka_bootstrap_servers" type="text" class="pure-input-1-2" placeholder="broker1:9092,broker2:9092">
                         </div>
-                        <div class="pure-control-group">
+                        <div class="pure-control-group kafka-only">
                             <label for="kafka_output_type">Output Type</label>
                             <select id="kafka_output_type">
                                 <option value="json">JSON</option>
                                 <option value="csv">CSV</option>
                             </select>
                         </div>
-                        <div class="pure-control-group">
+                        <div class="pure-control-group kafka-only">
                             <label for="kafka_batch_size">Batch Size</label>
                             <input id="kafka_batch_size" type="text" value="1000" placeholder="1000">
                         </div>

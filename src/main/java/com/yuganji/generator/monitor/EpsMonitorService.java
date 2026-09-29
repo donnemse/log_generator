@@ -1,6 +1,6 @@
 package com.yuganji.generator.monitor;
 
-import com.yuganji.generator.kafka.KafkaProducerService;
+import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.model.LoggerDto;
@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 public class EpsMonitorService {
 
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private OutputService outputService;
 
     @Autowired
     private LoggerService loggerService;
@@ -24,7 +24,7 @@ public class EpsMonitorService {
     public void monitorEps() {
         long time = System.currentTimeMillis();
 
-        Iterator<Entry<Integer, EpsVO>> it = kafkaProducerService.getProducerEps().entrySet().iterator();
+        Iterator<Entry<Integer, EpsVO>> it = outputService.getEps().entrySet().iterator();
         while (it.hasNext()) {
             Entry<Integer, EpsVO> entry = it.next();
             int loggerId = entry.getKey();

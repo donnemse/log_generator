@@ -5,7 +5,8 @@ import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
 import com.yuganji.generator.db.KafkaSettings;
 import com.yuganji.generator.db.KafkaSettingsRepository;
-import com.yuganji.generator.model.EpsVO;
+import com.yuganji.generator.model.LoggerDto;
+import com.yuganji.generator.output.OutputSink;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Log4j2
-public class KafkaProducerService {
+public class KafkaProducerService implements OutputSink {
 
     @Autowired
     private KafkaSettingsRepository kafkaSettingsRepository;
@@ -36,16 +37,17 @@ public class KafkaProducerService {
     private final ConcurrentHashMap<Integer, Producer<String, byte[]>> producers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, String> topics = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, String> outputTypes = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, EpsVO> producerEps = new ConcurrentHashMap<>();
     private final Gson gson = new Gson();
 
     /**
      * Create and cache a KafkaProducer for the given logger.
-     */
-    /**
+     *
      * @return null if success, error message if failed
      */
-    public String createProducer(int loggerId, String kafkaTopic) {
+    @Override
+    public String open(LoggerDto logger) {
+        int loggerId = logger.getId();
+        String kafkaTopic = logger.getKafkaTopic();
         if (kafkaTopic == null || kafkaTopic.trim().isEmpty()) {
             log.warn("No Kafka topic for logger {}", loggerId);
             return "Kafka topic is not configured. Set topic first.";
@@ -60,16 +62,16 @@ public class KafkaProducerService {
         producers.put(loggerId, producer);
         topics.put(loggerId, kafkaTopic.trim());
         outputTypes.put(loggerId, settings.getOutputType() != null ? settings.getOutputType() : "json");
-        producerEps.put(loggerId, new EpsVO("kafka-" + loggerId));
         log.info("Kafka producer created for logger {} -> topic {}", loggerId, kafkaTopic);
         return null;
     }
 
     /**
      * Send a batch of events to Kafka. NEVER throws - catches all exceptions internally.
-     * All config is cached at createProducer time - no DB access on hot path.
+     * All config is cached at open() time - no DB access on hot path.
      */
-    public void send(int loggerId, List<Map<String, Object>> batch) {
+    @Override
+    public void write(int loggerId, List<Map<String, Object>> batch) {
         try {
             Producer<String, byte[]> producer = producers.get(loggerId);
             if (producer == null) {
@@ -85,11 +87,6 @@ public class KafkaProducerService {
                 sendCsv(producer, topic, batch);
             } else {
                 sendJson(producer, topic, batch);
-            }
-
-            EpsVO eps = producerEps.get(loggerId);
-            if (eps != null) {
-                eps.addCnt(batch.size());
             }
         } catch (Exception e) {
             log.error("Kafka send failed for logger {}: {}", loggerId, e.getMessage());
@@ -118,11 +115,11 @@ public class KafkaProducerService {
     /**
      * Flush and close the producer for the given logger.
      */
-    public void closeProducer(int loggerId) {
+    @Override
+    public void close(int loggerId) {
         Producer<String, byte[]> producer = producers.remove(loggerId);
         topics.remove(loggerId);
         outputTypes.remove(loggerId);
-        producerEps.remove(loggerId);
         if (producer != null) {
             try {
                 producer.flush();
@@ -132,13 +129,6 @@ public class KafkaProducerService {
                 log.error("Error closing Kafka producer for logger {}: {}", loggerId, e.getMessage());
             }
         }
-    }
-
-    /**
-     * Get EPS tracking map for monitoring.
-     */
-    public ConcurrentHashMap<Integer, EpsVO> getProducerEps() {
-        return producerEps;
     }
 
     @PreDestroy
@@ -155,7 +145,6 @@ public class KafkaProducerService {
         producers.clear();
         topics.clear();
         outputTypes.clear();
-        producerEps.clear();
     }
 
     private Properties getKafkaProducerProperties(String bootstrapServers) {

@@ -2,7 +2,7 @@ package com.yuganji.generator.controller;
 
 import com.yuganji.generator.db.Logger;
 import com.yuganji.generator.engine.GeneratorSerivce;
-import com.yuganji.generator.kafka.KafkaProducerService;
+import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.EpsVO;
 import com.yuganji.generator.model.EpsHistoryVO;
@@ -29,7 +29,7 @@ public class LoggerRestController {
     @Autowired
     private LoggerService loggerService;
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private OutputService outputService;
 
     @ApiOperation(value = "Getting information of Logger")
     @RequestMapping(value = "/loggers", method = RequestMethod.GET)
@@ -122,10 +122,10 @@ public class LoggerRestController {
     @RequestMapping(value = {"/loggers/eps/{loggerId}"}, method = RequestMethod.GET)
     public @ResponseBody SingleObjectResponse loggerEps(@PathVariable int loggerId) {
         List<Map<String, Object>> res = new ArrayList<>();
-        EpsVO eps = kafkaProducerService.getProducerEps().get(loggerId);
+        EpsVO eps = outputService.getEps().get(loggerId);
         if (eps != null) {
             Map<String, Object> series = new HashMap<>();
-            series.put("name", "kafka-" + loggerId);
+            series.put("name", eps.getName());
             List<Map<String, Long>> data = new ArrayList<>();
             for (EpsHistoryVO vo : eps.getEpsHistory()) {
                 Map<String, Long> tick = new HashMap<>();

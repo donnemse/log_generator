@@ -21,7 +21,7 @@ import com.yuganji.generator.logger.LoggerService;
 import com.yuganji.generator.model.IntBound;
 import com.yuganji.generator.model.LoggerDto;
 import com.yuganji.generator.model.SingleObjectResponse;
-import com.yuganji.generator.kafka.KafkaProducerService;
+import com.yuganji.generator.output.OutputService;
 import com.yuganji.generator.util.NetUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +31,7 @@ import lombok.extern.log4j.Log4j2;
 public class GeneratorSerivce {
 
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private OutputService outputService;
 
     private Map<Integer, List<Future<String>>> cache;
 
@@ -82,7 +82,7 @@ public class GeneratorSerivce {
         if (futures != null) {
             futures.forEach(f -> f.cancel(true));
         }
-        kafkaProducerService.closeProducer(id);
+        outputService.close(id);
         loggerService.get(id).setStatus(0);
     }
 
@@ -108,14 +108,14 @@ public class GeneratorSerivce {
         AtomicBoolean running = new AtomicBoolean(true);
         runningFlags.put(logger.getId(), running);
 
-        // Create Kafka producer before spawning workers
-        String kafkaError = kafkaProducerService.createProducer(logger.getId(), loggerDto.getKafkaTopic());
-        if (kafkaError != null) {
+        // Open the configured output sink (Kafka or local file) before spawning workers
+        String outputError = outputService.open(loggerDto);
+        if (outputError != null) {
             runningFlags.remove(logger.getId());
             loggerService.get(logger.getId()).setStatus(0);
             return new SingleObjectResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    kafkaError, false);
+                    outputError, false);
         }
 
         // Spawn workers with proportional EPS range
@@ -164,7 +164,7 @@ public class GeneratorSerivce {
             if (futures != null) {
                 futures.forEach(f -> f.cancel(true));
             }
-            kafkaProducerService.closeProducer(logger.getId());
+            outputService.close(logger.getId());
         } else {
             String message = "Generator was not running status: " + loggerService.get(logger.getId()).getName();
             return new SingleObjectResponse(

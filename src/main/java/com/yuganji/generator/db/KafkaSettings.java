@@ -27,4 +27,16 @@ public class KafkaSettings {
     @Column(name = "batch_size")
     private Integer batchSize = 1000;
 
+    @Builder.Default
+    @Column(name = "output_target")
+    private String outputTarget = "kafka";  // "kafka" or "file"
+
+    @Builder.Default
+    @Column(name = "output_dir")
+    private String outputDir = "./output";  // used when outputTarget == "file"
+
+    @Builder.Default
+    @Column(name = "output_file")
+    private String outputFile = "output.jsonl";  // used when outputTarget == "file"
+
 }

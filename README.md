@@ -20,7 +20,7 @@ A web application that generates realistic log data in real-time using YAML-base
 | Backend | Java 8, Spring Boot 2.6, MyBatis, SQLite |
 | Frontend | Mustache, Bootstrap, jQuery, Ace Editor, Highcharts |
 | Network | Netty (TCP socket server) |
-| Build | Maven, Gradle |
+| Build | Gradle |
 | Container | Docker |
 
 ## Getting Started
@@ -28,16 +28,9 @@ A web application that generates realistic log data in real-time using YAML-base
 ### Prerequisites
 
 - Java 8 or higher
-- Maven or Gradle
+- Gradle (wrapper included)
 
 ### Build & Run
-
-**Maven:**
-
-```bash
-./mvnw clean install
-./mvnw spring-boot:run
-```
 
 **Gradle:**
 

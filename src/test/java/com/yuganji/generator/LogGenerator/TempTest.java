@@ -1,8 +1,6 @@
 package com.yuganji.generator.LogGenerator;
 
 import com.google.common.collect.Range;
-import com.yuganji.generator.model.AbstractOutputHandler;
-import com.yuganji.generator.output.model.SparrowOutput;
 import org.junit.jupiter.api.Test;
 
 import java.text.SimpleDateFormat;
@@ -51,14 +49,6 @@ public class TempTest {
         time = time / (1000 * 60 * 10) * (1000 * 60 * 10);
         System.out.println(new Date(time));
 
-
         System.out.println(new SimpleDateFormat("yyyyMMddH0").format(new Date()));
-        SparrowOutput vo = new SparrowOutput(1000);
-        vo.setPort(1000);
-        
-        AbstractOutputHandler vo2 = vo;
-
-        System.out.println(((SparrowOutput) vo2).getPort());
-        
     }
 }

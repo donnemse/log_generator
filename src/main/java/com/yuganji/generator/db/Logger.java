@@ -43,6 +43,9 @@ public class Logger {
     @ColumnDefault(value = "0")
     private Integer status = 0;
 
+    @Column(name = "kafka_topic")
+    private String kafkaTopic;
+
     public static LoggerBuilder builder(LoggerDto loggerDto) {
         return LoggerBuilder()
                 .id(loggerDto.getId())
@@ -52,7 +55,8 @@ public class Logger {
                 .ip(loggerDto.getIp())
                 .created(loggerDto.getCreated())
                 .lastModified(loggerDto.getLastModified())
-                .status(loggerDto.getStatus());
+                .status(loggerDto.getStatus())
+                .kafkaTopic(loggerDto.getKafkaTopic());
     }
 
     public LoggerDto toDto() {
@@ -64,6 +68,7 @@ public class Logger {
                 .ip(this.ip)
                 .created(this.created)
                 .lastModified(this.lastModified)
-                .status(this.status).build();
+                .status(this.status)
+                .kafkaTopic(this.kafkaTopic).build();
     }
 }

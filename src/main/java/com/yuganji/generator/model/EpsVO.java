@@ -40,6 +40,10 @@ public class EpsVO {
         this.del.incrementAndGet();
     }
 
+    public void addDeleted(int count) {
+        this.del.addAndGet(count);
+    }
+
     public void addCnt() {
         this.cnt.incrementAndGet();
     }
@@ -49,13 +53,15 @@ public class EpsVO {
     }
 
     public void setEps(long time) {
+        double seconds = (time - this.lastCheckTime) / 1000.0;
+        if (seconds < 0.1) {
+            // Sub-100ms window: don't reset counters, accumulate until next call
+            return;
+        }
         int cntSnapshot = this.cnt.getAndSet(0);
         int delSnapshot = this.del.getAndSet(0);
-        double seconds = Math.floor((time - this.lastCheckTime) / 1000.d);
-        if (seconds > 0) {
-            this.eps = Math.ceil(cntSnapshot / seconds);
-            this.delEps = Math.ceil(delSnapshot / seconds);
-        }
+        this.eps = Math.round(cntSnapshot / seconds);
+        this.delEps = Math.round(delSnapshot / seconds);
         this.lastCheckTime = time;
         if (this.epsHistory.size() == 200) {
             this.epsHistory.poll();

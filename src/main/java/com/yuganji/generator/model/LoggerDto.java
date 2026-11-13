@@ -48,6 +48,12 @@ public class LoggerDto {
     @Builder.Default
     private int status = 0;
 
+    private String kafkaTopic;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnore
+    private transient EpsVO producerEps;
+
     public String getIp() {
         if (this.ip == null) {
             return "unknown";
